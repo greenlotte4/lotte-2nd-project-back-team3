@@ -1,0 +1,38 @@
+spring:
+    application:
+        name: BackAnt
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        password: 1001
+        url: jdbc:mysql://127.0.0.1:3306/antwork
+        username: root
+    jpa:
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                format_sql: true
+        show-sql: true
+    servlet:
+        multipart:
+            max-file-size: 10MB
+    mail:
+        host: smtp.gmail.com
+        port: 587
+        username: loveu9911111@gmail.com
+        password: vclt brov xjod mybk
+        protocol: smtp
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    starttls:
+                        enable: true
+        default-encoding: UTF-8
+file:
+    upload:
+        path: uploads
+
+jwt:
+    issuer: loveu9911111@gmail.com
+    secret: Tz6W1F4Cl4Yl2GyyRjJ5C4v7KRMCA4z4
