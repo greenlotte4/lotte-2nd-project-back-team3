@@ -48,6 +48,9 @@ dependencies {
 
     // Google Mail SMTP
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // mongoDB
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 }
 
 tasks.named('test') {

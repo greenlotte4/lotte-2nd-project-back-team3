@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### 개인 개발용 yml파일 ###
+application-dev.yml

@@ -76,7 +76,7 @@ public class JwtProvider {
 
         // User 객체 생성
         User user = User.builder()
-                .id(username)
+                .uid(username)
                 .role(role)
                 .build();
 
