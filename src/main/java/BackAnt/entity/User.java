@@ -17,8 +17,11 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id; // 고유 ID
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // 무결성을 위한 AI PK
+    private int id;
+
+    private String uid; // 고유 ID
+
     private String username; // 사용자 이름
     private String email; // 이메일
     private String password; // 비밀번호 (암호화된 상태로 저장)
