@@ -1,0 +1,35 @@
+name: Java CI/CD with Gradle
+
+on:
+  push:
+    branches: [ "main" ]  # main 브랜치에 Push 시 실행
+  pull_request:
+    branches: [ "main" ]  # main 브랜치로 Pull Request 시 실행
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. 코드 체크아웃
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # 2. JDK 17 설정
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    # 3. gradlew 파일의 권한 확인
+    - name: Check gradlew Permissions
+      run: ls -l gradlew
+
+    # 4. gradlew 파일에 실행 권한 추가
+    - name: Add Execute Permission to gradlew
+      run: chmod +x gradlew
+
+    # 5. Gradle 빌드
+    - name: Build with Gradle Wrapper
+      run: ./gradlew build
