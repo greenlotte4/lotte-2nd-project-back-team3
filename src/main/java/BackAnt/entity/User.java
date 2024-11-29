@@ -6,6 +6,12 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/*
+    날짜 : 2024/11/29
+    이름 : 최준혁
+    내용 : User 엔티티 생성
+*/
+
 @Getter
 @Setter
 @AllArgsConstructor

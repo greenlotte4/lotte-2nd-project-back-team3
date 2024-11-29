@@ -1,4 +1,4 @@
-package BackAnt.entity;
+package BackAnt.dto;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,15 +14,12 @@ import java.time.LocalTime;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@Entity
-@Table(name = "Company")
-public class Company {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class CompanyDTO {
+
     private int id;
     private String name;
     private String description;

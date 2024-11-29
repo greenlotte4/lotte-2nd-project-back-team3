@@ -13,6 +13,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/*
+    날짜 : 2024/11/27
+    이름 : 최준혁
+    내용 : JwtAuthenticationFilter 생성
+*/
+
 @Log4j2
 @RequiredArgsConstructor
 @Component

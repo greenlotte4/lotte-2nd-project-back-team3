@@ -1,4 +1,4 @@
-package BackAnt.controller.common.user;
+package BackAnt.controller.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

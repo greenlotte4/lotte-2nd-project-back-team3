@@ -13,6 +13,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/*
+    날짜 : 2024/11/27
+    이름 : 최준혁
+    내용 : MyUserDetails 생성
+*/
+
+
 @Getter
 @Setter
 @ToString

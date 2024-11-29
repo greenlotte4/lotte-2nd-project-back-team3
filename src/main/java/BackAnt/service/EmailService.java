@@ -10,6 +10,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+/*
+    날짜 : 2024/11/29
+    이름 : 최준혁
+    내용 : 이메일 서비스 생성
+*/
+
 @Service
 public class EmailService {
 
