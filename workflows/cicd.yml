@@ -1,4 +1,5 @@
-name: Java CI with Gradle
+name: Java CI/CD with Gradle
+
 on:
   push:
     branches:
@@ -16,8 +17,13 @@ jobs:
           java-version: "17"
           distribution: temurin
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2.6.0
@@ -66,7 +72,7 @@ jobs:
             -o StrictHostKeyChecking=no \
             ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
             pgrep java | xargs kill -9;
-            nohup java -jar -Dspring.profiles.active=prod /home/${{ secrets.AWS_EC2_USER }}/$JAR_FILE > app.log 2>&1 &
+            nohup java -jar -Dspring.profiles.active=prod /home/${{ secrets.AWS_EC2_USER }}/$JAR_FILE > /var/log/app.log 2>&1 &
           EOF
 
       - name: Cleanup
