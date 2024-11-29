@@ -1,3 +1,6 @@
+server:
+    port: 8080
+
 spring:
     application:
         name: BackAnt
@@ -29,6 +32,9 @@ spring:
                     starttls:
                         enable: true
         default-encoding: UTF-8
+    data:
+        mongodb:
+            uri: mongodb://antwork:1234@107.20.58.55:27017/antwork?authSource=antwork
 file:
     upload:
         path: uploads
