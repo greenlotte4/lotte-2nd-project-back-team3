@@ -17,6 +17,10 @@ jobs:
           java-version: "17"
           distribution: temurin
 
+       # gradlew 파일의 권한 설정
+      - name: Add Execute Permission to gradlew
+        run: chmod +x gradlew
+
       - name: Cache Gradle dependencies
         uses: actions/cache@v3
         with:
