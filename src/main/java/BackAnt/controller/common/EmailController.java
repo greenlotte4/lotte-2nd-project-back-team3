@@ -22,20 +22,28 @@ public class EmailController {
 
     // 이메일 전송 요청
     @PostMapping("/send")
-    public ResponseEntity<String> sendEmail(@RequestBody EmailRequestDTO request) {
+    public ResponseEntity<Map<String, String>> sendEmail(@RequestBody EmailRequestDTO request) {
         try {
-            emailService.sendEmail(request.getTo(), request.getSubject(), request.getBody());
-            return ResponseEntity.ok("이메일이 성공적으로 전송되었습니다.");
+            String token = emailService.sendEmail(request.getTo(), request.getSubject(), request.getBody());
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "이메일이 성공적으로 전송되었습니다.");
+            response.put("token", token); // 토큰 반환
+            log.info("토큰" + token);
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("이메일 전송 실패: " + e.getMessage());
+            return ResponseEntity.status(500).body(Map.of("error", "이메일 전송 실패: " + e.getMessage()));
         }
     }
 
-    // 이메일 인증 요청
+
+    // 이메일 인증
     @GetMapping("/verify")
-    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
+    public ResponseEntity<String> verifyAndCheckEmailAPI(@RequestParam("token") String token) {
         try {
-            String email = emailService.verifyEmail(token);
+            String email = emailService.verifyAndCheckEmail(token);
+            log.info("로그 들어와서 인증 성공하니?");
             return ResponseEntity.ok("이메일 인증이 성공적으로 완료되었습니다! 이메일: " + email);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(400).body(e.getMessage());
@@ -44,11 +52,13 @@ public class EmailController {
         }
     }
 
+    // 이메일 인증 상태 확인
     @GetMapping("/check-verification")
-    public ResponseEntity<Boolean> isEmailVerified(@RequestParam("token") String token) {
-        log.info("들어오니? 폴링?");
-        boolean isVerified = emailService.isTokenVerified(token);
-        return ResponseEntity.ok(isVerified);
+    public ResponseEntity<Map<String, Boolean>> checkVerification(@RequestParam("token") String token) {
+        boolean isVerified = emailService.isEmailVerified(token);
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("verified", isVerified);
+        return ResponseEntity.ok(response); // JSON 형식으로 인증 상태 반환
     }
 
 }
