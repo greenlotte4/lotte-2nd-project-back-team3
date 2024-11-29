@@ -17,10 +17,15 @@ jobs:
           java-version: "17"
           distribution: temurin
 
-       # gradlew 파일의 권한 설정
+      # gradlew 파일 실행 권한 추가
       - name: Add Execute Permission to gradlew
-        run: chmod +x gradlew
+        run: chmod +x ./gradlew
 
+      # gradlew 권한 확인
+      - name: Verify gradlew Permissions
+        run: ls -l ./gradlew
+
+      # Gradle 캐시 사용
       - name: Cache Gradle dependencies
         uses: actions/cache@v3
         with:
@@ -29,17 +34,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      # Gradle 빌드 실행
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@v2.6.0
-        with:
-          arguments: build
+        shell: bash
+        run: ./gradlew build
 
+      # 빌드된 JAR 파일 경로 추출
       - name: Get JAR_FILE
         id: jarfile
         run: |
           JAR_FILE=$(ls build/libs/*.jar | grep -v plain | head -n 1)
           echo "JAR_FILE=${JAR_FILE}" >> $GITHUB_ENV
 
+      # 빌드 아티팩트 업로드
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
@@ -50,17 +57,20 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      # 빌드 아티팩트 다운로드
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
           name: app
           path: build/libs/
 
+      # SSH 키 설정
       - name: Setup SSH Key
         run: |
           echo "${{ secrets.AWS_EC2_KEY }}" > private_key.pem
           chmod 600 private_key.pem
 
+      # EC2에 JAR 파일 복사
       - name: Copy JAR to EC2
         run: |
           JAR_FILE=$(ls build/libs/*.jar | head -n 1)
@@ -69,6 +79,7 @@ jobs:
             $JAR_FILE \
             ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USER }}/
       
+      # EC2에서 Spring 애플리케이션 재시작
       - name: Restart Spring Application on EC2
         run: |
           JAR_FILE=$(basename $(ls build/libs/*.jar | head -n 1))
@@ -79,5 +90,6 @@ jobs:
             nohup java -jar -Dspring.profiles.active=prod /home/${{ secrets.AWS_EC2_USER }}/$JAR_FILE > /var/log/app.log 2>&1 &
           EOF
 
+      # SSH 키 정리
       - name: Cleanup
         run: rm -f private_key.pem
