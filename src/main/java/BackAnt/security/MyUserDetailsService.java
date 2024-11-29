@@ -11,6 +11,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+/*
+    날짜 : 2024/11/27
+    이름 : 최준혁
+    내용 : MyUserDetailsService 생성
+*/
+
 @RequiredArgsConstructor
 @Service
 public class MyUserDetailsService implements UserDetailsService {
@@ -21,7 +27,7 @@ public class MyUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         // 사용자가 입력한 아이디로 사용자 조회, 비밀번호에 대한 검증은 이전 컴포넌트인 AuthenticationProvider에서 수행
-        Optional<User> optUser = userRepository.findById(username);
+        Optional<User> optUser = userRepository.findByUid(username);
 
         if(optUser.isPresent()) {
             // 시큐리티 사용자 인증객체 생성 후 반환

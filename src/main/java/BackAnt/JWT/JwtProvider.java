@@ -21,6 +21,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/*
+    날짜 : 2024/11/27
+    이름 : 최준혁
+    내용 : JwtProvider 생성
+*/
+
 @Getter
 @Component
 public class JwtProvider {
