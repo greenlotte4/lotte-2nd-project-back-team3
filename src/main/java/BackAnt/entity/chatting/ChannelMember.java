@@ -4,7 +4,6 @@ import BackAnt.entity.User;
 import BackAnt.entity.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -14,19 +13,17 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class Message extends BaseTimeEntity {
+public class ChannelMember extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 채널 멤버의 고유 ID
 
-    @Column(length = 500)
-    private String content;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id")
+    private Channel channel; // 멤버가 소속된 채널
 
-    @ManyToOne
-    @JoinColumn(name = "sender_id")
-    private User sender;
-
-    @ManyToOne
-    @JoinColumn(name = "room_id")
-    private Room room;// Room과 연관 (Channel 또는 DM)private LocalDateTime createdAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user; // 채널 멤버로 참여 중인 사용자
 }
