@@ -10,8 +10,20 @@ import java.util.Map;
 @AllArgsConstructor
 @Builder
 public class PageRequestDTO {
+    private String _id;
     private String title;
     private String content;
-//  private Map<String, Object> content; - JSON 저장 방식
+    private String uid;
+
+
+
+
+
+
+
+
+
+
+    //  private Map<String, Object> content; - JSON 저장 방식
 
 }

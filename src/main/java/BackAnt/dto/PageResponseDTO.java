@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class PageResponseDTO {
-    private int _id;
+    private int id;
     private String title;
     private String content;
 }
