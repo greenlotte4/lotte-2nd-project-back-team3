@@ -9,6 +9,7 @@ import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +33,7 @@ public class PageController {
     private final ModelMapper modelMapper;
 
     // TODO : 현재는 버튼 클릭 시 저장 / 웹소켓으로 실시간 수정으로 바꿔야 함
+
     @PostMapping("/save")
     public ResponseEntity<String> savePage(@RequestBody PageRequestDTO page) {
 
@@ -39,6 +41,8 @@ public class PageController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid page data");
         }
         log.info("page"+page);
+        page.setUid("ghkdtnqls95");
+
         PageDocument savedPage = pageService.savePage(page); // 페이지 저장
         return ResponseEntity.status(HttpStatus.CREATED) // 201 Created 상태 코드
                 .body(savedPage.get_id());
@@ -66,7 +70,19 @@ public class PageController {
         }
         return ResponseEntity.ok(page); // 페이지가 존재할 경우 200 반환
     }
-//
-//    @GetMapping("/list")
-//    public ResponseEntity<List<PageDocument>> getListByUid
+
+    @GetMapping("/list")
+    public ResponseEntity<List<PageDocument>> selectByUid(){
+        // TODO : 하드코딩 고칠 것
+        String uid = "ghkdtnqls95";
+        List<PageDocument> pages = pageService.getPagesByUid(uid);
+        log.info(pages);
+        return ResponseEntity.ok(pages);
+    }
+    // TODO : 삭제하는 로직 보완 처리 필요함
+    @DeleteMapping("/{id}") // ID로 페이지 조회
+    public void deletePageById(@PathVariable String id) {
+        log.info("삭제할 Id "+ id);
+         pageService.deleteById(id); // ID로 페이지 조회
+    }
 }

@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /*
     날 짜 : 2024/11/29(금)
     담당자 : 황수빈
@@ -24,5 +26,11 @@ public class PageService {
     }
     public PageDocument getPageById(String id) {
         return pageRepository.findById(id).orElse(null); // ID로 페이지 조회
+    }
+    public List<PageDocument> getPagesByUid(String uid){
+        return pageRepository.findByUid(uid);
+    }
+    public void deleteById(String id){
+         pageRepository.deleteById(id);
     }
 }
