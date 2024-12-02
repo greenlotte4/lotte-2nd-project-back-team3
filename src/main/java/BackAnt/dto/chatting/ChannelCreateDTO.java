@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ChannelCreateDTO {
     private String name;
-    private int userId;
+    private Long userId;
 }
