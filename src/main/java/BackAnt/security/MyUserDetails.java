@@ -1,6 +1,7 @@
 package BackAnt.security;
 
 import BackAnt.entity.User;
+import BackAnt.entity.enums.Status;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +34,7 @@ public class MyUserDetails implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // 계정이 갖는 권한 목록 생성
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_"+user.getRole())); // 계정 권한 앞에 접두어 ROLE_ 붙여야 됨
+        authorities.add(new SimpleGrantedAuthority("ROLE_"+user.getRole().name())); // 계정 권한 앞에 접두어 ROLE_ 붙여야 됨
         return authorities;
     }
 
@@ -44,19 +45,17 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getUid();
+        return user.getEmail();
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        // 계정 만료 여부(true: 만료안됨, false: 만료)
-        return true;
+        return user.getStatus() != Status.EXPIRED; // 예시로 Status 열거형 사용
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        // 계정 잠김 여부(true: 잠김아님, false: 잠김)
-        return true;
+        return user.getStatus() != Status.LOCKED;
     }
 
     @Override
@@ -67,7 +66,6 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        // 계정 활성화 여부(true: 활성화, false: 비활성)
-        return true;
+        return user.getIsActive(); // User 엔티티의 활성화 여부 확인
     }
 }

@@ -11,6 +11,11 @@ import java.util.Optional;
     내용 : UserRepository 생성
 */
 @Repository
-public interface UserRepository extends JpaRepository<User, Integer> {
-    public Optional<User> findByUid(String uid);
+public interface UserRepository extends JpaRepository<User, Long> {
+    // 아이디로 사용자 조회
+    Optional<User> findByUid(String uid);
+
+    // 이메일로 사용자 조회
+    Optional<User> findByEmail(String email);
+
 }

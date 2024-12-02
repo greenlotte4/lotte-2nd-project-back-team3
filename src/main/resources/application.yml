@@ -42,3 +42,9 @@ file:
 jwt:
     issuer: loveu9911111@gmail.com
     secret: Tz6W1F4Cl4Yl2GyyRjJ5C4v7KRMCA4z4
+logging:
+    level:
+        root: info
+        BackAnt: debug
+    file:
+        name: application.log

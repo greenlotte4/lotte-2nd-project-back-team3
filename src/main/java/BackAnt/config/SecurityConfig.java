@@ -31,6 +31,11 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
 
     @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         // 세션, 폼로그인 비활성화
@@ -42,11 +47,11 @@ public class SecurityConfig {
                 .sessionManagement(config -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/article/**").hasAnyRole("ADMIN","USER")
-                        .requestMatchers(HttpMethod.POST, "/product/**").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET,"/article/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/product/**").permitAll()
+//                        .requestMatchers("/admin/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/article/**").hasAnyRole("ADMIN","USER")
+//                        .requestMatchers(HttpMethod.POST, "/product/**").hasAnyRole("ADMIN")
+//                        .requestMatchers(HttpMethod.GET,"/article/**").permitAll()
+//                        .requestMatchers(HttpMethod.GET,"/product/**").permitAll() // 인가설정 나중에
                         .anyRequest().permitAll()
 
                 );
@@ -59,18 +64,20 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
-
-    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:5174"
+//                "http://127.0.0.1:5174",
+//                "http://127.0.0.1:5173",
+//                "http://127.0.0.1:8080",
+//                "http://localhost:8080"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); // 쿠키 허용
+        configuration.setExposedHeaders(List.of("Authorization")); // 클라이언트가 헤더 접근 가능하도록 설정
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
