@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
     내용 : CompanyRepository 생성
 */
 @Repository
-public interface CompanyRepository extends JpaRepository<Company, Integer> {
+public interface CompanyRepository extends JpaRepository<Company, Long> {
 }

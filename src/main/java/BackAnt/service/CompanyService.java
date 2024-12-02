@@ -1,6 +1,7 @@
 package BackAnt.service;
 
 import BackAnt.dto.CompanyDTO;
+import BackAnt.dto.RequestDTO.CompanyRequestDTO;
 import BackAnt.entity.Company;
 import BackAnt.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,11 +17,9 @@ public class CompanyService {
     private final CompanyRepository companyRepository;
     private final ModelMapper modelMapper;
 
-    public Company insertCompany(CompanyDTO companyDTO) {
-        // DTO -> Entity 변환
+    // 회사 생성
+    public Company createCompany(CompanyRequestDTO companyDTO) {
         Company company = modelMapper.map(companyDTO, Company.class);
-        // 데이터 저장
         return companyRepository.save(company);
     }
-
 }

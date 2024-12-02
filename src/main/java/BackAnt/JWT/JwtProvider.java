@@ -1,6 +1,7 @@
 package BackAnt.JWT;
 
 import BackAnt.entity.User;
+import BackAnt.entity.enums.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -49,8 +50,8 @@ public class JwtProvider {
                 .setIssuer(issuer)
                 .setIssuedAt(issuedDate)
                 .setExpiration(expireDate)
-                .claim("username", user.getId())
-                .claim("role", user.getRole())
+                .claim("username", user.getUid())
+                .claim("role", user.getRole().name()) // Enum의 문자열 값 저장
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -83,7 +84,7 @@ public class JwtProvider {
         // User 객체 생성
         User user = User.builder()
                 .uid(username)
-                .role(role)
+                .role(Role.valueOf(role))
                 .build();
 
         // 권한 생성
