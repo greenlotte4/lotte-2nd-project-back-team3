@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 /*
     날 짜 : 2024/11/28(목)
@@ -33,10 +34,11 @@ public class PageController {
     // TODO : 현재는 버튼 클릭 시 저장 / 웹소켓으로 실시간 수정으로 바꿔야 함
     @PostMapping("/save")
     public ResponseEntity<String> savePage(@RequestBody PageRequestDTO page) {
+
         if (page == null || page.getTitle() == null || page.getContent() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid page data");
         }
-
+        log.info("page"+page);
         PageDocument savedPage = pageService.savePage(page); // 페이지 저장
         return ResponseEntity.status(HttpStatus.CREATED) // 201 Created 상태 코드
                 .body(savedPage.get_id());
@@ -64,5 +66,7 @@ public class PageController {
         }
         return ResponseEntity.ok(page); // 페이지가 존재할 경우 200 반환
     }
-
+//
+//    @GetMapping("/list")
+//    public ResponseEntity<List<PageDocument>> getListByUid
 }

@@ -24,4 +24,7 @@ public class PageDocument {
     private String title;
     private String content; // JSON 형식의 데이터
 
+    private String uid; // 작성자
+
+
 }
