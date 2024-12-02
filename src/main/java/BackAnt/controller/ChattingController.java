@@ -1,14 +1,15 @@
 package BackAnt.controller;
 
 import BackAnt.dto.chatting.ChannelCreateDTO;
+import BackAnt.dto.chatting.ChannelResponseDTO;
 import BackAnt.dto.common.ResponseDTO;
 import BackAnt.service.chatting.ChannelService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,9 +18,23 @@ public class ChattingController {
     private final ChannelService channelService;
 
     @PostMapping("/channel")
-    public ResponseEntity<ResponseDTO<Long>> createChannel(@RequestBody ChannelCreateDTO channelCreateDTO) {
-        Long channelId = channelService.createChannel(channelCreateDTO);
-        ResponseDTO<Long> result = ResponseDTO.success(channelId);
-        return ResponseEntity.status(result.getStatus()).body(result);
+    public ResponseEntity<Void> createChannel(@RequestBody ChannelCreateDTO channelCreateDTO) {
+        channelService.createChannel(channelCreateDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @GetMapping("/channel")
+    public ResponseEntity<List<ChannelResponseDTO>> getAllChannels() {
+        List<ChannelResponseDTO> channels = channelService.getAllChannels();
+        return ResponseEntity.status(HttpStatus.OK).body(channels);
+//        return new ResponseEntity<>(channels, HttpStatus.OK);
+    }
+
+    // /api/chatting/channel/13
+    @GetMapping("/channel/{id}")
+    public ResponseEntity<ChannelResponseDTO> getChannelById(@PathVariable Long id) {
+        ChannelResponseDTO channel = channelService.getChannel(id);
+        return ResponseEntity.status(HttpStatus.OK).body(channel);
+    }
+
 }
