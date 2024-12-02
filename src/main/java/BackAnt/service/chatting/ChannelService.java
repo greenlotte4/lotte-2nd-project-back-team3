@@ -1,10 +1,13 @@
 package BackAnt.service.chatting;
 
 import BackAnt.dto.chatting.ChannelCreateDTO;
+import BackAnt.dto.chatting.ChannelMemberAddDTO;
 import BackAnt.dto.chatting.ChannelResponseDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.chatting.Channel;
+import BackAnt.entity.chatting.ChannelMember;
 import BackAnt.repository.UserRepository;
+import BackAnt.repository.chatting.ChannelMemberRepository;
 import BackAnt.repository.chatting.ChannelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,7 @@ import java.util.List;
 public class ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final ChannelMemberRepository channelMemberRepository;
 
     public Long createChannel(ChannelCreateDTO channelCreateDTO) {
         User user = userRepository.findById(channelCreateDTO.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
@@ -44,4 +48,17 @@ public class ChannelService {
         return ChannelResponseDTO.fromEntity(channel);
     }
 
+    public void addChannelMember(Long channelId, ChannelMemberAddDTO channelMemberAddDTO) {
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
+        List<User> users = userRepository.findAllById(channelMemberAddDTO.getMemberIds());
+
+        for (User user : users) {
+            if(channelMemberRepository.findByChannelIdAndUserId(channel.getId(), user.getId()).isPresent()) {
+                continue;
+            }
+
+            ChannelMember channelMember = new ChannelMember(channel, user);
+            channelMemberRepository.save(channelMember);
+        }
+    }
 }

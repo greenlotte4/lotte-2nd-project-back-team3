@@ -26,4 +26,9 @@ public class ChannelMember extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user; // 채널 멤버로 참여 중인 사용자
+
+    public ChannelMember(Channel channel, User user) {
+        this.channel = channel;
+        this.user = user;
+    }
 }

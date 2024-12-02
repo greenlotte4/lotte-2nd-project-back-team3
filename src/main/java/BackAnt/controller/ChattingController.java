@@ -1,8 +1,8 @@
 package BackAnt.controller;
 
 import BackAnt.dto.chatting.ChannelCreateDTO;
+import BackAnt.dto.chatting.ChannelMemberAddDTO;
 import BackAnt.dto.chatting.ChannelResponseDTO;
-import BackAnt.dto.common.ResponseDTO;
 import BackAnt.service.chatting.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,4 +37,9 @@ public class ChattingController {
         return ResponseEntity.status(HttpStatus.OK).body(channel);
     }
 
+    @PostMapping("/channel/{id}/member")
+    public ResponseEntity<Void> addChannelMember(@PathVariable Long id, @RequestBody ChannelMemberAddDTO channelMemberAddDTO) {
+        channelService.addChannelMember(id, channelMemberAddDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 }
