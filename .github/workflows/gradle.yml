@@ -1,8 +1,10 @@
-name: Java CI with Gradle
+name: Java CI/CD with Gradle
+
 on:
   push:
     branches:
       - main
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,19 +18,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@v2.6.0
-        with:
-          arguments: build
-      - name: Get JAR_FILE
-        id: jarfile
-        run: |
-          JAR_FILE=$(ls build/libs/*.jar | grep -v plain | head -n 1)
-          echo "JAR_FILE=${JAR_FILE}" >> $GITHUB_ENV
+        run: ./gradlew build
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: app
-          path: ${{ env.JAR_FILE }}
+          path: build/libs/app.jar
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -44,20 +40,17 @@ jobs:
           chmod 600 private_key.pem
       - name: Copy JAR to EC2
         run: |
-          JAR_FILE=$(ls build/libs/*.jar | head -n 1)
           scp -i private_key.pem \
             -o StrictHostKeyChecking=no \
-            $JAR_FILE \
-            ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USER }}/
-      
+            build/libs/app.jar \
+            ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USER }}/app.jar
       - name: Restart Spring Application on EC2
         run: |
-          JAR_FILE=$(basename $(ls build/libs/*.jar | head -n 1))
           ssh -i private_key.pem \
             -o StrictHostKeyChecking=no \
             ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
-            pgrep java | xargs kill -9;
-            nohup java -jar /home/${{ secrets.AWS_EC2_USER }}/$JAR_FILE > app.log 2>&1 &
+            pgrep java | xargs kill -9 || true;
+            nohup java -Dspring.profiles.active=prod -jar /home/${{ secrets.AWS_EC2_USER }}/app.jar > /var/log/your-app/app.log 2>&1 &
           EOF
       - name: Cleanup
         run: rm -f private_key.pem
