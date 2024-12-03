@@ -52,4 +52,15 @@ public class DriveFolderService {
 
         return myDriveViewDTOList;
     }
+
+    public List<MyDriveViewDTO> MyDriveSelectView(String driveFolderId){
+        List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findWithSelectFolders(driveFolderId);
+
+        List<MyDriveViewDTO> myDriveViewDTOList = MyDriveFolders.stream()
+                .map(folder -> modelMapper.map(folder, MyDriveViewDTO.class))
+                .collect(Collectors.toList());
+
+
+        return myDriveViewDTOList;
+    }
 }

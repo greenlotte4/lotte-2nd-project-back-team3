@@ -47,3 +47,4 @@ jwt:
     secret: Tz6W1F4Cl4Yl2GyyRjJ5C4v7KRMCA4z4
 frontend:
     url: http://localhost:5173
+

@@ -21,7 +21,6 @@ public class MyDriveViewDTO {
     private String driveFolderMaker; // 등록한 사람(공유폴더일시 수정한사람)
 
     private int driveFolderSize;
-
     private LocalDateTime driveFolderCreatedAt;
 
 

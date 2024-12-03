@@ -28,10 +28,18 @@ public class DriveController {
                 .body(folderDTO);
     }
 
-    @GetMapping("/folder/mydriveView")
+    @GetMapping("/folder/myDriveView")
     public ResponseEntity<?> MydriveView(){
         List<MyDriveViewDTO> myDriveDTOs = driveFolderService.MyDriveView();
 
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(myDriveDTOs);
+    }
+
+    @GetMapping("/folder/myDriveSelectView/{driveFolderId}")
+    public ResponseEntity<?> MyDriveSelectView(@PathVariable String driveFolderId){
+        log.info("asdfasdf : " + driveFolderId);
+        List<MyDriveViewDTO> myDriveDTOs = driveFolderService.MyDriveSelectView(driveFolderId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(myDriveDTOs);
     }
