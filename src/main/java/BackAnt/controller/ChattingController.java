@@ -2,7 +2,9 @@ package BackAnt.controller;
 
 import BackAnt.dto.chatting.ChannelCreateDTO;
 import BackAnt.dto.chatting.ChannelMemberAddDTO;
+import BackAnt.dto.chatting.ChannelMessageCreateDTO;
 import BackAnt.dto.chatting.ChannelResponseDTO;
+import BackAnt.service.chatting.ChannelMessageService;
 import BackAnt.service.chatting.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import java.util.List;
 @RequestMapping("/api/chatting")
 public class ChattingController {
     private final ChannelService channelService;
+    private final ChannelMessageService channelMessageService;
 
     @PostMapping("/channel")
     public ResponseEntity<Void> createChannel(@RequestBody ChannelCreateDTO channelCreateDTO) {
@@ -48,5 +51,13 @@ public class ChattingController {
         channelService.removeChannelMember(id, channelMemberAddDTO);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    // 메시지 보내기
+    @PostMapping("/channel/{id}/message")
+    public ResponseEntity<Void> sendMessage(@PathVariable Long id, @RequestBody ChannelMessageCreateDTO channelMessageCreateDTO) {
+        channelMessageService.sendMessage(channelMessageCreateDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
 
 }
