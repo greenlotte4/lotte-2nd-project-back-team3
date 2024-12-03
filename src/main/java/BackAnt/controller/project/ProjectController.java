@@ -1,7 +1,7 @@
 package BackAnt.controller.project;
 
 import BackAnt.document.page.PageDocument;
-import BackAnt.dto.PageRequestDTO;
+import BackAnt.dto.PageDTO;
 import BackAnt.dto.ProjectDTO;
 import BackAnt.service.PageImageService;
 import BackAnt.service.PageService;

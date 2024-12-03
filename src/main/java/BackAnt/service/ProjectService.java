@@ -1,7 +1,7 @@
 package BackAnt.service;
 
 import BackAnt.document.page.PageDocument;
-import BackAnt.dto.PageRequestDTO;
+import BackAnt.dto.PageDTO;
 import BackAnt.dto.ProjectDTO;
 import BackAnt.entity.Project;
 import BackAnt.entity.ProjectCollaborator;
