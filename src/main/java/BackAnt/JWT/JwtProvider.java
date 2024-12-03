@@ -50,7 +50,7 @@ public class JwtProvider {
                 .setIssuer(issuer)
                 .setIssuedAt(issuedDate)
                 .setExpiration(expireDate)
-                .claim("username", user.getUid())
+                .claim("uid", user.getUid())
                 .claim("role", user.getRole().name()) // Enum의 문자열 값 저장
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
