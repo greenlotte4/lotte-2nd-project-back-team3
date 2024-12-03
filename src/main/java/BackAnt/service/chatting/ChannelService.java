@@ -61,4 +61,20 @@ public class ChannelService {
             channelMemberRepository.save(channelMember);
         }
     }
+
+    public void removeChannelMember(Long channelId, ChannelMemberAddDTO channelMemberAddDTO) {
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
+        List<User> users = userRepository.findAllById(channelMemberAddDTO.getMemberIds());
+
+        for (User user : users) {
+            ChannelMember channelMember = channelMemberRepository
+                    .findByChannelIdAndUserId(channel.getId(), user.getId())
+                    .orElseThrow(() -> new RuntimeException("User is not a member of this channel"));
+            channelMemberRepository.delete(channelMember);
+
+        }
+    }
+
+
 }
+

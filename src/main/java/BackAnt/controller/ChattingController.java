@@ -42,4 +42,11 @@ public class ChattingController {
         channelService.addChannelMember(id, channelMemberAddDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @DeleteMapping("/channel/{id}/member")
+    public ResponseEntity<Void> removeChannelMember(@PathVariable Long id, @RequestBody ChannelMemberAddDTO channelMemberAddDTO) {
+        channelService.removeChannelMember(id, channelMemberAddDTO);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
 }
