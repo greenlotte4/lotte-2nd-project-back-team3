@@ -2,7 +2,10 @@ package BackAnt.document.page;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
 
 /*
     날 짜 : 2024/11/29(금)
@@ -25,6 +28,10 @@ public class PageDocument {
     private String content; // JSON 형식의 데이터
 
     private String uid; // 작성자
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt = null;
 
 
 }
