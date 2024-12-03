@@ -1,7 +1,8 @@
 package BackAnt.dto;
 import lombok.*;
 
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -9,21 +10,16 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PageRequestDTO {
+public class PageDTO {
+
     private String _id;
     private String title;
     private String content;
+
     private String uid;
 
-
-
-
-
-
-
-
-
-
+    private LocalDateTime updatedAt;
+    private int isDeleted;
     //  private Map<String, Object> content; - JSON 저장 방식
 
 }
