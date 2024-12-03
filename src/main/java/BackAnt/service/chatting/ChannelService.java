@@ -17,7 +17,7 @@ public class ChannelService {
     private final UserRepository userRepository;
 
     public Long createChannel(ChannelCreateDTO channelCreateDTO) {
-        User user = userRepository.findById(channelCreateDTO.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById((long) channelCreateDTO.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
 
         Channel channel = Channel.create(channelCreateDTO.getName(), user);
         channelRepository.save(channel);
