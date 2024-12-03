@@ -1,11 +1,12 @@
 package BackAnt.controller.page;
 
 import BackAnt.document.page.PageDocument;
-import BackAnt.dto.PageRequestDTO;
+import BackAnt.dto.PageDTO;
 import BackAnt.service.PageImageService;
 import BackAnt.service.PageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.hibernate.query.Page;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,23 +33,22 @@ public class PageController {
     private final PageImageService pageImageService;// MongoDB와 연결된 리포지토리
     private final ModelMapper modelMapper;
 
-    // TODO : 현재는 버튼 클릭 시 저장 / 웹소켓으로 실시간 수정으로 바꿔야 함
-
+    // 페이지 생성 및 수정
     @PostMapping("/save")
-    public ResponseEntity<String> savePage(@RequestBody PageRequestDTO page) {
+    public ResponseEntity<String> savePage(@RequestBody PageDTO page) {
 
         if (page == null || page.getTitle() == null || page.getContent() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid page data");
         }
         log.info("page"+page);
         page.setUid("ghkdtnqls95");
-
         PageDocument savedPage = pageService.savePage(page); // 페이지 저장
         return ResponseEntity.status(HttpStatus.CREATED) // 201 Created 상태 코드
                 .body(savedPage.get_id());
     }
 
-    @PostMapping("/upload")
+    // 페이지 이미지 업로드
+    @PostMapping("/upload") // image 업로드 후 url을 반환
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             String fileUrl = pageImageService.saveImage(file); // 서비스 호출
@@ -62,6 +62,7 @@ public class PageController {
         }
     }
 
+    // page 조회
     @GetMapping("/{id}") // ID로 페이지 조회
     public ResponseEntity<PageDocument> getPageById(@PathVariable String id) {
         PageDocument page = pageService.getPageById(id); // ID로 페이지 조회
@@ -71,18 +72,60 @@ public class PageController {
         return ResponseEntity.ok(page); // 페이지가 존재할 경우 200 반환
     }
 
-    @GetMapping("/list")
-    public ResponseEntity<List<PageDocument>> selectByUid(){
-        // TODO : 하드코딩 고칠 것
-        String uid = "ghkdtnqls95";
-        List<PageDocument> pages = pageService.getPagesByUid(uid);
-        log.info(pages);
-        return ResponseEntity.ok(pages);
+    // page List 조회 (DELETED | MODIFIED | UID)
+    @GetMapping("/list/{type}")
+    public ResponseEntity<List<PageDocument>> selectByUid(@PathVariable String type) {
+        try {
+            String uid = "ghkdtnqls95";
+            List<PageDocument> pages;
+
+            switch (type) {
+                case "deleted":
+                    pages = pageService.getDeletedPagesByUid(uid);
+                    break;
+                case "uid":
+                    pages = pageService.getPagesByUid(uid);
+                    break;
+                case "modified":
+                    pages = pageService.getPageByUpdatedAt();
+                    break;
+                default: // type 오류
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(List.of()); // 빈 리스트 반환
+            }
+
+            if (pages.isEmpty()) { // page가 없는 경우
+                return ResponseEntity.ok(pages); // 빈 리스트 반환
+            }
+            return ResponseEntity.ok(pages);
+
+        } catch (Exception e) { // 에러 처리
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(List.of()); // 빈 리스트 반환
+        }
     }
-    // TODO : 삭제하는 로직 보완 처리 필요함
-    @DeleteMapping("/{id}") // ID로 페이지 조회
-    public void deletePageById(@PathVariable String id) {
-        log.info("삭제할 Id "+ id);
-         pageService.deleteById(id); // ID로 페이지 조회
+
+    // page 삭제 (SOFT | HARD)
+    @DeleteMapping("/{id}/{type}")
+    public String softDeletePageById(@PathVariable String id,@PathVariable String type) {
+        if (type.equals("soft")) {
+            return pageService.DeleteById(id, "soft");
+        }
+        if (type.equals("hard")){
+            return pageService.DeleteById(id,"hard");
+        }
+        return "Deleted Failed...";
+    }
+
+    // page 복구
+    @PutMapping("/{id}/restore")  // 페이지 복구 엔드포인트
+    public ResponseEntity<String> restorePage(@PathVariable String id) {
+        try {
+            pageService.restorePage(id);
+            return ResponseEntity.ok("Page restored successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to restore page");
+        }
     }
 }
