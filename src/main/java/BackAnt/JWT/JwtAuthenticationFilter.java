@@ -29,6 +29,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTH_HEADER = "Authorization";
     private static final String TOKEN_PREFIX = "Bearer";
 
+    // 로그인 할때는 토큰 검증 필요 x
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri.startsWith("/public/") || uri.equals("/api/user/login");
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
@@ -53,7 +60,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             try {
                 jwtProvider.validateToken(token);
-
                 // 토큰이 이상없으면 시큐리티 인증 처리
                 Authentication authentication = jwtProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);

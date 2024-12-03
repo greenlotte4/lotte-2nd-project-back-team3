@@ -4,6 +4,7 @@ import BackAnt.dto.RequestDTO.AdminRequestDTO;
 import BackAnt.dto.RequestDTO.LoginRequestDTO;
 import BackAnt.dto.ResponseDTO.ApiResponseDTO;
 import BackAnt.entity.User;
+import BackAnt.security.MyUserDetails;
 import BackAnt.service.AuthService;
 import BackAnt.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -72,6 +74,7 @@ public class UserController {
         }
     }
 
+    // 리프레시 토큰 검증
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken) {
         try {
@@ -83,6 +86,38 @@ public class UserController {
             return ResponseEntity.status(401)
                     .body(new ApiResponseDTO<>(false, "토큰 갱신 실패: " + e.getMessage(), null));
         }
+    }
+
+    // 로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        try {
+            log.info("로그아웃 요청");
+
+            // 리프레시 토큰 쿠키 삭제
+            Cookie deleteCookie = new Cookie("refreshToken", null);
+            deleteCookie.setHttpOnly(true);
+            deleteCookie.setSecure(true);
+            deleteCookie.setPath("/");
+            deleteCookie.setMaxAge(0); // 쿠키 삭제
+            response.addCookie(deleteCookie);
+
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, "로그아웃 성공", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(new ApiResponseDTO<>(false, "로그아웃 실패: " + e.getMessage(), null));
+        }
+    }
+
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getAuthenticatedUser(@AuthenticationPrincipal MyUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("사용자가 인증되지 않았습니다.");
+        }
+
+        User user = userDetails.getUser();
+        return ResponseEntity.ok(user);
     }
 
 }
