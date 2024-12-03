@@ -3,9 +3,12 @@ package BackAnt.controller.user;
 import BackAnt.dto.RequestDTO.AdminRequestDTO;
 import BackAnt.dto.RequestDTO.LoginRequestDTO;
 import BackAnt.dto.ResponseDTO.ApiResponseDTO;
+import BackAnt.dto.UserDTO;
 import BackAnt.entity.User;
 import BackAnt.security.MyUserDetails;
 import BackAnt.service.AuthService;
+import BackAnt.service.EmailService;
+import BackAnt.service.InviteService;
 import BackAnt.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +28,9 @@ import java.time.Duration;
 public class UserController {
 
     private final UserService userService;
+    private final InviteService inviteService;
     private final AuthService authService;
+    private final EmailService emailService;
 
     // 초기 관리자 멤버 추가
     @PostMapping("/create")
@@ -41,6 +46,44 @@ public class UserController {
                     .body(ApiResponseDTO.fail("사용자 저장 실패: " + e.getMessage()));
         }
     }
+
+    // 초대 생성 및 이메일 전송
+    @PostMapping("/invite")
+    public ResponseEntity<?> sendInvite(@RequestBody UserDTO userDTO) {
+        try {
+            String inviteToken = inviteService.createInvite(userDTO);
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, "초대 생성 성공", inviteToken));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(new ApiResponseDTO<>(false, "초대 생성 실패: " + e.getMessage(), null));
+        }
+    }
+
+    // 회원가입 처리
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestParam String inviteToken, @RequestBody UserDTO userDTO) {
+        try {
+            userService.registerUser(inviteToken, userDTO);
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, "회원가입 성공", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(400)
+                    .body(new ApiResponseDTO<>(false, "회원가입 실패: " + e.getMessage(), null));
+        }
+    }
+
+   // 이메일 인증처리
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+        try {
+            String email = emailService.verifyAndCheckEmail(token);
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, "이메일 인증 성공", email));
+        } catch (Exception e) {
+            return ResponseEntity.status(400)
+                    .body(new ApiResponseDTO<>(false, "이메일 인증 실패: " + e.getMessage(), null));
+        }
+    }
+
+
 
     // 로그인
     @PostMapping("/login")
