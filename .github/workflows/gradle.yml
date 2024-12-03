@@ -23,7 +23,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: app
-          path: build/libs/app.jar
+          path: build/libs/*.jar
 
   deploy:
     needs: build
@@ -40,17 +40,19 @@ jobs:
           chmod 600 private_key.pem
       - name: Copy JAR to EC2
         run: |
+          JAR_FILE=$(ls build/libs/*.jar | head -n 1)
           scp -i private_key.pem \
             -o StrictHostKeyChecking=no \
-            build/libs/app.jar \
-            ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USER }}/app.jar
+            $JAR_FILE \
+            ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USER }}/
       - name: Restart Spring Application on EC2
         run: |
+          JAR_FILE=$(basename $(ls build/libs/*.jar | head -n 1))
           ssh -i private_key.pem \
             -o StrictHostKeyChecking=no \
             ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
             pgrep java | xargs kill -9 || true;
-            nohup java -Dspring.profiles.active=prod -jar /home/${{ secrets.AWS_EC2_USER }}/app.jar > app.log 2>&1 &
+            nohup java -Dspring.profiles.active=prod -jar /home/${{ secrets.AWS_EC2_USER }}/$JAR_FILE > app.log 2>&1 &
           EOF
       - name: Cleanup
         run: rm -f private_key.pem
