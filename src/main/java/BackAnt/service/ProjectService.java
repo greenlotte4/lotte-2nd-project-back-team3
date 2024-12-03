@@ -37,8 +37,17 @@ public class ProjectService {
     public ProjectDTO createProject(ProjectDTO projectDTO, String uid) {
 
         // 1. 로그인한 사용자 조회
-        User user = userRepository.findByUid(uid)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+     /*   User user = userRepository.findByUid(uid)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));*/
+
+        uid = "qwer123";
+
+        User user = User.builder()
+                .id(1L) // 사용자 ID 하드코딩
+                .uid(uid) // UID 하드코딩
+                .name("Test User") // 사용자 이름
+                .email("test@example.com") // 사용자 이메일
+                .build();
 
         // 2. 프로젝트 저장
         Project project = Project.builder()
@@ -69,35 +78,17 @@ public class ProjectService {
 
     }
 
-    // 프로젝트 생성
-   /* public ProjectDTO createProject(ProjectDTO projectDTO) {
+    // 내 프로젝트 조회
+    public List<ProjectDTO> getProjectsByUser(String uid) {
 
-        // DTO > entity 변환
-        Project project = modelMapper.map(projectDTO, Project.class);
+        // 사용자와 관련된 프로젝트 조회
+        List<ProjectCollaborator> collaborators = projectCollaboratorRepository.findByUserUid(uid);
 
-        // 기본값 설정
-        project.setStatus(0); // 기본값으로 일단 진행중
-
-        // 저장
-        Project savedProject = projectRepository.save(project);
-
-        // entity > DTO 변환
-        return modelMapper.map(savedProject, ProjectDTO.class);
-
-    }*/
-
-
-    // 모든 프로젝트 데이터를 반환
-   /* public List<ProjectDTO> getAllProjects() {
-        List<Project> projects = projectRepository.findAll();
-
-        // Entity -> DTO 변환
-        return projects.stream()
-                .map(project -> modelMapper.map(project, ProjectDTO.class))
+        // dto 변환
+        return collaborators.stream()
+                .map(collaborator -> modelMapper.map(collaborator.getProject(), ProjectDTO.class))
                 .collect(Collectors.toList());
     }
-*/
-
 
 
 
