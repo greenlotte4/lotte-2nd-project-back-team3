@@ -47,7 +47,7 @@ jobs:
           JAR_FILE=$(ls build/libs/*.jar | head -n 1)
           scp -i private_key.pem \
             -o StrictHostKeyChecking=no \
-            $JAR_FILE \	
+            $JAR_FILE \
             ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USER }}/
       
       - name: Restart Spring Application on EC2
@@ -60,4 +60,4 @@ jobs:
             nohup java -jar /home/${{ secrets.AWS_EC2_USER }}/$JAR_FILE > app.log 2>&1 &
           EOF
       - name: Cleanup
-        run: rm -f private_key.pem 
+        run: rm -f private_key.pem
