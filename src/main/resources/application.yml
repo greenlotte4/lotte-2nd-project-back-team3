@@ -33,6 +33,8 @@ spring:
                     starttls:
                         enable: true
         default-encoding: UTF-8
+    profiles:
+      active: local # 기본 프로파일을 로컬로 설정
     data:
         mongodb:
             uri: mongodb://antwork:1234@107.20.58.55:27017/antwork?authSource=antwork
@@ -43,4 +45,5 @@ file:
 jwt:
     issuer: loveu9911111@gmail.com
     secret: Tz6W1F4Cl4Yl2GyyRjJ5C4v7KRMCA4z4
-
+frontend:
+    url: http://localhost:5173
