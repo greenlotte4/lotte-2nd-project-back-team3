@@ -50,6 +50,7 @@ public class JwtProvider {
                 .setIssuer(issuer)
                 .setIssuedAt(issuedDate)
                 .setExpiration(expireDate)
+                .claim("id", user.getId())
                 .claim("uid", user.getUid())
                 .claim("role", user.getRole().name()) // Enum의 문자열 값 저장
                 .claim("company", user.getCompany().getId())

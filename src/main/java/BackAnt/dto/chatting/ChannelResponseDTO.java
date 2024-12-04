@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class ChannelResponseDTO {
     private Long id;
     private String name;
-    @JsonProperty("isPrivate")
+    @JsonProperty("isPublic")
     private boolean isPublic;
     private Long ownerId;
 
