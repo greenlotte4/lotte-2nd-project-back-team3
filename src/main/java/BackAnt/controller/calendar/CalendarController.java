@@ -31,14 +31,26 @@ public class CalendarController {
     }
 
     @PostMapping("/insert")
-    public String calendar(@RequestBody CalendarDTO calendar) {
+    public void calendar(@RequestBody CalendarDTO calendar) {
 
         log.info("44444"+calendar);
 
         calendarService.insertCalendar(calendar);
+    }
 
+    @PutMapping("/update/{no}/{newName}")
+    public void update(@PathVariable int no, @PathVariable String newName) {
 
-        return null;
+        log.info("11111111111"+no);
+        log.info("22222222222"+newName);
+
+        calendarService.updateCalendar(no, newName);
+    }
+
+    @DeleteMapping("/delete/{no}")
+    public void delete(@PathVariable int no) {
+        log.info("11111111111"+no);
+        calendarService.deleteCalendar(no);
     }
 
 }

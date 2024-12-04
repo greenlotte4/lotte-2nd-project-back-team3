@@ -30,4 +30,9 @@ public class Calendar {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "uid", nullable = false)  // 외래 키 설정
     private User user;
+
+    public void updateName (String name){
+        this.name = name;
+    }
+
 }

@@ -31,10 +31,6 @@ public class Department {
     @JsonBackReference // 순환 참조 방지
     private Company company; // 소속 회사
 
-    @OneToMany(mappedBy = "department")
-    @ToString.Exclude
-    private List<User> users = new ArrayList<>(); // 부서에 속한 사용자들
-
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성 시간
 

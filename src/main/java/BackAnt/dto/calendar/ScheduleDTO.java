@@ -3,6 +3,7 @@ package BackAnt.dto.calendar;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,8 +17,8 @@ public class ScheduleDTO {
     private int calendarId;
     private String title;
     private String content;
-    private String internalAttendees;
-    private String externalAttendees;
+    private List<String> internalAttendees;
+    private List<String> externalAttendees;
     private String location;
     private LocalDateTime start;
     private LocalDateTime end;

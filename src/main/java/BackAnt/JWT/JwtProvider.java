@@ -54,6 +54,7 @@ public class JwtProvider {
                 .claim("role", user.getRole().name()) // Enum의 문자열 값 저장
                 .claim("company", user.getCompany().getId())
                 .claim("companyName", user.getCompany().getName())
+                .claim("department", user.getDepartment().getId() )
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
