@@ -3,6 +3,7 @@ package BackAnt.entity;
 import BackAnt.entity.enums.Role;
 import BackAnt.entity.enums.Status;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -62,6 +63,7 @@ public class User {
     private Department department; // 소속 부서
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "company_id", nullable = false)
     private Company company; // 소속 회사
 

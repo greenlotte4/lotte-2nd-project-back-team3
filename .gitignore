@@ -40,3 +40,6 @@ out/
 application-dev.yml
 application.log
 application-local.yml
+
+### 모든 테스트 파일 제외 ###
+**/test/**
