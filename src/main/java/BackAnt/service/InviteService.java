@@ -5,10 +5,14 @@ package BackAnt.service;
     내용 : 초대 서비스 생성
 */
 
+import BackAnt.dto.RequestDTO.InviteRequestDTO;
 import BackAnt.dto.UserDTO;
+import BackAnt.entity.Department;
 import BackAnt.entity.Invite;
 import BackAnt.entity.User;
+import BackAnt.entity.enums.Role;
 import BackAnt.entity.enums.Status;
+import BackAnt.repository.DepartmentRepository;
 import BackAnt.repository.InviteRepository;
 import BackAnt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,46 +28,63 @@ import java.util.UUID;
 public class InviteService {
     private final InviteRepository inviteRepository;
     private final UserRepository userRepository;
+    private final DepartmentRepository departmentRepository;
+    private final EmailService emailService;
 
     // 멤버 초대 생성
-    public String createInvite(UserDTO userDTO) {
-        // User 엔티티 생성
-        User user = User.builder()
-                .name(userDTO.getName())
-                .email(userDTO.getEmail())
-                .status(Status.INVITE)
-                .build();
+    public String createInvite(InviteRequestDTO inviteRequestDTO) {
+        // 부서 확인
+        Department department = departmentRepository.findById(inviteRequestDTO.getDepartment())
+                .orElseThrow(() -> new IllegalArgumentException("부서를 찾을 수 없습니다."));
 
-        // 사용자 저장
-        userRepository.save(user);
-
-        // 초대 엔티티 생성
+        // 초대 토큰 생성
         String inviteToken = UUID.randomUUID().toString();
+
+        // Invite 엔티티 생성
         Invite invite = Invite.builder()
+                .email(inviteRequestDTO.getEmail())
+                .name(inviteRequestDTO.getName())
+                .position(inviteRequestDTO.getPosition())
+                .phoneNumber(inviteRequestDTO.getPhoneNumber())
+                .department(department)
+                .role(Role.valueOf(inviteRequestDTO.getRole()))
                 .inviteToken(inviteToken)
-                .expiry(LocalDateTime.now().plusDays(7)) // 초대 만료 시간 (7일)
+                .expiry(LocalDateTime.now().plusDays(7)) // 7일 후 만료
                 .status(Status.INVITE)
-                .user(user)
+                .note(inviteRequestDTO.getNote())
                 .build();
 
+        // 저장
         inviteRepository.save(invite);
+
+        // 초대 이메일 전송
+        emailService.sendInviteEmailWithTemplate(
+                invite.getEmail(),
+                invite.getName(),
+                department.getName(),
+                invite.getInviteToken()
+        );
 
         return inviteToken;
     }
 
 
     // 멤버 초대 검증
-    public User validateInvite(String inviteToken) throws Exception {
-        Invite invite = inviteRepository.findByInviteToken(inviteToken)
-                .orElseThrow(() -> new Exception("유효하지 않은 초대 토큰입니다."));
+    public Invite verifyToken(String token) {
+        // 토큰에 해당하는 초대 정보 찾기
+        Invite invite = inviteRepository.findByInviteToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 초대 토큰입니다."));
 
+        // 초대 상태 확인
         if (invite.getExpiry().isBefore(LocalDateTime.now())) {
-            invite.setStatus(Status.EXPIRED);
-            inviteRepository.save(invite);
-            throw new Exception("초대 토큰이 만료되었습니다.");
+            throw new IllegalArgumentException("초대 토큰이 만료되었습니다.");
         }
 
-        return invite.getUser();
+        if (invite.getStatus() != Status.INVITE) {
+            throw new IllegalArgumentException("초대 토큰이 이미 사용되었습니다.");
+        }
+
+        return invite; // 유효한 초대 반환
     }
 
 }

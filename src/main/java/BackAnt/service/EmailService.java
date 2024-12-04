@@ -3,11 +3,16 @@ package BackAnt.service;
 import BackAnt.JWT.JwtProvider;
 import BackAnt.entity.User;
 import BackAnt.repository.UserRepository;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,6 +26,7 @@ public class EmailService {
 
     // 이메일 기반 인증 상태 관리
     private final ConcurrentHashMap<String, Boolean> emailVerificationStatus = new ConcurrentHashMap<>();
+    private final SpringTemplateEngine templateEngine;
 
     // YML에서 읽어온 프론트엔드 URL
     @Value("${frontend.url}")
@@ -37,11 +43,35 @@ public class EmailService {
     }
 
     // 초대 이메일 전송
-    public void sendInviteEmail(String email, String inviteToken) {
-        String inviteLink = frontendUrl + "/register?token=" + inviteToken;
-        String body = "멤버 초대를 받았습니다.\n\n초대 링크:\n" + inviteLink;
+    public void sendInviteEmailWithTemplate(String email, String name, String department, String inviteToken) {
+        try {
+            // 초대 링크 생성
+            String inviteLink = frontendUrl + "/register?token=" + inviteToken;
 
-        sendEmailMessage(email, "멤버 초대", body);
+            // Thymeleaf 컨텍스트 생성
+            Context context = new Context();
+            context.setVariable("name", name);
+            context.setVariable("department", department);
+            context.setVariable("inviteLink", inviteLink);
+
+            // HTML 템플릿 처리
+            String htmlContent = templateEngine.process("invite-email", context);
+
+            // MIME 이메일 생성
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            // 이메일 설정
+            helper.setTo(email);
+            helper.setSubject("멤버 초대");
+            helper.setText(htmlContent, true); // HTML 내용을 포함
+
+            // 이메일 전송
+            mailSender.send(mimeMessage);
+            System.out.println("HTML 이메일 전송 완료: " + email);
+        } catch (Exception e) {
+            throw new RuntimeException("이메일 전송 실패", e);
+        }
     }
 
     // 이메일 인증 요청 전송

@@ -1,5 +1,6 @@
 package BackAnt.entity;
 
+import BackAnt.entity.enums.Role;
 import BackAnt.entity.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,16 +26,32 @@ public class Invite {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String email; // 초대받은 사용자의 이메일
+    private String name; // 초대받은 사용자의 이름
+    private String position; // 직위
+    private String phoneNumber; // 연락처
+
     private String inviteToken; // 초대 토큰
     private LocalDateTime expiry; // 토큰 만료 시간
 
     @Enumerated(EnumType.STRING)
-    private Status status; // INVITED, EXPIRED 등
+    private Status status = Status.INVITE; // 초대 상태 (기본값: INVITE)
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user; // 초대 대상 유저
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department; // 소속 부서
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role = Role.USER; // 초대받은 사용자의 역할
+
+    private String note; // 관리자가 남긴 초대 메모
 
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
 }
