@@ -45,9 +45,10 @@ public class ProjectTask {
     @JoinColumn(name = "state_id", nullable = false)
     private ProjectState state; // 작업이 속한 상태
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assigned_user_id")
-    private User assignedUser;  // 작업 담당자
+    // 나중에 추가해야함
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "assigned_user_id")
+//    private User assignedUser;  // 작업 담당자
 
     @CreationTimestamp
     private LocalDateTime createdAt; // 생성 날짜
