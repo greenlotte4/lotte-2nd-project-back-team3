@@ -1,11 +1,9 @@
 package BackAnt.controller;
 
-import BackAnt.dto.chatting.ChannelCreateDTO;
-import BackAnt.dto.chatting.ChannelMemberAddDTO;
-import BackAnt.dto.chatting.ChannelMessageCreateDTO;
-import BackAnt.dto.chatting.ChannelResponseDTO;
+import BackAnt.dto.chatting.*;
 import BackAnt.service.chatting.ChannelMessageService;
 import BackAnt.service.chatting.ChannelService;
+import BackAnt.service.chatting.DmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +17,7 @@ import java.util.List;
 public class ChattingController {
     private final ChannelService channelService;
     private final ChannelMessageService channelMessageService;
-    private final DmService dmService;  // 추가된 부분
+    private final DmService dmService;
 
     // 채널 생성
     @PostMapping("/channel")
@@ -57,13 +55,13 @@ public class ChattingController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    // 메시지 검색 (채널 내 키워드로)
+  /*  // 메시지 검색 (채널 내 키워드로)
     @GetMapping("/channel/{channelId}/messages")
     public ResponseEntity<List<ChannelMessageResponseDTO>> getMessages(@PathVariable Long channelId, @RequestParam String keyword) {
         // 채널 ID와 키워드를 기준으로 메시지 검색
         List<ChannelMessageResponseDTO> messages = channelMessageService.getsearchChannelMessages(channelId, keyword);
         return ResponseEntity.ok(messages);
-    }
+    }*/
 
     // 채널 멤버 삭제
     @DeleteMapping("/channel/{id}/member")
