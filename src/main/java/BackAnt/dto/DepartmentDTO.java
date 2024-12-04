@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class DepartmentDTO {
 
     private Long id; // 부서 고유 ID

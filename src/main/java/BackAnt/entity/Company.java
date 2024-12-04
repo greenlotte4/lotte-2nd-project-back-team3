@@ -27,14 +27,6 @@ public class Company {
     private String phone;   // 회사 대표 전화번호
     private String logoUrl; // 회사 로고 URL
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
-    private List<Department> departments = new ArrayList<>(); // 회사에 속한 부서들
-
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
-    private List<User> users = new ArrayList<>(); // 회사에 속한 사용자들
-
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성 시간
 

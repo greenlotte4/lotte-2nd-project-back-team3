@@ -16,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -122,8 +124,18 @@ public class UserController {
     public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken) {
         try {
             log.info("리프레시들어오나");
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            // Principal에서 User 객체 가져오기
+            if (authentication != null && authentication.isAuthenticated()) {
+                User user = (User) authentication.getPrincipal();
+                System.out.println("현재 유저: " + user);
+            } else {
+                System.out.println("인증되지 않은 사용자입니다.");
+            }
             // 토큰 갱신
             String newAccessToken = authService.refreshToken(refreshToken);
+            log.info("리프레시 갱신 성공? " + newAccessToken);
             return ResponseEntity.ok(new ApiResponseDTO<>(true, "토큰 갱신 성공", newAccessToken));
         } catch (Exception e) {
             return ResponseEntity.status(401)

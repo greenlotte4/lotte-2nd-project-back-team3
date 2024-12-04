@@ -42,7 +42,7 @@ public class AuthService {
         jwtProvider.validateToken(refreshToken);
 
         // 아이디 추출
-        String uid = jwtProvider.getClaims(refreshToken).get("username", String.class);
+        String uid = jwtProvider.getClaims(refreshToken).get("uid", String.class);
 
         // 사용자 조회
         User user = userRepository.findByUid(uid)
