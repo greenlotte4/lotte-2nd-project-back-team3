@@ -39,6 +39,8 @@ public class ProjectService {
         // 1. 로그인한 사용자 조회
         User user = userRepository.findByUid(uid)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        log.info("user : " + user);
+
 
         // 2. 프로젝트 저장
         Project project = Project.builder()
@@ -69,34 +71,26 @@ public class ProjectService {
 
     }
 
-    // 프로젝트 생성
-   /* public ProjectDTO createProject(ProjectDTO projectDTO) {
+    // 내 프로젝트 조회
+    public List<ProjectDTO> getMyProjects(String uid) {
+        List<Project> projects = projectCollaboratorRepository.findProjectsByUserUid(uid);
 
-        // DTO > entity 변환
-        Project project = modelMapper.map(projectDTO, Project.class);
-
-        // 기본값 설정
-        project.setStatus(0); // 기본값으로 일단 진행중
-
-        // 저장
-        Project savedProject = projectRepository.save(project);
-
-        // entity > DTO 변환
-        return modelMapper.map(savedProject, ProjectDTO.class);
-
-    }*/
-
-
-    // 모든 프로젝트 데이터를 반환
-   /* public List<ProjectDTO> getAllProjects() {
-        List<Project> projects = projectRepository.findAll();
-
-        // Entity -> DTO 변환
         return projects.stream()
-                .map(project -> modelMapper.map(project, ProjectDTO.class))
+                .map(project -> new ProjectDTO(project.getId(), project.getProjectName(), project.getStatus()))
                 .collect(Collectors.toList());
     }
-*/
+
+
+    // 프로젝트 상세 페이지
+    public ProjectDTO getProjectById(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+
+        log.info("project: " + project);
+
+        return new ProjectDTO(project.getId(), project.getProjectName(), project.getStatus());
+    }
+
 
 
 
