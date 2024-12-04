@@ -2,7 +2,6 @@ server:
     port: 8080
     address: 0.0.0.0
 spring:
-
     application:
         name: BackAnt
     datasource:
@@ -38,6 +37,10 @@ spring:
     data:
         mongodb:
             uri: mongodb://antwork:1234@107.20.58.55:27017/antwork?authSource=antwork
+    jackson:
+        serialization:
+            fail-on-empty-beans: false
+        default-property-inclusion: non_null
 file:
     upload:
         path: uploads

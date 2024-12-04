@@ -2,6 +2,7 @@ package BackAnt.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,7 +28,7 @@ public class Department {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
-    @JsonIgnore // 순환 참조 방지
+    @JsonBackReference // 순환 참조 방지
     private Company company; // 소속 회사
 
     @OneToMany(mappedBy = "department")

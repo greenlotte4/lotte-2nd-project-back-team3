@@ -2,6 +2,7 @@ package BackAnt.JWT;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTH_HEADER = "Authorization";
     private static final String TOKEN_PREFIX = "Bearer";
 
-    // 로그인 할때는 토큰 검증 필요 x
+    // 로그인 또는 공개 API 경로는 필터 제외
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String uri = request.getRequestURI();
@@ -37,44 +38,55 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-        // 요청주소에서 마지막 문자열 추출
-        //String uri = request.getRequestURI();
-        //int i = uri.lastIndexOf("/");
-        //String path = uri.substring(i);
-        //log.info("here1 - " + path);
+        // 토큰 추출 (헤더 또는 쿠키에서)
+        String token = resolveToken(request);
+        log.info("토큰 추출 완료: {}", token);
 
-        // 토큰 추출
-        String header = request.getHeader(AUTH_HEADER);
-        log.info("here2 - " + header);
-
-        String token = null;
-        if(header != null && header.startsWith(TOKEN_PREFIX)) {
-            token = header.substring(TOKEN_PREFIX.length()).trim();
-        }
-        log.info("here3 - " + token);
-
-        // 토큰 검사
-        if(token != null) {
-
+        // 토큰이 있을 경우에만 검증
+        if (token != null) {
             try {
-                jwtProvider.validateToken(token);
-                // 토큰이 이상없으면 시큐리티 인증 처리
+                jwtProvider.validateToken(token); // 토큰 유효성 검증
                 Authentication authentication = jwtProvider.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("here4 - " + authentication);
-
+                SecurityContextHolder.getContext().setAuthentication(authentication); // 인증 정보 설정
+                log.info("인증 성공: {}", authentication);
             } catch (Exception e) {
-                // 토큰이 이상이 있으면 실패 응답
+                log.info("토큰 검증 실패: {}", e.getMessage());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write(e.getMessage());
-                log.info("here5 - " + e.getMessage());
-                return; // 처리종료
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\": \"유효하지 않은 토큰\", \"message\": \"" + e.getMessage() + "\"}");
+                return;
+            }
+        } else {
+            log.info("요청에 토큰이 없습니다.");
+        }
+
+        // 다음 필터로 요청 전달
+        filterChain.doFilter(request, response);
+    }
+
+    // 토큰 추출 로직 (헤더와 쿠키 처리)
+    private String resolveToken(HttpServletRequest request) {
+        // 1. Authorization 헤더에서 Access Token 추출
+        String header = request.getHeader(AUTH_HEADER);
+        if (header != null && header.startsWith(TOKEN_PREFIX)) {
+            log.info("Authorization 헤더에서 토큰 추출 성공");
+            return header.substring(TOKEN_PREFIX.length()).trim();
+        }
+
+        // 2. 쿠키에서 Refresh Token 추출
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    log.info("쿠키에서 Refresh Token 추출 성공");
+                    return cookie.getValue();
+                }
             }
         }
 
-        log.info("here6...");
-        filterChain.doFilter(request, response);
+        log.info("토큰을 찾을 수 없습니다.");
+        return null; // 토큰이 없으면 null 반환
     }
 }
