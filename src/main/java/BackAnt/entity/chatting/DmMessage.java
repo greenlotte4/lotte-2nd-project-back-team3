@@ -1,7 +1,7 @@
 package BackAnt.entity.chatting;
 
 import BackAnt.entity.User;
-import BackAnt.entity.chatting.Dm;
+import BackAnt.entity.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,8 +12,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
-public class DmMember {
+public class DmMessage extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,11 +21,18 @@ public class DmMember {
     private Dm dm;
 
     @ManyToOne
-    private User user;
+    private User sender;
 
-    // 새로운 생성자 추가: Dm과 User를 받아서 DmMember 초기화
-    public DmMember(Dm dm, User user) {
+    private String content;
+
+    private Boolean isRead = false; // 읽음 여부
+
+    // 추가된 생성자
+    public DmMessage(Dm dm, User sender, String content) {
         this.dm = dm;
-        this.user = user;
+        this.sender = sender;
+        this.content = content;
+        this.isRead = false; // 기본값 false
     }
+
 }
