@@ -47,20 +47,20 @@ public class UserService {
         return modelMapper.map(userDTO, User.class);
     }
 
-    // 회원 회원가입
-    public void registerUser(String inviteToken, UserDTO userDTO) throws Exception {
-        User user = inviteService.validateInvite(inviteToken);
-
-        user.setPassword(userDTO.getPassword());
-        user.setPhoneNumber(userDTO.getPhoneNumber());
-        user.setStatus(Status.ACTIVE); // 상태를 활성화로 변경
-        userRepository.save(user);
-
-        // 초대 상태를 만료로 변경
-        Invite invite = inviteRepository.findByInviteToken(inviteToken).orElseThrow();
-        invite.setStatus(Status.EXPIRED);
-        inviteRepository.save(invite);
-    }
+//    // 회원 회원가입
+//    public void registerUser(String inviteToken, UserDTO userDTO) throws Exception {
+//        User user = inviteService.validateInvite(inviteToken);
+//
+//        user.setPassword(userDTO.getPassword());
+//        user.setPhoneNumber(userDTO.getPhoneNumber());
+//        user.setStatus(Status.ACTIVE); // 상태를 활성화로 변경
+//        userRepository.save(user);
+//
+//        // 초대 상태를 만료로 변경
+//        Invite invite = inviteRepository.findByInviteToken(inviteToken).orElseThrow();
+//        invite.setStatus(Status.EXPIRED);
+//        inviteRepository.save(invite);
+//    }
 
     // 관리자 회원가입
     public User createUser(AdminRequestDTO adminDTO) {

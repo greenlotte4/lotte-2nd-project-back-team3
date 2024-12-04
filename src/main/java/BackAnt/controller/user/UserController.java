@@ -1,9 +1,12 @@
 package BackAnt.controller.user;
 
 import BackAnt.dto.RequestDTO.AdminRequestDTO;
+import BackAnt.dto.RequestDTO.InviteRequestDTO;
 import BackAnt.dto.RequestDTO.LoginRequestDTO;
 import BackAnt.dto.ResponseDTO.ApiResponseDTO;
 import BackAnt.dto.UserDTO;
+import BackAnt.dto.common.ResponseDTO;
+import BackAnt.entity.Invite;
 import BackAnt.entity.User;
 import BackAnt.security.MyUserDetails;
 import BackAnt.service.AuthService;
@@ -22,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.Map;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -49,29 +53,51 @@ public class UserController {
         }
     }
 
-    // 초대 생성 및 이메일 전송
+    // 초대 생성 요청
     @PostMapping("/invite")
-    public ResponseEntity<?> sendInvite(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<?> createInvite(@RequestBody InviteRequestDTO inviteRequestDTO) {
         try {
-            String inviteToken = inviteService.createInvite(userDTO);
-            return ResponseEntity.ok(new ApiResponseDTO<>(true, "초대 생성 성공", inviteToken));
+            log.info("초대 생성 요청 수신");
+            log.info("초대DTO"+ inviteRequestDTO.toString());
+            String inviteToken = inviteService.createInvite(inviteRequestDTO);
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, "이메일 전송 성공", inviteToken));
         } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(new ApiResponseDTO<>(false, "초대 생성 실패: " + e.getMessage(), null));
+            log.error("초대 생성 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseDTO.failure("초대 생성 중 오류 발생: " + e.getMessage()));
         }
     }
 
-    // 회원가입 처리
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestParam String inviteToken, @RequestBody UserDTO userDTO) {
+
+    // 초대 인증
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyInviteToken(@RequestParam String token) {
         try {
-            userService.registerUser(inviteToken, userDTO);
-            return ResponseEntity.ok(new ApiResponseDTO<>(true, "회원가입 성공", null));
-        } catch (Exception e) {
-            return ResponseEntity.status(400)
-                    .body(new ApiResponseDTO<>(false, "회원가입 실패: " + e.getMessage(), null));
+            log.info("검증하니?");
+            Invite invite = inviteService.verifyToken(token);
+            return ResponseEntity.ok(Map.of(
+                    "name", invite.getName(),
+                    "email", invite.getEmail(),
+                    "companyCode", invite.getDepartment().getCompany().getId(),
+                    "department", invite.getDepartment().getName()
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+
+    // 회원가입 처리
+//    @PostMapping("/register")
+//    public ResponseEntity<?> registerUser(@RequestParam String inviteToken, @RequestBody UserDTO userDTO) {
+//        try {
+//            userService.registerUser(inviteToken, userDTO);
+//            return ResponseEntity.ok(new ApiResponseDTO<>(true, "회원가입 성공", null));
+//        } catch (Exception e) {
+//            return ResponseEntity.status(400)
+//                    .body(new ApiResponseDTO<>(false, "회원가입 실패: " + e.getMessage(), null));
+//        }
+//    }
 
    // 이메일 인증처리
     @GetMapping("/verify-email")
