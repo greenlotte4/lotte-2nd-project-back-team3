@@ -1,7 +1,9 @@
 package BackAnt.service.calendar;
 
 import BackAnt.dto.calendar.CalendarDTO;
+import BackAnt.dto.calendar.ScheduleDTO;
 import BackAnt.entity.calendar.Calendar;
+import BackAnt.entity.calendar.Schedule;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.calendar.CalendarRepository;
 import BackAnt.repository.calendar.ScheduleRepository;
@@ -51,7 +53,39 @@ public class CalendarService {
         calendarRepository.save(calendar);
     }
 
-    public void insertSchedule (){
+    public void updateCalendar (int no, String newName) {
+        Calendar calendar = calendarRepository.findById(no).orElseThrow(() -> new EntityNotFoundException("이 id의 Calendar가 없습니다."));
+
+        log.info("123123432432"+calendar);
+        calendar.updateName(newName);
+        log.info("123123432432"+calendar);
+        calendarRepository.save(calendar);
+
+    }
+
+    public void deleteCalendar (int no) {
+        calendarRepository.deleteById(no);
+    }
+
+    public void insertSchedule (ScheduleDTO scheduleDTO){
+
+        String internalAttendees = scheduleDTO.getInternalAttendees().toString() .replace("[", "")
+                .replace("]", "");;
+        String externalAttendees = scheduleDTO.getExternalAttendees().toString() .replace("[", "")
+                .replace("]", "");;
+
+        Schedule schedule = Schedule.builder()
+                .title(scheduleDTO.getTitle())
+                .calendar(calendarRepository.findById(scheduleDTO.getCalendarId()).orElseThrow(() -> new EntityNotFoundException("이 id의 Calendar가 없습니다.")))
+                .content(scheduleDTO.getContent())
+                .internalAttendees(internalAttendees)
+                .externalAttendees(externalAttendees)
+                .location(scheduleDTO.getLocation())
+                .start(scheduleDTO.getStart())
+                .end(scheduleDTO.getEnd())
+                .build();
+
+        scheduleRepository.save(schedule);
 
     }
 
