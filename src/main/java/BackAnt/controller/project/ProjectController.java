@@ -3,6 +3,8 @@ package BackAnt.controller.project;
 import BackAnt.document.page.PageDocument;
 import BackAnt.dto.PageDTO;
 import BackAnt.dto.ProjectDTO;
+import BackAnt.dto.ProjectStateDTO;
+import BackAnt.entity.ProjectState;
 import BackAnt.service.PageImageService;
 import BackAnt.service.PageService;
 import BackAnt.service.ProjectService;
@@ -58,6 +60,7 @@ public class ProjectController {
         return ResponseEntity.ok(myProjects);
     }
 
+    // 프로젝트 상세 페이지
     @GetMapping("/view/{id}")
     public ResponseEntity<ProjectDTO> getProjectById(@PathVariable Long id) {
         log.info("id: " + id);
@@ -65,15 +68,6 @@ public class ProjectController {
         log.info("project: " + project);
         return ResponseEntity.ok(project);
     }
-
-
-
-    // 프로젝트 조회
-    /*@GetMapping
-    public ResponseEntity<List<ProjectDTO>> getAllProjects() {
-        List<ProjectDTO> projects = projectService.getAllProjects();
-        return ResponseEntity.ok(projects);
-    }*/
 
 
 

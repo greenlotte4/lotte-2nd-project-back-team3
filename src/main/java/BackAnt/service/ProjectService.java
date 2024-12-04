@@ -3,11 +3,14 @@ package BackAnt.service;
 import BackAnt.document.page.PageDocument;
 import BackAnt.dto.PageDTO;
 import BackAnt.dto.ProjectDTO;
+import BackAnt.dto.ProjectStateDTO;
 import BackAnt.entity.Project;
 import BackAnt.entity.ProjectCollaborator;
+import BackAnt.entity.ProjectState;
 import BackAnt.entity.User;
 import BackAnt.repository.ProjectCollaboratorRepository;
 import BackAnt.repository.ProjectRepository;
+import BackAnt.repository.ProjectStateRepository;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.mongoDB.PageRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +35,7 @@ public class ProjectService {
     private final ProjectCollaboratorRepository projectCollaboratorRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final ProjectStateRepository projectStateRepository;
 
     // 프로젝트 생성
     public ProjectDTO createProject(ProjectDTO projectDTO, String uid) {
@@ -90,6 +94,7 @@ public class ProjectService {
 
         return new ProjectDTO(project.getId(), project.getProjectName(), project.getStatus());
     }
+
 
 
 
