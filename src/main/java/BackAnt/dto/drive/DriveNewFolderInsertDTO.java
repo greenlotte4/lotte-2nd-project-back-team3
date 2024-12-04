@@ -21,6 +21,8 @@ public class DriveNewFolderInsertDTO {
 
     private String driveFolderPath;
 
+    private int driveFolderSize = 0;
+
     private LocalDateTime driveFolderCreatedAt;
 
     private LocalDateTime driveFolderUpdatedAt;
