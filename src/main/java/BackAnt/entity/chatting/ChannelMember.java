@@ -30,5 +30,6 @@ public class ChannelMember extends BaseTimeEntity {
     public ChannelMember(Channel channel, User user) {
         this.channel = channel;
         this.user = user;
+
     }
 }

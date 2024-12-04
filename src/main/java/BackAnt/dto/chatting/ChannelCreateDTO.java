@@ -13,4 +13,5 @@ import lombok.NoArgsConstructor;
 public class ChannelCreateDTO {
     private String name;
     private Long userId;
+    private boolean isPublic; // 채널 공개 여부 추가
 }

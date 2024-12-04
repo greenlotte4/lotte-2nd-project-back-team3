@@ -15,7 +15,7 @@ public class ChannelResponseDTO {
     private Long id;
     private String name;
     @JsonProperty("isPrivate")
-    private boolean isPrivate;
+    private boolean isPublic;
     private Long ownerId;
 
 
@@ -26,7 +26,7 @@ public class ChannelResponseDTO {
     public ChannelResponseDTO(Channel channel) {
         this.id = channel.getId();
         this.name = channel.getName();
-        this.isPrivate = channel.isPrivate();
+        this.isPublic = channel.isPublic();  // 'isPrivate' -> 'isPublic'
         this.ownerId = channel.getOwner() != null ? channel.getOwner().getId() : 0;
     }
 
@@ -36,7 +36,7 @@ public class ChannelResponseDTO {
         return ChannelResponseDTO.builder()
                 .id(channel.getId())
                 .name(channel.getName())
-                .isPrivate(channel.isPrivate())
+                .isPublic(channel.isPublic())  // 'isPrivate' -> 'isPublic'
                 .ownerId(channel.getOwner() != null ? channel.getOwner().getId() : 0)
                 .build();
     }
