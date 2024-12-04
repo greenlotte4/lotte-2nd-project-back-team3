@@ -36,17 +36,37 @@ public class ProjectController {
 
     // 프로젝트 저장
     @PostMapping("/add")
-    public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectDTO, String uid) {
+    public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectDTO) {
 
         // 현재 로그인한 사용자 ID 가져오기
-        //String uid = userDetails.getUsername();
-        uid = "ekkang";
+        String uid = projectDTO.getUid();
+        log.info("uid : " + uid);
+
 
         ProjectDTO savedProjectDTO = projectService.createProject(projectDTO, uid);
         log.info("savedProjectDTO " + savedProjectDTO);
 
         return ResponseEntity.ok(savedProjectDTO);
     }
+
+    // 내 프로젝트 조회
+    @GetMapping("/list/{uid}")
+    public ResponseEntity<List<ProjectDTO>> getMyProjects(@PathVariable String uid) {
+        log.info("Received uid: " + uid);
+
+        List<ProjectDTO> myProjects = projectService.getMyProjects(uid);
+        return ResponseEntity.ok(myProjects);
+    }
+
+    @GetMapping("/view/{id}")
+    public ResponseEntity<ProjectDTO> getProjectById(@PathVariable Long id) {
+        log.info("id: " + id);
+        ProjectDTO project = projectService.getProjectById(id);
+        log.info("project: " + project);
+        return ResponseEntity.ok(project);
+    }
+
+
 
     // 프로젝트 조회
     /*@GetMapping
