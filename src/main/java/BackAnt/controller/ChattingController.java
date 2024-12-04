@@ -79,7 +79,7 @@ public class ChattingController {
         return ResponseEntity.ok().build();
     }
 
-    // 디엠방 생성 (1:1 비공개 채팅)
+    /*// 디엠방 생성 (1:1 비공개 채팅)
     @PostMapping("/dm")
     public ResponseEntity<DmResponseDTO> createDm(@RequestBody DmCreateDTO dmCreateDTO, @RequestParam Long senderId) {
         // DM 방 생성 및 첫 번째 메시지 처리
@@ -93,5 +93,5 @@ public class ChattingController {
         // DM 메시지 보내기
         dmService.sendMessage(dmId, senderId, dmMessageCreateDTO.getMessage());
         return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
+    }*/
 }
