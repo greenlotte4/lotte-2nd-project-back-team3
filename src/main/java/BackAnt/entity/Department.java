@@ -27,6 +27,7 @@ public class Department {
     private String name; // 부서명
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "company_id", nullable = false)
     @JsonBackReference // 순환 참조 방지
     private Company company; // 소속 회사
