@@ -2,6 +2,7 @@ package BackAnt.repository;
 
 import BackAnt.entity.Project;
 import BackAnt.entity.ProjectState;
+import BackAnt.entity.ProjectTask;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +16,9 @@ import java.util.List;
 @Repository
 public interface ProjectStateRepository extends JpaRepository<ProjectState, Long> {
 
+    // 프로젝트id에 따른 작업상태 조회
     List<ProjectState> findAllByProjectId(Long projectId);
+
 
 
 

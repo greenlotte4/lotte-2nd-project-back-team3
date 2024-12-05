@@ -37,8 +37,6 @@ public class ProjectState {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project; // 상태가 속한 프로젝트
 
-//    @OneToMany(mappedBy = "state", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    private List<ProjectTask> tasks = new ArrayList<>(); // 상태 내 작업 목록
 
 
 }

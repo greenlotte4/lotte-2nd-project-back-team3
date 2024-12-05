@@ -7,8 +7,12 @@ import BackAnt.repository.ProjectStateRepository;
 import BackAnt.repository.ProjectTaskRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /*
     날 짜 : 2024/12/2(월)
@@ -16,6 +20,7 @@ import org.springframework.stereotype.Service;
     내 용 : ProjectTask 를 위한 Service 생성
 */
 
+@Log4j2
 @RequiredArgsConstructor
 @Service
 public class ProjectTaskService {
@@ -42,7 +47,16 @@ public class ProjectTaskService {
         return modelMapper.map(savedTask, ProjectTaskDTO.class);
     }
 
+    // 특정 상태 id로 작업 조회
+    public List<ProjectTaskDTO> getTasksByStateId(Long stateId) {
 
+        List<ProjectTask> tasks = projectTaskRepository.findAllByStateId(stateId);
+        log.info("tasks : " + tasks);
+
+        return tasks.stream()
+                .map(task -> modelMapper.map(task, ProjectTaskDTO.class))
+                .collect(Collectors.toList());
+    }
 
 
 }
