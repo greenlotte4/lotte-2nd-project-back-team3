@@ -94,4 +94,6 @@ public class ChattingController {
         dmService.sendMessage(dmId, senderId, dmMessageCreateDTO.getMessage());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+
 }
