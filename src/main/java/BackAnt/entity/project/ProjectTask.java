@@ -1,4 +1,4 @@
-package BackAnt.entity;
+package BackAnt.entity.project;
 
 import jakarta.persistence.*;
 import lombok.*;

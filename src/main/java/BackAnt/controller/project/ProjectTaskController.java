@@ -1,8 +1,7 @@
 package BackAnt.controller.project;
 
-import BackAnt.dto.ProjectStateDTO;
-import BackAnt.dto.ProjectTaskDTO;
-import BackAnt.service.ProjectStateService;
+import BackAnt.dto.project.ProjectTaskDTO;
+import BackAnt.repository.ProjectTaskRepository;
 import BackAnt.service.ProjectTaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -25,6 +24,7 @@ import java.util.List;
 public class ProjectTaskController {
 
     private final ProjectTaskService projectTaskService;
+    private final ProjectTaskRepository projectTaskRepository;
 
 
     // 프로젝트 작업 등록
@@ -38,6 +38,7 @@ public class ProjectTaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
     }
 
+    // 작업상태별 작업 select
     @GetMapping("/select/{stateId}")
     public ResponseEntity<List<ProjectTaskDTO>> getTasksByStateId(@PathVariable Long stateId) {
         log.info("stateId : " + stateId);
@@ -47,7 +48,23 @@ public class ProjectTaskController {
         return ResponseEntity.ok(tasks);
     }
 
+    // 작업 수정
+    @PutMapping("/update/{taskId}")
+    public ResponseEntity<ProjectTaskDTO> updateTask(@PathVariable Long taskId, @RequestBody ProjectTaskDTO projectTaskDTO) {
+        log.info("taskId : " + taskId);
+        log.info("projectTaskDTO : " + projectTaskDTO);
 
+        ProjectTaskDTO updatedTask = projectTaskService.updateTask(taskId, projectTaskDTO);
+        return ResponseEntity.ok(updatedTask);
+    }
+
+    // 작업 개별 삭제
+    @DeleteMapping("/delete/{taskId}")
+    public ResponseEntity<Void> deleteTaskById(@PathVariable Long taskId) {
+        log.info("taskId : " + taskId);
+        projectTaskRepository.deleteById(taskId);
+        return ResponseEntity.noContent().build();
+    }
 
 
 }

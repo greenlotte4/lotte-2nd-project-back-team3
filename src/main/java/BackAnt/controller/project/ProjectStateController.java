@@ -1,13 +1,9 @@
 package BackAnt.controller.project;
 
-import BackAnt.dto.ProjectDTO;
-import BackAnt.dto.ProjectStateDTO;
-import BackAnt.entity.ProjectState;
-import BackAnt.service.ProjectService;
+import BackAnt.dto.project.ProjectStateDTO;
 import BackAnt.service.ProjectStateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

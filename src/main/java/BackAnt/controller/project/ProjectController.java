@@ -1,24 +1,13 @@
 package BackAnt.controller.project;
 
-import BackAnt.document.page.PageDocument;
-import BackAnt.dto.PageDTO;
-import BackAnt.dto.ProjectDTO;
-import BackAnt.dto.ProjectStateDTO;
-import BackAnt.entity.ProjectState;
-import BackAnt.service.PageImageService;
-import BackAnt.service.PageService;
+import BackAnt.dto.project.ProjectDTO;
 import BackAnt.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 /*

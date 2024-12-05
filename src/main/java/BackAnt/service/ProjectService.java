@@ -1,18 +1,13 @@
 package BackAnt.service;
 
-import BackAnt.document.page.PageDocument;
-import BackAnt.dto.PageDTO;
-import BackAnt.dto.ProjectDTO;
-import BackAnt.dto.ProjectStateDTO;
-import BackAnt.entity.Project;
-import BackAnt.entity.ProjectCollaborator;
-import BackAnt.entity.ProjectState;
+import BackAnt.dto.project.ProjectDTO;
+import BackAnt.entity.project.Project;
+import BackAnt.entity.project.ProjectCollaborator;
 import BackAnt.entity.User;
 import BackAnt.repository.ProjectCollaboratorRepository;
 import BackAnt.repository.ProjectRepository;
 import BackAnt.repository.ProjectStateRepository;
 import BackAnt.repository.UserRepository;
-import BackAnt.repository.mongoDB.PageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
