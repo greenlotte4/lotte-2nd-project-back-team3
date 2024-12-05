@@ -55,13 +55,13 @@ public class ChattingController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-  /*  // 메시지 검색 (채널 내 키워드로)
+    // 메시지 검색 (채널 내 키워드로)
     @GetMapping("/channel/{channelId}/messages")
     public ResponseEntity<List<ChannelMessageResponseDTO>> getMessages(@PathVariable Long channelId, @RequestParam String keyword) {
         // 채널 ID와 키워드를 기준으로 메시지 검색
         List<ChannelMessageResponseDTO> messages = channelMessageService.getsearchChannelMessages(channelId, keyword);
         return ResponseEntity.ok(messages);
-    }*/
+    }
 
     // 채널 멤버 삭제
     @DeleteMapping("/channel/{id}/member")
@@ -79,7 +79,7 @@ public class ChattingController {
         return ResponseEntity.ok().build();
     }
 
-    /*// 디엠방 생성 (1:1 비공개 채팅)
+    // 디엠방 생성 (1:1 비공개 채팅)
     @PostMapping("/dm")
     public ResponseEntity<DmResponseDTO> createDm(@RequestBody DmCreateDTO dmCreateDTO, @RequestParam Long senderId) {
         // DM 방 생성 및 첫 번째 메시지 처리
@@ -93,5 +93,5 @@ public class ChattingController {
         // DM 메시지 보내기
         dmService.sendMessage(dmId, senderId, dmMessageCreateDTO.getMessage());
         return ResponseEntity.status(HttpStatus.CREATED).build();
-    }*/
+    }
 }

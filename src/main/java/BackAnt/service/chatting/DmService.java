@@ -1,7 +1,7 @@
 package BackAnt.service.chatting;
 
-/*import BackAnt.dto.chatting.DmCreateDTO;
-import BackAnt.dto.chatting.DmResponseDTO;*/
+import BackAnt.dto.chatting.DmCreateDTO;
+import BackAnt.dto.chatting.DmResponseDTO;
 import BackAnt.entity.chatting.Dm;
 import BackAnt.entity.chatting.DmMember;
 import BackAnt.entity.chatting.DmMessage;
@@ -29,7 +29,7 @@ public class DmService {
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
     }
 
-    /*// 디엠방 생성 (1:1 비공개 채팅)
+    // 디엠방 생성 (1:1 비공개 채팅)
     @Transactional
     public DmResponseDTO createDm(DmCreateDTO dmCreateDTO, Long senderId) {
         User sender = getUserById(senderId);  // 보내는 사람
@@ -40,7 +40,7 @@ public class DmService {
 
         // 첫 번째 메시지 생성은 외부에서 처리 (DM 방은 여기서만 관리)
         return new DmResponseDTO(dm.getId(), dmCreateDTO.getFirstMessage());
-    }*/
+    }
 
     // 메시지 보내기 (기존 DM 방에서 메시지 송신)
     @Transactional
