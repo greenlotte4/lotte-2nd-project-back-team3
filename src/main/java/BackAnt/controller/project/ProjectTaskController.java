@@ -38,8 +38,14 @@ public class ProjectTaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
     }
 
+    @GetMapping("/select/{stateId}")
+    public ResponseEntity<List<ProjectTaskDTO>> getTasksByStateId(@PathVariable Long stateId) {
+        log.info("stateId : " + stateId);
 
-
+        List<ProjectTaskDTO> tasks = projectTaskService.getTasksByStateId(stateId);
+        log.info("tasks : " + tasks);
+        return ResponseEntity.ok(tasks);
+    }
 
 
 

@@ -34,7 +34,4 @@ public class Project {
     @CreationTimestamp
     private LocalDateTime createdAt; // 프로젝트 생성 날짜
 
-//    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    private List<ProjectState> states = new ArrayList<>(); // 프로젝트 상태 (예: Todo, Ready)
-
 }
