@@ -14,6 +14,9 @@ import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -104,10 +107,59 @@ public class CalendarService {
                     return dto;
                 })
                 .toList();
+    }
 
+    public ScheduleDTO selectScheduleDetail (int id) {
+        Schedule schedule = scheduleRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("이 id의 schedule 이 없습니다."));
+        log.info("777777777777777777777::::::::::"+schedule);
 
+        List<String> internal = Arrays.stream(schedule.getInternalAttendees().split(","))
+                .map(String::trim)  // 각 항목에서 공백 제거
+                .toList();
+
+        List<String> external = Arrays.stream(schedule.getExternalAttendees().split(","))
+                .map(String::trim)  // 각 항목에서 공백 제거
+                .toList();
+        ScheduleDTO dto = modelMapper.map(schedule, ScheduleDTO.class);
+
+        dto.setInternalAttendees(internal);
+        dto.setExternalAttendees(external);
+        dto.setCalendarId(schedule.getCalendar().getCalendarId());
+        log.info("8888888888888888:::"+dto);
+
+        return dto;
 
     }
 
+    public void updateSchedule (int no, LocalDateTime start, LocalDateTime end) {
+
+        Schedule schedule = scheduleRepository.findById(no).orElseThrow(() -> new EntityNotFoundException("이 id의 Schedule 이 없습니다."));
+
+
+        schedule.updateTime(start, end);
+
+        scheduleRepository.save(schedule);
+
+    }
+    public void updateScheduleDetail (ScheduleDTO scheduleDTO) {
+
+        String internalAttendees = scheduleDTO.getInternalAttendees().toString() .replace("[", "")
+                .replace("]", "");;
+        String externalAttendees = scheduleDTO.getExternalAttendees().toString() .replace("[", "")
+                .replace("]", "");;
+
+        Schedule schedule = scheduleRepository.findById(scheduleDTO.getId()).orElseThrow(() -> new EntityNotFoundException("이 id의 Schedule 이 없습니다."));
+        String uid = schedule.getUid();
+        scheduleDTO.setUid(uid);
+        modelMapper.map(scheduleDTO, schedule);
+
+        schedule.updateAttendees(internalAttendees, externalAttendees);
+
+        scheduleRepository.save(schedule);
+    }
+
+    public void deleteSchedule (int no) {
+        scheduleRepository.deleteById(no);
+    }
 
 }
