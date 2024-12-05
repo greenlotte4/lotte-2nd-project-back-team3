@@ -3,12 +3,21 @@ package BackAnt.service;
 import BackAnt.document.page.drive.DriveFolderDocument;
 import BackAnt.dto.drive.DriveNewFolderInsertDTO;
 import BackAnt.dto.drive.MyDriveViewDTO;
+import BackAnt.entity.DriveFileEntity;
+import BackAnt.repository.DriveFileRepository;
 import BackAnt.repository.mongoDB.drive.DriveFolderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,8 +29,11 @@ public class DriveFolderService {
 
     private final DriveFolderRepository driveFolderRepository;
     private final ModelMapper modelMapper;
+    private final String USER_DIR = System.getProperty("user.dir"); // 현재 위치에서 /uploads를 붙혀주기때문에 배포 시 문제 없음
+    private final DriveFileRepository driveFileRepository;
 
-    //상위추적경로
+
+    //상위추적경로 메서드
     public String buildFolderPath(String driveFolderId, String parentFolderPath) {
         if (driveFolderId == null) {
             throw new IllegalArgumentException("driveFolderId는 null일 수 없습니다.");
@@ -51,7 +63,7 @@ public class DriveFolderService {
             }
         }
 
-        // 기본 경로에 상위 폴더들을 연결
+        // 기본 경로에 상위 폴더들을 연결 (fullPath는 초기값으로 parentFolderPath를 가짐)
         StringBuilder fullPath = new StringBuilder(parentFolderPath);
         while (!folderStack.isEmpty()) {
             fullPath.append("/").append(folderStack.pop());
@@ -61,9 +73,11 @@ public class DriveFolderService {
         return fullPath.toString();
     }
 
+    //새폴더생성
     public DriveNewFolderInsertDTO FolderNewInsert(DriveNewFolderInsertDTO driveNewFolderInsertDTO) {
         String driveFolderId = driveNewFolderInsertDTO.getDriveFolderId(); // 상위 폴더 ID
-        String parentFolderPath = "/documents"; // 기본 경로 설정
+
+        String parentFolderPath = "/uploads/drive";
 
         // 상위 폴더 경로 계산
         if (driveFolderId != null) {
@@ -72,6 +86,20 @@ public class DriveFolderService {
 
         // 새로운 폴더 경로 생성
         String newFolderPath = parentFolderPath + "/" + driveNewFolderInsertDTO.getDriveFolderName();
+
+        // 실제 서버 경로 (user.dir을 기반으로 경로 생성)
+        String USER_DIR = System.getProperty("user.dir"); // 현재 작업 디렉터리 (배포 시 경로 자동화)
+        Path path = Paths.get(USER_DIR + newFolderPath); // 최종 경로에 새로운 폴더 경로 추가
+
+
+        // 디렉터리가 존재하지 않으면 생성
+        try {
+            Files.createDirectories(path); // 경로에 디렉터리 생성
+        } catch (IOException e) {
+            log.error("디렉터리 생성 실패: {}", path.toString(), e);
+            throw new RuntimeException("디렉터리 생성 실패", e);
+        }
+
 
         // 새로운 폴더 객체 생성
         DriveFolderDocument newFolder = DriveFolderDocument.builder()
@@ -91,16 +119,21 @@ public class DriveFolderService {
     }
 
 
-    public List<MyDriveViewDTO> MyDriveView() {
+    public Map<String, Object> MyDriveView() {
         List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findFirstWithFolders();
+        List<DriveFileEntity> MyDriveFiles = driveFileRepository.findBydriveFolderIdIsNull();
+        log.info("파일...나와..? 야옹.. : " + MyDriveFiles);
 
-        List<MyDriveViewDTO> myDriveViewDTOList = MyDriveFolders.stream()
-                .map(folder -> modelMapper.map(folder, MyDriveViewDTO.class))
-                .collect(Collectors.toList());
+        Map<String, Object> response = new HashMap<>();
+        response.put("folders", MyDriveFolders);  // MyDriveFolders를 "folders"라는 키로 추가
+        response.put("files", MyDriveFiles);     // MyDriveFiles를 "files"라는 키로 추가
 
-
-        return myDriveViewDTOList;
+        return response;
     }
+//        List<MyDriveViewDTO> myDriveViewDTOList = MyDriveFolders.stream()
+//                .map(folder -> modelMapper.map(folder, MyDriveViewDTO.class))
+//                .collect(Collectors.toList());
+//
 
     public List<MyDriveViewDTO> MyDriveSelectView(String driveFolderId){
         List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findWithSelectFolders(driveFolderId);

@@ -20,35 +20,35 @@ import java.time.LocalDateTime;
 @ToString
 @Builder
 @Entity
-@Table(name = "Files")
-public class FileEntity {
+@Table(name = "DriveFiles")
+public class DriveFileEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int fileId;
+    private int driveFileId;
 
-    private String oName; // 파일 기존 이름
-    private String sName; // 파일 저장된 이름
-    private String filePath; // 파일 경로
-    private long fileSize; // 파일 크기
+    private String driveFileOName; // 파일 기존 이름
+    private String driveFileSName; // 파일 저장된 이름
+    private String driveFilePath; // 파일 경로
+    private double driveFileSize; // 파일 크기
 
     @ColumnDefault("0") // 디폴트 값 - 삭제되지 않음
-    private int isDeleted; //
+    private int driveIsDeleted; //
 
     @ColumnDefault("0") // 디폴트 값 - 즐찾되지 않음
-    private int isFavorite;
+    private int driveIsStarted;
 
     @ColumnDefault("0") // (0이면 공유중아님, 1이면 공유중)
-    private int shareType;
+    private int driveShareType;
 
-    private String folderId; // 본인의 폴더아이디에 담긴 파일
+    private String driveFolderId; // 본인의 폴더아이디에 담긴 파일(없을수도있음)
 
-    private String maker; // 등록한 사람
+    private String driveFileMaker; // 등록한 사람
 
     @CreationTimestamp
-    private LocalDateTime createdAt;
+    private LocalDateTime driveFileCreatedAt;
     @CreationTimestamp
-    private LocalDateTime updatedAt;
+    private LocalDateTime driveFileUpdatedAt;
 
 
 }
