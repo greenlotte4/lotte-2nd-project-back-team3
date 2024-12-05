@@ -34,5 +34,12 @@ public class DmMessage extends BaseTimeEntity {
         this.content = content;
         this.isRead = false; // 기본값 false
     }
-
+    // isRead 상태 변경을 위한 메서드
+    public void markAsRead() {
+        this.isRead = true;
+    }
+    // isRead 상태 조회를 위한 getter
+    public Boolean getIsRead() {
+        return isRead;
+    }
 }

@@ -95,5 +95,19 @@ public class ChattingController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    // 디엠 메시지 조회
+    @GetMapping("/dm/{dmId}/messages")
+    public ResponseEntity<List<DmMessageResponseDTO>> getDmMessages(@PathVariable Long dmId) {
+        List<DmMessageResponseDTO> messages = dmService.getMessages(dmId);
+        return ResponseEntity.ok(messages);
+    }
+
+
+    // 디엠 메시지 읽음 표시
+    @PatchMapping("/dm/{dmId}/messages/read")
+    public ResponseEntity<String> markMessagesAsRead(@PathVariable Long dmId, @RequestBody DmReadRequestDTO dto) {
+        dmService.markMessagesAsRead(dmId, dto.getUserId());
+        return ResponseEntity.ok("메시지가 성공적으로 읽음으로 표시되었습니다.");
+    }
 
 }

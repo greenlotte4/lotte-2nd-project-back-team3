@@ -1,6 +1,7 @@
 package BackAnt.service.chatting;
 
 import BackAnt.dto.chatting.DmCreateDTO;
+import BackAnt.dto.chatting.DmMessageResponseDTO;
 import BackAnt.dto.chatting.DmResponseDTO;
 import BackAnt.entity.chatting.Dm;
 import BackAnt.entity.chatting.DmMember;
@@ -13,6 +14,9 @@ import BackAnt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -72,6 +76,49 @@ public class DmService {
 
         return dm;
     }
+
+
+
+    @Transactional(readOnly = true)
+    public List<DmMessageResponseDTO> getMessages(Long dmId) {
+        Dm dm = dmRepository.findById(dmId)
+                .orElseThrow(() -> new RuntimeException("디엠 방을 찾을 수 없습니다"));
+
+        List<DmMessage> messages = dmMessageRepository.findAllByDm(dm);
+
+        // DmMessage -> DmMessageResponseDTO 변환
+        return messages.stream()
+                .map(dmMessage -> new DmMessageResponseDTO(
+                        dmMessage.getId(),
+                        dmMessage.getContent(),
+                        dmMessage.getSender().getId(), // senderId 추가
+                        dmMessage.getSender().getName(), // senderName 추가
+                        dmMessage.getDm().getId(), // dmId 추가
+                        dmMessage.getIsRead(), // isRead 추가
+                        dmMessage.getCreatedAt().toString() // timestamp 추가 (날짜 포맷 필요 시 포맷 수정 가능)
+                ))
+                .collect(Collectors.toList());
+    }
+
+
+    @Transactional
+    public void markMessagesAsRead(Long dmId, Long userId) {
+        // DM 방 조회
+        Dm dm = dmRepository.findById(dmId)
+                .orElseThrow(() -> new RuntimeException("디엠 방을 찾을 수 없습니다"));
+
+        // 해당 DM 방의 메시지 목록을 조회
+        List<DmMessage> messages = dmMessageRepository.findAllByDm(dm);
+
+        // 메시지를 읽음 처리
+        for (DmMessage message : messages) {
+            // 본인이 보낸 메시지는 제외하고, 읽지 않은 메시지를 읽음 상태로 처리
+            if (!message.getSender().getId().equals(userId) && !message.getIsRead()) {
+                message.markAsRead();  // 읽음 상태로 설정
+            }
+        }
+    }
+
 
 
 }
