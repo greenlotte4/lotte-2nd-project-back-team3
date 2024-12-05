@@ -10,20 +10,19 @@ import BackAnt.dto.common.ResponseDTO;
 import BackAnt.entity.Invite;
 import BackAnt.entity.User;
 import BackAnt.security.MyUserDetails;
-import BackAnt.service.AuthService;
-import BackAnt.service.EmailService;
-import BackAnt.service.InviteService;
-import BackAnt.service.UserService;
+import BackAnt.service.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
 import java.util.Map;
@@ -38,6 +37,7 @@ public class UserController {
     private final InviteService inviteService;
     private final AuthService authService;
     private final EmailService emailService;
+    private final ImageService imageService;
 
     // 초기 관리자 멤버 추가
     @PostMapping("/create")
@@ -95,9 +95,18 @@ public class UserController {
 
     // 회원가입 처리
     @PostMapping("/register")
-    public ResponseEntity<ApiResponseDTO<Long>> registerUser(@RequestBody UserRegisterRequestDTO userDTO) {
+    public ResponseEntity<ApiResponseDTO<Long>> registerUser(
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
+            @RequestPart(value = "formData") UserRegisterRequestDTO userDTO) {
         try {
             log.info("DTO 상태 확인: {}", userDTO.toString());
+
+            // 이미지 업로드 처리
+            if (profileImage != null && !profileImage.isEmpty()) {
+                String imageUrl = imageService.uploadImage(profileImage);
+                userDTO.setProfileImageUrl(imageUrl);
+            }
+
             User savedUser = userService.registerUser(userDTO);
             return ResponseEntity.ok(new ApiResponseDTO<>(true, "회원가입이 성공적으로 완료되었습니다.", savedUser.getId()));
         } catch (IllegalArgumentException e) {
@@ -109,6 +118,7 @@ public class UserController {
                     .body(new ApiResponseDTO<>(false, "서버 오류가 발생했습니다.", null));
         }
     }
+
 
 
     // 이메일 인증처리
@@ -211,6 +221,16 @@ public class UserController {
 
         User user = userDetails.getUser();
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<Page<UserDTO>> getMembers(
+            @RequestParam Long company,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<UserDTO> members = userService.getMembersByCompany(company, page - 1, size); // Spring Data는 0-based 페이지
+        return ResponseEntity.ok(members);
     }
 
 }

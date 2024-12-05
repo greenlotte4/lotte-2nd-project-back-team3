@@ -15,6 +15,9 @@ import BackAnt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -105,7 +108,16 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    // 회사별 유저 조회 (페이징)
+    public Page<UserDTO> getMembersByCompany(Long companyid, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
 
+        // Company 조회
+        Company company = companyRepository.findById(companyid)
+                .orElseThrow(() -> new IllegalArgumentException("회사를 찾을 수 없습니다."));
 
-
+        // User 엔티티를 UserDTO로 매핑
+        return userRepository.findAllByCompany(company, pageable)
+                .map(user -> modelMapper.map(user, UserDTO.class));
+    }
 }

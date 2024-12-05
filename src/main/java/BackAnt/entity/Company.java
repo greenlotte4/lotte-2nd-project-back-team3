@@ -7,6 +7,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+/*
+    날짜 : 2024/11/29
+    이름 : 최준혁
+    내용 : Company 엔티티 생성
+*/
 
 @Getter
 @Setter

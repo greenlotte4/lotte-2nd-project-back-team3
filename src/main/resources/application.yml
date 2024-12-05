@@ -41,6 +41,9 @@ spring:
         serialization:
             fail-on-empty-beans: false
         default-property-inclusion: non_null
+    web:
+        resources:
+            static-locations: file:uploads/
 file:
     upload:
         path: uploads

@@ -1,6 +1,9 @@
 package BackAnt.repository;
 
+import BackAnt.entity.Company;
 import BackAnt.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 아이디 중복 확인
     boolean existsByUid(String uid);
+
+    // 회사별 유저 조회 (페이징 처리)
+    Page<User> findAllByCompany(Company company, Pageable pageable);
 }
