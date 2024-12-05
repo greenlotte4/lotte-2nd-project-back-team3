@@ -1,10 +1,13 @@
 package BackAnt.service;
 
 import BackAnt.dto.RequestDTO.AdminRequestDTO;
+import BackAnt.dto.RequestDTO.UserRegisterRequestDTO;
 import BackAnt.dto.UserDTO;
 import BackAnt.entity.Company;
+import BackAnt.entity.Department;
 import BackAnt.entity.Invite;
 import BackAnt.entity.User;
+import BackAnt.entity.enums.Role;
 import BackAnt.entity.enums.Status;
 import BackAnt.repository.CompanyRepository;
 import BackAnt.repository.InviteRepository;
@@ -15,6 +18,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /*
@@ -47,20 +51,48 @@ public class UserService {
         return modelMapper.map(userDTO, User.class);
     }
 
-//    // 회원 회원가입
-//    public void registerUser(String inviteToken, UserDTO userDTO) throws Exception {
-//        User user = inviteService.validateInvite(inviteToken);
-//
-//        user.setPassword(userDTO.getPassword());
-//        user.setPhoneNumber(userDTO.getPhoneNumber());
-//        user.setStatus(Status.ACTIVE); // 상태를 활성화로 변경
-//        userRepository.save(user);
-//
-//        // 초대 상태를 만료로 변경
-//        Invite invite = inviteRepository.findByInviteToken(inviteToken).orElseThrow();
-//        invite.setStatus(Status.EXPIRED);
-//        inviteRepository.save(invite);
-//    }
+    // 아이디 중복확인
+    public boolean isIdAvailable(String uid) {
+        return !userRepository.existsByUid(uid); // 아이디가 존재하지 않으면 true
+    }
+
+    // 회원 회원가입
+    public User registerUser(UserRegisterRequestDTO userDTO) throws Exception {
+        Department department = null;
+        // 초대 상태 업데이트
+        if (userDTO.getTokenid() != null) {
+            Optional<Invite> optionalInvite = inviteRepository.findById(userDTO.getTokenid());
+
+            if (optionalInvite.isPresent()) {
+                Invite invite = optionalInvite.get();
+
+                // 초대 상태를 INVITE_COMPLETE로 변경
+                invite.setStatus(Status.INVITE_COMPLETE);
+                department = invite.getDepartment();
+                inviteRepository.save(invite);
+            } else {
+                throw new IllegalArgumentException("유효하지 않은 초대 토큰입니다.");
+            }
+        }
+
+        // User 엔티티 생성 및 저장
+        User user = User.builder()
+                .name(userDTO.getName())
+                .uid(userDTO.getUid())
+                .password(passwordEncoder.encode(userDTO.getPassword())) // 비밀번호 암호화
+                .nick(userDTO.getNick())
+                .phoneNumber(userDTO.getPhoneNumber())
+                .profileImageUrl(userDTO.getProfileImageUrl())
+                .email(userDTO.getEmail())
+                .role(Role.valueOf(userDTO.getRole()))
+                .position(userDTO.getPosition())
+                .company(department.getCompany())
+                .department(department)
+                .status(Status.ACTIVE)
+                .build();
+
+        return userRepository.save(user);
+    }
 
     // 관리자 회원가입
     public User createUser(AdminRequestDTO adminDTO) {

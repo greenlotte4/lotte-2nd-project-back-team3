@@ -2,7 +2,8 @@ package BackAnt.entity.enums;
 
 public enum Status {
     ACTIVE("활성화된 계정"),
-    INVITE("초대된 계정"),
+    INVITE("초대상태"),
+    INVITE_COMPLETE("초대완료상태"),
     INACTIVE("비활성화된 계정"),
     SUSPENDED("일시 정지된 계정"),
     LOCKED("잠긴 계정"),
