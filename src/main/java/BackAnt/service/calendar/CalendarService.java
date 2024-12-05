@@ -1,5 +1,6 @@
 package BackAnt.service.calendar;
 
+import BackAnt.controller.calendar.ScheduleController;
 import BackAnt.dto.calendar.CalendarDTO;
 import BackAnt.dto.calendar.ScheduleDTO;
 import BackAnt.entity.calendar.Calendar;
@@ -14,6 +15,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class CalendarService {
     private final CalendarRepository calendarRepository;
     private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
+
 
     public List<CalendarDTO> selectCalendar (String uid){
 
@@ -83,10 +86,28 @@ public class CalendarService {
                 .location(scheduleDTO.getLocation())
                 .start(scheduleDTO.getStart())
                 .end(scheduleDTO.getEnd())
+                .uid(scheduleDTO.getUid())
                 .build();
 
         scheduleRepository.save(schedule);
 
     }
+
+    public List<ScheduleDTO> selectSchedule (String uid) {
+        List<Schedule> schedules = scheduleRepository.findScheduleByUid(uid);
+        log.info("schedule::::::::::"+schedules);
+
+        return schedules.stream()
+                .map(schedule -> {
+                    ScheduleDTO dto = modelMapper.map(schedule, ScheduleDTO.class); // 기본 매핑
+                    dto.setCalendarId(schedule.getCalendar().getCalendarId()); // calendarId 수동 설정
+                    return dto;
+                })
+                .toList();
+
+
+
+    }
+
 
 }
