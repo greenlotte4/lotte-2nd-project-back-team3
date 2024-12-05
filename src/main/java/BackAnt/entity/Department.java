@@ -12,6 +12,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -27,9 +28,13 @@ public class Department {
     private String name; // 부서명
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "company_id", nullable = false)
     @JsonBackReference // 순환 참조 방지
     private Company company; // 소속 회사
+
+    @OneToMany(mappedBy = "department")
+    private List<User> users = new ArrayList<>(); // 부서에 속한 사용자들
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성 시간

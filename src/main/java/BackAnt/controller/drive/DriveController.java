@@ -23,7 +23,7 @@ public class DriveController {
     public ResponseEntity<?> folderInsert(@RequestBody DriveNewFolderInsertDTO driveNewFolderInsertDTO){
         log.info(driveNewFolderInsertDTO);
         DriveNewFolderInsertDTO folderDTO = driveFolderService.FolderNewInsert(driveNewFolderInsertDTO);
-        log.info("aaaaaaaaa" + folderDTO);
+        log.info("aaaaaaaaa : " + folderDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(folderDTO);
     }

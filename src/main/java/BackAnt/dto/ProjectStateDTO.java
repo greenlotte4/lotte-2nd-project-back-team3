@@ -18,6 +18,5 @@ public class ProjectStateDTO {
     private Long projectId; // 프로젝트 ID
     private List<ProjectTaskDTO> tasks; // 상태 내 작업 목록
 
-    public ProjectStateDTO(Long id, String title, String description) {
-    }
+
 }

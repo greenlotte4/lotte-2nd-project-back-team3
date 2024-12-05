@@ -2,6 +2,8 @@ package BackAnt.controller.calendar;
 
 import BackAnt.dto.calendar.CalendarDTO;
 import BackAnt.dto.calendar.ScheduleDTO;
+import BackAnt.service.DepartmentService;
+import BackAnt.service.UserService;
 import BackAnt.service.calendar.CalendarService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -22,6 +24,7 @@ import java.util.List;
 public class ScheduleController {
 
     private final CalendarService calendarService;
+    private final DepartmentService departmentService;
 
     @PostMapping("/insert")
     public void insert(@RequestBody ScheduleDTO scheduleDTO) {
@@ -31,4 +34,18 @@ public class ScheduleController {
 
     }
 
+    @GetMapping("/select/{uid}")
+    public List<ScheduleDTO> select(@PathVariable String uid) {
+
+        return calendarService.selectSchedule(uid);
+
+    }
+
+    @GetMapping("/selectDepart/{department}")
+    public List<String> selectDepart(@PathVariable String department) {
+        log.info("dep:::::::::::::"+department);
+
+        return departmentService.selectDepart(department);
+
+    }
 }

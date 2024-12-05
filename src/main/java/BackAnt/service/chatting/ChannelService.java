@@ -27,6 +27,7 @@ public class ChannelService {
 
     // 채널 생성 메서드 수정
     public Long createChannel(ChannelCreateDTO channelCreateDTO) {
+        System.out.println("channelCreateDTO = " + channelCreateDTO);
         User user = userRepository.findById(channelCreateDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
         Channel channel = Channel.create(channelCreateDTO.getName(), user, channelCreateDTO.isPublic());

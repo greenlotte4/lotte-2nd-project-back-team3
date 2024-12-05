@@ -3,13 +3,16 @@ package BackAnt.service;
 import BackAnt.dto.DepartmentDTO;
 import BackAnt.entity.Company;
 import BackAnt.entity.Department;
+import BackAnt.entity.User;
 import BackAnt.repository.CompanyRepository;
 import BackAnt.repository.DepartmentRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.io.Console;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -59,6 +62,17 @@ public class DepartmentService {
                 .collect(Collectors.toList());
 
         return departmentDTOS;
+    }
+
+    public List<String> selectDepart (String depart) {
+        Long departNo = Long.parseLong(depart);
+
+        Department department = departmentRepository.findById(departNo).orElseThrow(() -> new EntityNotFoundException("이 id의 department가 없습니다."));
+
+        List<User> users = department.getUsers();
+
+        return users.stream().map(User::getName).toList();
+
     }
 
 }

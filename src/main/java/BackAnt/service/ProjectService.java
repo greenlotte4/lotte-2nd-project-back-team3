@@ -80,10 +80,9 @@ public class ProjectService {
         List<Project> projects = projectCollaboratorRepository.findProjectsByUserUid(uid);
 
         return projects.stream()
-                .map(project -> new ProjectDTO(project.getId(), project.getProjectName(), project.getStatus()))
+                .map(project -> modelMapper.map(project, ProjectDTO.class))
                 .collect(Collectors.toList());
     }
-
 
     // 프로젝트 상세 페이지
     public ProjectDTO getProjectById(Long projectId) {
@@ -92,9 +91,8 @@ public class ProjectService {
 
         log.info("project: " + project);
 
-        return new ProjectDTO(project.getId(), project.getProjectName(), project.getStatus());
+        return modelMapper.map(project, ProjectDTO.class);
     }
-
 
 
 

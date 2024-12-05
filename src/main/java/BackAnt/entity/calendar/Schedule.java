@@ -32,7 +32,7 @@ public class Schedule {
     private String location;
     private LocalDateTime start;
     private LocalDateTime end;
-
+    private String uid;
 
 
 

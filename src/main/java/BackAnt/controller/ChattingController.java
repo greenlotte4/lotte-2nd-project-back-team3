@@ -55,13 +55,13 @@ public class ChattingController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-  /*  // 메시지 검색 (채널 내 키워드로)
+    // 메시지 검색 (채널 내 키워드로)
     @GetMapping("/channel/{channelId}/messages")
     public ResponseEntity<List<ChannelMessageResponseDTO>> getMessages(@PathVariable Long channelId, @RequestParam String keyword) {
         // 채널 ID와 키워드를 기준으로 메시지 검색
         List<ChannelMessageResponseDTO> messages = channelMessageService.getsearchChannelMessages(channelId, keyword);
         return ResponseEntity.ok(messages);
-    }*/
+    }
 
     // 채널 멤버 삭제
     @DeleteMapping("/channel/{id}/member")
@@ -94,4 +94,6 @@ public class ChattingController {
         dmService.sendMessage(dmId, senderId, dmMessageCreateDTO.getMessage());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+
 }

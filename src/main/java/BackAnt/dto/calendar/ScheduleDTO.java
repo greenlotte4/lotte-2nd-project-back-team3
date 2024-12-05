@@ -22,6 +22,7 @@ public class ScheduleDTO {
     private String location;
     private LocalDateTime start;
     private LocalDateTime end;
+    private String uid;
 
 
 
