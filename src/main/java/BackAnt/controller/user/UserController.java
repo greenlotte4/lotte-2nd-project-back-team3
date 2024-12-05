@@ -3,26 +3,26 @@ package BackAnt.controller.user;
 import BackAnt.dto.RequestDTO.AdminRequestDTO;
 import BackAnt.dto.RequestDTO.InviteRequestDTO;
 import BackAnt.dto.RequestDTO.LoginRequestDTO;
+import BackAnt.dto.RequestDTO.UserRegisterRequestDTO;
 import BackAnt.dto.ResponseDTO.ApiResponseDTO;
 import BackAnt.dto.UserDTO;
 import BackAnt.dto.common.ResponseDTO;
 import BackAnt.entity.Invite;
 import BackAnt.entity.User;
 import BackAnt.security.MyUserDetails;
-import BackAnt.service.AuthService;
-import BackAnt.service.EmailService;
-import BackAnt.service.InviteService;
-import BackAnt.service.UserService;
+import BackAnt.service.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
 import java.util.Map;
@@ -37,6 +37,7 @@ public class UserController {
     private final InviteService inviteService;
     private final AuthService authService;
     private final EmailService emailService;
+    private final ImageService imageService;
 
     // 초기 관리자 멤버 추가
     @PostMapping("/create")
@@ -68,6 +69,16 @@ public class UserController {
         }
     }
 
+    // 아이디 중복 확인
+    @PostMapping("/checkduplicateId")
+    public ResponseEntity<?> checkDuplicateId(@RequestBody Map<String, String> request) {
+        String uid = request.get("uid");
+        log.info("유아이디" + uid);
+
+        boolean isAvailable = userService.isIdAvailable(uid);
+        return ResponseEntity.ok(Map.of("isAvailable", isAvailable));
+    }
+
 
     // 초대 인증
     @GetMapping("/verify")
@@ -75,12 +86,7 @@ public class UserController {
         try {
             log.info("검증하니?");
             Invite invite = inviteService.verifyToken(token);
-            return ResponseEntity.ok(Map.of(
-                    "name", invite.getName(),
-                    "email", invite.getEmail(),
-                    "companyCode", invite.getDepartment().getCompany().getId(),
-                    "department", invite.getDepartment().getName()
-            ));
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, "초대 토큰 인증 성공", invite));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -88,18 +94,34 @@ public class UserController {
 
 
     // 회원가입 처리
-//    @PostMapping("/register")
-//    public ResponseEntity<?> registerUser(@RequestParam String inviteToken, @RequestBody UserDTO userDTO) {
-//        try {
-//            userService.registerUser(inviteToken, userDTO);
-//            return ResponseEntity.ok(new ApiResponseDTO<>(true, "회원가입 성공", null));
-//        } catch (Exception e) {
-//            return ResponseEntity.status(400)
-//                    .body(new ApiResponseDTO<>(false, "회원가입 실패: " + e.getMessage(), null));
-//        }
-//    }
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponseDTO<Long>> registerUser(
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
+            @RequestPart(value = "formData") UserRegisterRequestDTO userDTO) {
+        try {
+            log.info("DTO 상태 확인: {}", userDTO.toString());
 
-   // 이메일 인증처리
+            // 이미지 업로드 처리
+            if (profileImage != null && !profileImage.isEmpty()) {
+                String imageUrl = imageService.uploadImage(profileImage);
+                userDTO.setProfileImageUrl(imageUrl);
+            }
+
+            User savedUser = userService.registerUser(userDTO);
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, "회원가입이 성공적으로 완료되었습니다.", savedUser.getId()));
+        } catch (IllegalArgumentException e) {
+            log.error("회원가입 실패 - 잘못된 요청: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(new ApiResponseDTO<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("회원가입 실패 - 서버 오류: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponseDTO<>(false, "서버 오류가 발생했습니다.", null));
+        }
+    }
+
+
+
+    // 이메일 인증처리
     @GetMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@RequestParam String token) {
         try {
@@ -199,6 +221,16 @@ public class UserController {
 
         User user = userDetails.getUser();
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<Page<UserDTO>> getMembers(
+            @RequestParam Long company,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<UserDTO> members = userService.getMembersByCompany(company, page - 1, size); // Spring Data는 0-based 페이지
+        return ResponseEntity.ok(members);
     }
 
 }

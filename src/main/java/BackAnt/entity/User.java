@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -38,6 +39,8 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email; // 이메일
 
+    private String nick; // 닉네임
+
     @Column(nullable = false)
     private String password; // 비밀번호 (암호화된 상태로 저장)
 
@@ -56,6 +59,7 @@ public class User {
     private LocalDateTime lastLoginAt; // 마지막 로그인 시간
     private Boolean isActive = true; // 계정 활성화 여부 (기본값: true)
 
+    @CreationTimestamp
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성 시간
     private LocalDateTime updatedAt = LocalDateTime.now(); // 업데이트 시간
 

@@ -52,7 +52,10 @@ public class JwtProvider {
                 .setExpiration(expireDate)
                 .claim("id", user.getId())
                 .claim("uid", user.getUid())
+                .claim("name", user.getName())
                 .claim("role", user.getRole().name()) // Enum의 문자열 값 저장
+                .claim("profile",user.getProfileImageUrl())
+                .claim("position",user.getPosition())
                 .claim("company", user.getCompany().getId())
                 .claim("companyName", user.getCompany().getName())
                 .claim("department", user.getDepartment().getId() )
