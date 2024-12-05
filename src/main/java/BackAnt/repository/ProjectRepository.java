@@ -1,7 +1,6 @@
 package BackAnt.repository;
 
-import BackAnt.entity.Company;
-import BackAnt.entity.Project;
+import BackAnt.entity.project.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

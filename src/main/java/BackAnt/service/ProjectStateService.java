@@ -1,8 +1,8 @@
 package BackAnt.service;
 
-import BackAnt.dto.ProjectStateDTO;
-import BackAnt.entity.Project;
-import BackAnt.entity.ProjectState;
+import BackAnt.dto.project.ProjectStateDTO;
+import BackAnt.entity.project.Project;
+import BackAnt.entity.project.ProjectState;
 import BackAnt.repository.ProjectRepository;
 import BackAnt.repository.ProjectStateRepository;
 import lombok.RequiredArgsConstructor;

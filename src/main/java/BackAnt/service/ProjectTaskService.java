@@ -1,8 +1,8 @@
 package BackAnt.service;
 
-import BackAnt.dto.ProjectTaskDTO;
-import BackAnt.entity.ProjectState;
-import BackAnt.entity.ProjectTask;
+import BackAnt.dto.project.ProjectTaskDTO;
+import BackAnt.entity.project.ProjectState;
+import BackAnt.entity.project.ProjectTask;
 import BackAnt.repository.ProjectStateRepository;
 import BackAnt.repository.ProjectTaskRepository;
 import jakarta.transaction.Transactional;
@@ -56,6 +56,39 @@ public class ProjectTaskService {
         return tasks.stream()
                 .map(task -> modelMapper.map(task, ProjectTaskDTO.class))
                 .collect(Collectors.toList());
+    }
+
+    // 프로젝트 작업 수정
+    @Transactional
+    public ProjectTaskDTO updateTask(Long taskId, ProjectTaskDTO projectTaskDTO ) {
+
+        // 수정할 작업 가져오기
+        ProjectTask existingTask = projectTaskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+        log.info("existingTask : " + existingTask);
+
+
+        // 프로젝트 작업상태 확인
+        ProjectState projectState = projectStateRepository.findById(projectTaskDTO.getStateId())
+                .orElseThrow(() -> new IllegalArgumentException("State not found with ID: " + projectTaskDTO.getStateId()));
+        log.info("projectState : " + projectState);
+
+        // 기존 작업의 필드 업데이트
+        existingTask.setTitle(projectTaskDTO.getTitle());
+        existingTask.setContent(projectTaskDTO.getContent());
+        existingTask.setPriority(projectTaskDTO.getPriority());
+        existingTask.setStatus(projectTaskDTO.getStatus());
+        existingTask.setSize(projectTaskDTO.getSize());
+        existingTask.setDueDate(projectTaskDTO.getDueDate());
+        existingTask.setPosition(projectTaskDTO.getPosition());
+        existingTask.setState(projectState);
+
+        // 변경 내용 저장
+        ProjectTask updatedTask = projectTaskRepository.save(existingTask);
+        log.info("updatedTask : " + updatedTask);
+
+        return modelMapper.map(updatedTask, ProjectTaskDTO.class);
+
     }
 
 

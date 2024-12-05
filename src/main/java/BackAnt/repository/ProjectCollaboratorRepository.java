@@ -1,8 +1,7 @@
 package BackAnt.repository;
 
-import BackAnt.entity.Project;
-import BackAnt.entity.ProjectCollaborator;
-import BackAnt.entity.User;
+import BackAnt.entity.project.Project;
+import BackAnt.entity.project.ProjectCollaborator;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
