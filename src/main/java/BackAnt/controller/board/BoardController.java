@@ -47,11 +47,15 @@ public class BoardController {
 
     // 글쓰기
     @PostMapping("/write")
-    public ResponseEntity<Long> insertBoard(@RequestBody BoardDTO boardDTO) {
-        log.info("여기는 컨트롤러(insertBoard)");
-        log.info("boardDTO " + boardDTO);
+    public ResponseEntity<Long> insertBoard(@RequestBody BoardDTO boardDTO, HttpServletRequest req) {
+        log.info("여기는 컨트롤러(write) ---------------------------------");
+        log.info(" 여기는 컨트롤러(글쓰기) - boardDTO: {}", boardDTO);
 
-        return ResponseEntity.ok(boardService.save(boardDTO));
+//        return ResponseEntity.ok(boardService.save(boardDTO));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(boardService.save(boardDTO, req));
+
     }
 
 
