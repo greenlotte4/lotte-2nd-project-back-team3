@@ -39,4 +39,15 @@ public class Schedule {
     @ManyToOne
     @JoinColumn(name = "calendarId", nullable = false)  // 외래 키 설정
     private Calendar calendar;
+
+    public void updateTime(LocalDateTime start, LocalDateTime end) {
+        this.start = start;
+        this.end = end;
+    }
+
+    public void updateAttendees(String internalAttendees, String externalAttendees) {
+        this.internalAttendees = internalAttendees;
+        this.externalAttendees = externalAttendees;
+    }
+
 }
