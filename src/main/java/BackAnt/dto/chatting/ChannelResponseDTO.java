@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 public class ChannelResponseDTO {
     private Long id;
     private String name;
-    @JsonProperty("isPublic")
-    private boolean isPublic;
+    @JsonProperty("ChannelPrivacy")
+    private boolean ChannelPrivacy;
     private Long ownerId;
 
 
@@ -26,7 +26,7 @@ public class ChannelResponseDTO {
     public ChannelResponseDTO(Channel channel) {
         this.id = channel.getId();
         this.name = channel.getName();
-        this.isPublic = channel.isPublic();  // 'isPrivate' -> 'isPublic'
+        this.ChannelPrivacy = channel.isChannelPrivacy();  // 'isPrivate' -> 'ChannelPrivacy'
         this.ownerId = channel.getOwner() != null ? channel.getOwner().getId() : 0;
     }
 
@@ -36,7 +36,7 @@ public class ChannelResponseDTO {
         return ChannelResponseDTO.builder()
                 .id(channel.getId())
                 .name(channel.getName())
-                .isPublic(channel.isPublic())  // 'isPrivate' -> 'isPublic'
+                .ChannelPrivacy(channel.isChannelPrivacy())  // 'isPrivate' -> 'ChannelPrivacy'
                 .ownerId(channel.getOwner() != null ? channel.getOwner().getId() : 0)
                 .build();
     }
