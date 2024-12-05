@@ -5,6 +5,7 @@ import BackAnt.service.chatting.ChannelMessageService;
 import BackAnt.service.chatting.ChannelService;
 import BackAnt.service.chatting.DmService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/chatting")
+@Log4j2
 public class ChattingController {
     private final ChannelService channelService;
     private final ChannelMessageService channelMessageService;
@@ -22,7 +24,10 @@ public class ChattingController {
     // 채널 생성
     @PostMapping("/channel")
     public ResponseEntity<Void> createChannel(@RequestBody ChannelCreateDTO channelCreateDTO) {
+        log.info("여기는 컨트롤러");
         channelService.createChannel(channelCreateDTO);
+        
+        log.info("채널 생성 정보 : "+channelCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

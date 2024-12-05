@@ -21,7 +21,8 @@ public class Channel extends BaseTimeEntity {
 
     private String name; // 채널 이름
 
-    private boolean isPublic; // 채널의 공개 여부 (기본값을 true 또는 false로 설정)
+    @Column(name = "channel_privacy")
+    private boolean channelPrivacy;  // 변경 후
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
@@ -37,7 +38,7 @@ public class Channel extends BaseTimeEntity {
         Channel channel = Channel.builder()
                 .name(name)
                 .owner(owner)
-                .isPublic(!isPublic)  // isPublic을 기반으로 isPrivate 값 설정
+                .channelPrivacy(!isPublic)  // isPublic을 기반으로 isPrivate 값 설정
                 .build();
 
         return channel;

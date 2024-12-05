@@ -10,6 +10,7 @@ import BackAnt.repository.UserRepository;
 import BackAnt.repository.chatting.ChannelMemberRepository;
 import BackAnt.repository.chatting.ChannelRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Log4j2
 public class ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
@@ -27,11 +29,13 @@ public class ChannelService {
 
     // 채널 생성 메서드 수정
     public Long createChannel(ChannelCreateDTO channelCreateDTO) {
+
         System.out.println("channelCreateDTO = " + channelCreateDTO);
         User user = userRepository.findById(channelCreateDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
-        Channel channel = Channel.create(channelCreateDTO.getName(), user, channelCreateDTO.isPublic());
+        Channel channel = Channel.create(channelCreateDTO.getName(), user, channelCreateDTO.isChannelPrivacy());
         channelRepository.save(channel);
+        log.info("여기는 서비스 (채널 생성) : "+channel);
 
         // 소유자를 채널 멤버로 추가
         ChannelMember channelMember = new ChannelMember(channel, user);
