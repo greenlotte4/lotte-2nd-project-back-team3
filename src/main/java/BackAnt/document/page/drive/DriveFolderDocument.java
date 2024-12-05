@@ -1,7 +1,7 @@
 package BackAnt.document.page.drive;
 
 
-import BackAnt.entity.FileEntity;
+import BackAnt.entity.DriveFileEntity;
 import org.springframework.data.annotation.Id;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -32,7 +32,7 @@ public class DriveFolderDocument {
 
     private String driveParentFolderId;
 
-    private List<FileEntity> files;
+    private List<DriveFileEntity> files;
 
     private int driveFolderSize;
 
@@ -46,7 +46,7 @@ public class DriveFolderDocument {
 
     private int driveFolderIsDeleted = 0;//(0이면 휴지통X, 1이면 휴지통)
 
-    private boolean isStarred = false;//(0이면 즐찾X, 1이면 즐찾됨)
+    private boolean driveFolderIsStared = false;//(0이면 즐찾X, 1이면 즐찾됨)
 
     private String driveFolderMaker; // 등록한 사람(공유폴더일시 수정한사람)
 
