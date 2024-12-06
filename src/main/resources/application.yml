@@ -6,6 +6,7 @@ server:
             cookie:
                 same-site: None
 spring:
+
     application:
         name: BackAnt
     datasource:
@@ -48,6 +49,9 @@ spring:
     web:
         resources:
             static-locations: file:uploads/
+    graphql:
+        websocket:
+            path: /ws
 file:
     upload:
         path: uploads

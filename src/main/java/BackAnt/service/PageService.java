@@ -1,9 +1,11 @@
 package BackAnt.service;
 
 import BackAnt.document.page.PageDocument;
-import BackAnt.dto.PageDTO;
-import BackAnt.repository.mongoDB.PageRepository;
+import BackAnt.dto.page.PageDTO;
+import BackAnt.repository.mongoDB.page.PageRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +20,9 @@ import java.util.List;
 // TODO : 현재 DTO 없이 Document 로 return 반환 수정해야함
 @RequiredArgsConstructor
 @Service
+@Log4j2
 public class PageService {
+
     private final PageRepository pageRepository;
     private final ModelMapper modelMapper;
 
@@ -68,4 +72,27 @@ public class PageService {
         pageRepository.save(page);
     }
 
-}
+    @Transactional
+    public void updatePageInRealTime(PageDTO pageDTO) {
+        try {
+            log.info("Updating page in real time: " + pageDTO);
+            PageDocument page = pageRepository.findById(pageDTO.get_id())
+                    .orElseThrow(() -> new RuntimeException("Page not found"));
+
+            // 내용 업데이트
+            if (pageDTO.getContent() != null) {
+                page.setContent(pageDTO.getContent());
+            }
+            if (pageDTO.getTitle() != null) {
+                page.setTitle(pageDTO.getTitle());
+            }
+
+            page.setUpdatedAt(LocalDateTime.now());
+            pageRepository.save(page);
+            log.info("Page updated successfully via WebSocket");
+        } catch (Exception e) {
+            log.error("Error updating page via WebSocket: ", e);
+            throw e;
+        }
+    }
+    }

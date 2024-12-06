@@ -1,7 +1,7 @@
 package BackAnt.service;
 
 import BackAnt.document.page.PageImageDocument;
-import BackAnt.repository.mongoDB.PageImageRepository;
+import BackAnt.repository.mongoDB.page.PageImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

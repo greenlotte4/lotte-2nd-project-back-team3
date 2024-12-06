@@ -1,4 +1,4 @@
-package BackAnt.repository.mongoDB;
+package BackAnt.repository.mongoDB.page;
 import BackAnt.document.page.PageDocument;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
