@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
 
-    List<Schedule> findScheduleByUid (String uid);
+    List<Schedule> findScheduleByUidOrderByStartAsc(String uid);
 
 }

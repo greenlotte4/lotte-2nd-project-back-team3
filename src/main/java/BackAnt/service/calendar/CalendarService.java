@@ -97,8 +97,8 @@ public class CalendarService {
     }
 
     public List<ScheduleDTO> selectSchedule (String uid) {
-        List<Schedule> schedules = scheduleRepository.findScheduleByUid(uid);
-        log.info("schedule::::::::::"+schedules);
+        List<Schedule> schedules = scheduleRepository.findScheduleByUidOrderByStartAsc(uid);
+        log.info("schedule123::::::::::"+schedules);
 
         return schedules.stream()
                 .map(schedule -> {
