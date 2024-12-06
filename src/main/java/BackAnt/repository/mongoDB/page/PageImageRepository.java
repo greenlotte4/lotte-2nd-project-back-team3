@@ -1,4 +1,4 @@
-package BackAnt.repository.mongoDB;
+package BackAnt.repository.mongoDB.page;
 
 /*
     날 짜 : 2024/11/28(목)

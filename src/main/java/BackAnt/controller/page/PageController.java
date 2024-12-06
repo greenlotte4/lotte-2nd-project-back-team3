@@ -1,16 +1,14 @@
 package BackAnt.controller.page;
 
 import BackAnt.document.page.PageDocument;
-import BackAnt.dto.PageDTO;
+import BackAnt.dto.page.PageDTO;
 import BackAnt.service.PageImageService;
 import BackAnt.service.PageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.hibernate.query.Page;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,18 +31,41 @@ public class PageController {
     private final PageImageService pageImageService;// MongoDB와 연결된 리포지토리
     private final ModelMapper modelMapper;
 
+    @PostMapping("/create")
+    public ResponseEntity<String> createPage(@RequestBody PageDTO page) {
+        try {
+            if (page == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid page data");
+            }
+            log.info("Received page data: " + page);
+            PageDocument savedPage = pageService.savePage(page);
+            log.info(savedPage.get_id());
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(savedPage.get_id());
+        } catch (Exception e) {
+            log.error("Error saving page: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error saving page: " + e.getMessage());
+        }
+    }
+
     // 페이지 생성 및 수정
     @PostMapping("/save")
     public ResponseEntity<String> savePage(@RequestBody PageDTO page) {
+        try {
+            if (page == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid page data");
+            }
 
-        if (page == null || page.getTitle() == null || page.getContent() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid page data");
+            log.info("Received page data: " + page);
+            PageDocument savedPage = pageService.savePage(page);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body("success");
+        } catch (Exception e) {
+            log.error("Error saving page: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error saving page: " + e.getMessage());
         }
-        log.info("page"+page);
-        page.setUid("ghkdtnqls95");
-        PageDocument savedPage = pageService.savePage(page); // 페이지 저장
-        return ResponseEntity.status(HttpStatus.CREATED) // 201 Created 상태 코드
-                .body(savedPage.get_id());
     }
 
     // 페이지 이미지 업로드

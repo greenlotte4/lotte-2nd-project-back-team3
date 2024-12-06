@@ -29,9 +29,10 @@ public class PageDocument {
 
     private String uid; // 작성자
 
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
     private LocalDateTime deletedAt = null;
 
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
+    private String componentId;
 }
