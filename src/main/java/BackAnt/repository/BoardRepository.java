@@ -1,7 +1,7 @@
 package BackAnt.repository;
 
-import BackAnt.dto.BoardDTO;
-import BackAnt.entity.Board;
+import BackAnt.dto.board.BoardDTO;
+import BackAnt.entity.board.Board;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -27,7 +27,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     List<Board> findAllWithWriter();
 
     // 글 목록 전체 조회
-    @Query("SELECT NEW BackAnt.dto.BoardDTO(b.id, b.cate1, b.cate2, b.title, " +
+    @Query("SELECT NEW BackAnt.dto.board.BoardResponseViewDTO(b.id, b.cate1, b.cate2, b.title, " +
             "b.comment, b.content, b.writer.name, b.file, b.hit, b.likes, " +
             "b.regIp, b.regDate) " +
             "FROM Board b " +

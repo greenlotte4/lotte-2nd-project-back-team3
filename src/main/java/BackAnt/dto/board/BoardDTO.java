@@ -1,8 +1,6 @@
-package BackAnt.dto;
+package BackAnt.dto.board;
 
-import jakarta.persistence.Column;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -41,6 +39,5 @@ public class BoardDTO {
     private String regIp; // 작성일시
 
     private LocalDateTime regDate; // 작성일
-
 
 }
