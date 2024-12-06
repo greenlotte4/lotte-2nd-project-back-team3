@@ -144,13 +144,14 @@ public class UserController {
             // 로그인 처리
             String accessToken = authService.login(loginRequest.getUid(), loginRequest.getPassword());
 
+            log.info("엑세스토큰 " + accessToken);
             // 리프레시 토큰 생성
             String refreshToken = authService.refreshToken(accessToken);
-
+            log.info("리프레시토큰 " + refreshToken);
             // 리프레시 토큰을 쿠키로 저장
             Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
             refreshCookie.setHttpOnly(true);
-            refreshCookie.setSecure(true);
+            refreshCookie.setSecure(false);
             refreshCookie.setPath("/");
             refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 유효
             response.addCookie(refreshCookie);

@@ -31,7 +31,6 @@ public class AuthService {
         if (user.getStatus() != BackAnt.entity.enums.Status.ACTIVE) {
             throw new IllegalArgumentException("계정이 활성화되어 있지 않습니다.");
         }
-
         // 액세스 토큰 생성
         return jwtProvider.createToken(user, 15); // 유효 시간 15분
     }
