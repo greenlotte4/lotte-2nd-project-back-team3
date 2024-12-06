@@ -76,7 +76,7 @@ public class SecurityConfig {
 //                "http://127.0.0.1:8080",
 //                "http://localhost:8080"
         ));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // 쿠키 허용
         configuration.setExposedHeaders(List.of("Authorization")); // 클라이언트가 헤더 접근 가능하도록 설정

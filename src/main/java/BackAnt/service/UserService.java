@@ -59,6 +59,12 @@ public class UserService {
         return !userRepository.existsByUid(uid); // 아이디가 존재하지 않으면 true
     }
 
+    // uid로 객체 찾기
+    public User getUserByUid(String uid) {
+        return userRepository.findByUid(uid)
+                .orElseThrow(() -> new IllegalArgumentException("UID에 해당하는 사용자를 찾을 수 없습니다: " + uid));
+    }
+
     // 회원 회원가입
     public User registerUser(UserRegisterRequestDTO userDTO) throws Exception {
         Department department = null;

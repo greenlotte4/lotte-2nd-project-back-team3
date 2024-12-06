@@ -15,6 +15,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,7 @@ public class UserController {
     private final EmailService emailService;
     private final ImageService imageService;
 
+    private final ModelMapper modelMapper;
     // 초기 관리자 멤버 추가
     @PostMapping("/create")
     public ResponseEntity<?> addUser(@RequestBody AdminRequestDTO adminDTO) {
@@ -77,6 +79,15 @@ public class UserController {
 
         boolean isAvailable = userService.isIdAvailable(uid);
         return ResponseEntity.ok(Map.of("isAvailable", isAvailable));
+    }
+
+    // 아이디로 객체찾기
+    @GetMapping("/{uid}")
+    public ResponseEntity<UserDTO> getUserByUid(@PathVariable String uid) {
+        User user = userService.getUserByUid(uid);
+        UserDTO userDTO = modelMapper.map(user, UserDTO.class); // DTO 변환
+        log.info("userdto" + userDTO.toString());
+        return ResponseEntity.ok(userDTO);
     }
 
 

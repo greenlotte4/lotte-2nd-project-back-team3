@@ -177,9 +177,5 @@ public class ChannelService {
                 .orElseThrow(() -> new RuntimeException("소유자는 채널 멤버가 아닙니다"));
         channelMemberRepository.delete(channelMember);
     }
-
-
-
-
 }
 
