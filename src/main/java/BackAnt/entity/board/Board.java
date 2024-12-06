@@ -1,5 +1,6 @@
-package BackAnt.entity;
+package BackAnt.entity.board;
 
+import BackAnt.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
