@@ -231,6 +231,8 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Page<UserDTO> members = userService.getMembersByCompany(company, page - 1, size); // Spring Data는 0-based 페이지
+
+        log.info("ㅇㅇ" + members.getContent().get(0).getDepartmentName());
         return ResponseEntity.ok(members);
     }
 

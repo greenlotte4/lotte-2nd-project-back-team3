@@ -108,16 +108,25 @@ public class UserService {
         return userRepository.save(user);
     }
 
+
     // 회사별 유저 조회 (페이징)
-    public Page<UserDTO> getMembersByCompany(Long companyid, int page, int size) {
+    public Page<UserDTO> getMembersByCompany(Long companyId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
         // Company 조회
-        Company company = companyRepository.findById(companyid)
+        Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new IllegalArgumentException("회사를 찾을 수 없습니다."));
 
-        // User 엔티티를 UserDTO로 매핑
+        // User 엔티티를 UserDTO로 매핑하고 departmentName 설정
         return userRepository.findAllByCompany(company, pageable)
-                .map(user -> modelMapper.map(user, UserDTO.class));
+                .map(user -> {
+                    UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+                    if (user.getDepartment() != null) {
+                        userDTO.setDepartmentName(user.getDepartment().getName());
+                        userDTO.setDepartmentId(user.getDepartment().getId());
+                    }
+                    return userDTO;
+                });
     }
+
 }

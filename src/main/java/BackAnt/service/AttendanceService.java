@@ -19,7 +19,7 @@ public class AttendanceService {
     private final UserRepository userRepository;
 
     // 출근 처리
-    public void checkIn(Long userId) {
+    public Attendance checkIn(Long userId) {
         // 유저 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
@@ -37,11 +37,11 @@ public class AttendanceService {
                 .status(AttendanceStatus.CHECKED_IN)
                 .build();
 
-        attendanceRepository.save(attendance);
+        return attendanceRepository.save(attendance); // 출근 기록 반환
     }
 
     // 퇴근 처리
-    public void checkOut(Long userId) {
+    public Attendance checkOut(Long userId) {
         // 유저 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
@@ -53,11 +53,11 @@ public class AttendanceService {
         // 퇴근 처리
         attendance.setCheckOut(LocalDateTime.now());
         attendance.setStatus(AttendanceStatus.CHECKED_OUT);
-        attendanceRepository.save(attendance);
+        return attendanceRepository.save(attendance); // 퇴근 기록 반환
     }
 
     // 상태 업데이트
-    public void updateStatus(Long userId, String status) {
+    public Attendance updateStatus(Long userId, String status) {
         // 유저 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
@@ -68,6 +68,7 @@ public class AttendanceService {
 
         // 상태 업데이트
         attendance.setStatus(AttendanceStatus.valueOf(status));
-        attendanceRepository.save(attendance);
+        return attendanceRepository.save(attendance); // 업데이트된 출근 기록 반환
     }
+
 }

@@ -33,4 +33,6 @@ public class UserDTO {
 
     private Long companyId; // 소속 회사 ID
     private Long departmentId; // 소속 부서 ID
+    private String departmentName; // 소속 부서 ID
+
 }
