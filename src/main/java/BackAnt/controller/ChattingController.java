@@ -1,9 +1,12 @@
 package BackAnt.controller;
 
 import BackAnt.dto.chatting.*;
+import BackAnt.entity.chatting.Channel;
+import BackAnt.entity.chatting.ChannelMessage;
 import BackAnt.service.chatting.ChannelMessageService;
 import BackAnt.service.chatting.ChannelService;
 import BackAnt.service.chatting.DmService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -11,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,7 +30,7 @@ public class ChattingController {
     public ResponseEntity<Void> createChannel(@RequestBody ChannelCreateDTO channelCreateDTO) {
         log.info("여기는 컨트롤러");
         channelService.createChannel(channelCreateDTO);
-        
+
         log.info("채널 생성 정보 : "+channelCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -61,12 +65,13 @@ public class ChattingController {
     }
 
     // 메시지 검색 (채널 내 키워드로)
-    @GetMapping("/channel/{channelId}/messages")
-    public ResponseEntity<List<ChannelMessageResponseDTO>> getMessages(@PathVariable Long channelId, @RequestParam String keyword) {
+    @GetMapping("/channel/{channelId}/messages/search")
+    public ResponseEntity<List<ChannelMessageResponseDTO>> searchMessages(@PathVariable Long channelId, @RequestParam String keyword) {
         // 채널 ID와 키워드를 기준으로 메시지 검색
         List<ChannelMessageResponseDTO> messages = channelMessageService.getsearchChannelMessages(channelId, keyword);
         return ResponseEntity.ok(messages);
     }
+
 
     // 채널 멤버 삭제
     @DeleteMapping("/channel/{id}/member")
@@ -75,6 +80,7 @@ public class ChattingController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    // 채널 나가기
     @PutMapping("/channel/{channelId}/leave")
     public ResponseEntity<Void> transferOwnershipAndLeave(
             @PathVariable Long channelId,
@@ -83,6 +89,22 @@ public class ChattingController {
         channelService.transferOwnershipAndLeave(channelId, userId);
         return ResponseEntity.ok().build();
     }
+
+    // 채널 메시지 읽음 처리
+    @PostMapping("/channel/{channelId}/messages/read")
+    public ResponseEntity<Void> markMessagesAsRead(@PathVariable Long channelId, @RequestParam Long userId) {
+        channelMessageService.markMessagesAsRead(channelId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    // 채널 메시지 조회
+    @GetMapping("/channel/{channelId}/messages")
+    public ResponseEntity<List<ChannelMessageResponseDTO>> getMessages(@PathVariable Long channelId) {
+        List<ChannelMessageResponseDTO> messages = channelMessageService.getMessages(channelId);
+        return ResponseEntity.ok(messages); // 상태 코드 200과 함께 메시지 리스트 반환
+    }
+
+
 
     // 디엠방 생성 (1:1 비공개 채팅)
     @PostMapping("/dm")
@@ -107,10 +129,9 @@ public class ChattingController {
         return ResponseEntity.ok(messages);
     }
 
-
     // 디엠 메시지 읽음 표시
     @PatchMapping("/dm/{dmId}/messages/read")
-    public ResponseEntity<String> markMessagesAsRead(@PathVariable Long dmId, @RequestBody DmReadRequestDTO dto) {
+    public ResponseEntity<String> markDmMessagesAsRead(@PathVariable Long dmId, @RequestBody DmReadRequestDTO dto) {
         dmService.markMessagesAsRead(dmId, dto.getUserId());
         return ResponseEntity.ok("메시지가 성공적으로 읽음으로 표시되었습니다.");
     }

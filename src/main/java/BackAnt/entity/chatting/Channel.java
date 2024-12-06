@@ -22,7 +22,7 @@ public class Channel extends BaseTimeEntity {
     private String name; // 채널 이름
 
     @Column(name = "channel_privacy")
-    private boolean channelPrivacy;  // 변경 후
+    private boolean channelPrivacy;  // 공개여부 이름 변경
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
