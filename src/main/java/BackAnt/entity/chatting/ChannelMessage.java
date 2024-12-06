@@ -29,4 +29,18 @@ public class ChannelMessage extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "channel_id")
     private Channel channel; // 메시지가 전송된 채널
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isRead = false; // 읽음 여부, 기본값 false
+
+    // 읽음 상태 변경 메서드
+    public void markAsRead() {
+        this.isRead = true;
+    }
+
+    // isRead 상태 조회 메서드
+    public Boolean getIsRead() {
+        return isRead == null ? false : isRead;
+    }
+
 }
