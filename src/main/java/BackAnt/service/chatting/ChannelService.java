@@ -96,10 +96,7 @@ public class ChannelService {
         User currentOwner = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("현재 소유자를 찾을 수 없습니다"));
 
-        // 현재 소유자만 소유권을 변경할 수 있도록 처리
-        if (!channel.getOwner().equals(currentOwner)) {
-            throw new RuntimeException("현재 소유자만 소유권을 변경할 수 있습니다");
-        }
+
 
         // 채널에 포함된 멤버들 조회 (소유자 제외)
         List<ChannelMember> members = channelMemberRepository.findByChannel(channel);
@@ -110,23 +107,23 @@ public class ChannelService {
             channelRepository.delete(channel);
             return;  // 채널이 삭제되었으므로 더 이상 진행할 필요 없음
         }
+        // 현재 소유자만 소유권을 변경할 수 있도록 처리
+        if (channel.getOwner().equals(currentOwner)) {
+            // 새로운 소유자 찾기 (현재 소유자 제외)
+            Optional<User> newOwner = members.stream()
+                    .filter(member -> !member.getUser().equals(currentOwner))
+                    .map(ChannelMember::getUser)
+                    .findFirst();
 
-        // 새로운 소유자 찾기 (현재 소유자 제외)
-        Optional<User> newOwner = members.stream()
-                .filter(member -> !member.getUser().equals(currentOwner))
-                .map(ChannelMember::getUser)
-                .findFirst();
+            // 새로운 소유자가 없으면 채널 삭제
+            if (newOwner.isEmpty()) {
+                channelRepository.delete(channel);
+                return;  // 채널 삭제 후 더 이상 진행할 필요 없음
+            }
 
-        // 새로운 소유자가 없으면 채널 삭제
-        if (newOwner.isEmpty()) {
-            channelRepository.delete(channel);
-            return;  // 채널 삭제 후 더 이상 진행할 필요 없음
+            // 소유자 변경
+            channel.setOwner(newOwner.get());
         }
-
-        // 소유자 변경
-        channel.setOwner(newOwner.get());
-        channelRepository.save(channel);
-
         // 기존 소유자 채널 멤버에서 제거
         ChannelMember channelMember = channelMemberRepository
                 .findByChannelIdAndUserId(channel.getId(), currentOwner.getId())

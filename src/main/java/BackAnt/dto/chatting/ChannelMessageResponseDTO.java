@@ -13,8 +13,9 @@ import lombok.NoArgsConstructor;
 public class ChannelMessageResponseDTO {
     private Long id;
     private String content;
-    private Long userId;
+    private Long senderId;
     private String userName;
+    private String userProfile;
     private Long channelId;
     private String channelName;
     private Boolean isRead;  // 읽음 여부 추가
@@ -27,8 +28,9 @@ public class ChannelMessageResponseDTO {
         return ChannelMessageResponseDTO.builder()
                 .id(message.getId())
                 .content(message.getContent())
-                .userId(message.getSender().getId())
+                .senderId(message.getSender().getId())
                 .userName(message.getSender().getName())
+                .userProfile(message.getSender().getProfileImageUrl())
                 .channelId(message.getChannel().getId())
                 .channelName(message.getChannel().getName())
                 .isRead(message.getIsRead())  // 읽음 여부 포함

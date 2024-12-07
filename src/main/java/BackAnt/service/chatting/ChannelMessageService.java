@@ -9,11 +9,8 @@ import BackAnt.repository.UserRepository;
 import BackAnt.repository.chatting.ChannelMessageRepository;
 import BackAnt.repository.chatting.ChannelRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,12 +25,12 @@ public class ChannelMessageService {
     private final ChannelRepository channelRepository;
 
     // 채널 메시지 보내기
-    public Long sendMessage(ChannelMessageCreateDTO dto) {
+    public Long sendMessage(Long id, ChannelMessageCreateDTO dto) {
         // 사용자 및 채널 검증
         User sender = userRepository.findById(dto.getSenderId())
                 .orElseThrow(() -> new RuntimeException("Sender not found"));
 
-        Channel channel = channelRepository.findById(dto.getChannelId())
+        Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Channel not found"));
 
         // 메시지 생성
