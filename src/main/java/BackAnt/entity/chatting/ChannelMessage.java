@@ -4,9 +4,12 @@ import BackAnt.entity.User;
 import BackAnt.entity.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Getter
@@ -26,12 +29,12 @@ public class ChannelMessage extends BaseTimeEntity {
     @JoinColumn(name = "sender_id")
     private User sender; // 메시지를 전송한 사용자
 
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @ManyToOne
     @JoinColumn(name = "channel_id")
     private Channel channel; // 메시지가 전송된 채널
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private Boolean isRead = false; // 읽음 여부, 기본값 false
+    private boolean isRead = false; // 읽음 여부, 기본값 false
 
     // 읽음 상태 변경 메서드
     public void markAsRead() {
@@ -40,7 +43,7 @@ public class ChannelMessage extends BaseTimeEntity {
 
     // isRead 상태 조회 메서드
     public Boolean getIsRead() {
-        return isRead == null ? false : isRead;
+        return isRead;
     }
 
 }

@@ -1,6 +1,7 @@
 package BackAnt.controller;
 
 import BackAnt.dto.chatting.*;
+import BackAnt.dto.common.ResultDTO;
 import BackAnt.entity.chatting.Channel;
 import BackAnt.entity.chatting.ChannelMessage;
 import BackAnt.service.chatting.ChannelMessageService;
@@ -27,12 +28,14 @@ public class ChattingController {
 
     // 채널 생성
     @PostMapping("/channel")
-    public ResponseEntity<Void> createChannel(@RequestBody ChannelCreateDTO channelCreateDTO) {
+    public ResponseEntity<ResultDTO<Long>> createChannel(@RequestBody ChannelCreateDTO channelCreateDTO) {
         log.info("여기는 컨트롤러");
-        channelService.createChannel(channelCreateDTO);
+        Long channelId = channelService.createChannel(channelCreateDTO);
 
         log.info("채널 생성 정보 : "+channelCreateDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ResultDTO.<Long>builder().data(channelId).build());
     }
 
     // 모든 채널 조회
@@ -58,9 +61,9 @@ public class ChattingController {
     }
 
     // 채널 메시지 보내기
-    @PostMapping("/channel/{id}/message")
+    @PostMapping("/channel/{id}/messages")
     public ResponseEntity<Void> sendMessage(@PathVariable Long id, @RequestBody ChannelMessageCreateDTO channelMessageCreateDTO) {
-        channelMessageService.sendMessage(channelMessageCreateDTO);
+        channelMessageService.sendMessage(id ,channelMessageCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

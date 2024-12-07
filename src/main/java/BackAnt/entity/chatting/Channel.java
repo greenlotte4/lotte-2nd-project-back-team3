@@ -4,6 +4,7 @@ import BackAnt.entity.User;
 import BackAnt.entity.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -33,12 +34,12 @@ public class Channel extends BaseTimeEntity {
         this.owner = newOwner;
     }
 
-    public static Channel create(String name, User owner, boolean isPublic)
+    public static Channel create(String name, User owner, boolean isPrivate)
     {
         Channel channel = Channel.builder()
                 .name(name)
                 .owner(owner)
-                .channelPrivacy(!isPublic)  // isPublic을 기반으로 isPrivate 값 설정
+                .channelPrivacy(isPrivate)
                 .build();
 
         return channel;
