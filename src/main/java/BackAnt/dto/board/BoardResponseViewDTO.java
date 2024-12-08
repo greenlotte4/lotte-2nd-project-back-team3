@@ -34,6 +34,8 @@ public class BoardResponseViewDTO {
     private String regIp; // 작성일시
     private LocalDateTime regDate; // 작성일
 
+
+
     // ModelMapper 설정을 위한 정적 메서드
     public static ModelMapper createModelMapper() {
         ModelMapper modelMapper = new ModelMapper();
