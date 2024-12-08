@@ -21,12 +21,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Document(value = "Page")
 public class PageDocument {
+
     @Id
     private String _id; // int X - mongoDB Id는 String 으로 해야 랜덤값으로 들어감
 
     private String title;
     private String content; // JSON 형식의 데이터
 
+    private String owner; // 주인
     private String uid; // 작성자
 
     private LocalDateTime deletedAt = null;

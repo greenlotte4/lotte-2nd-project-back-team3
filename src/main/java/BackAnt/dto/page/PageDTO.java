@@ -14,6 +14,7 @@ public class PageDTO {
     private String _id;
     private String title;
     private String content;
+    private String owner;
     private String uid;
     private LocalDateTime updatedAt;
 
