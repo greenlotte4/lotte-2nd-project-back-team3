@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -135,4 +136,15 @@ public class UserService {
                 });
     }
 
+    public List<UserDTO> getAllMembers() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(user -> {
+            UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+            if (user.getDepartment() != null) {
+                userDTO.setDepartmentName(user.getDepartment().getName());
+                userDTO.setDepartmentId(user.getDepartment().getId());
+            }
+            return userDTO;
+        }).toList();
+    }
 }

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 @Log4j2
@@ -247,4 +248,10 @@ public class UserController {
         return ResponseEntity.ok(members);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<UserDTO>> getMembers()
+    {
+        List<UserDTO> allMembers = userService.getAllMembers();
+        return ResponseEntity.ok(allMembers);
+    }
 }
