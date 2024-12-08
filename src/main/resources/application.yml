@@ -6,7 +6,6 @@ server:
             cookie:
                 same-site: None
 spring:
-
     application:
         name: BackAnt
     datasource:
@@ -42,6 +41,10 @@ spring:
     data:
         mongodb:
             uri: mongodb://antwork:1234@107.20.58.55:27017/antwork?authSource=antwork
+        redis:
+            host: 127.0.0.1
+            port: 6379
+            password: 'qwer1234!Q'
     jackson:
         serialization:
             fail-on-empty-beans: false
@@ -52,6 +55,7 @@ spring:
     graphql:
         websocket:
             path: /ws
+
 file:
     upload:
         path: uploads

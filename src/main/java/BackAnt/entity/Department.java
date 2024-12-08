@@ -9,6 +9,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+/*
+    날 짜 : 2024/12/5(목)
+    담당자 : 최준혁
+    내 용 : Department 를 위한 Entity 생성
+*/
 
 @Getter
 @Setter
