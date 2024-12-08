@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 
    수정내역 :
    2024/12/03(화) 김민희 - likes 컬럼 추가 (* sql 예약어 "like" 컬럼명 추가 x)
+   2024/12/06(금) 김민희 - 게시글의 전체 좋아요 수(likes) 관리 하는 필드
+                       - 좋아요 증가/감소
+
 */
 
 @Getter
@@ -55,7 +58,7 @@ public class Board {
     private int hit = 0; // 조회수 처음에 0
 
     @Builder.Default
-    private int likes = 0; // 좋아요 처음에 0
+    private int likes = 0; // 좋아요 처음에 0 (전체 좋아요 수)
 
     private String regIp; // 작성자 IP
 
@@ -63,5 +66,14 @@ public class Board {
     @Column(updatable = false) // 날짜 한 번 저장 된 후 -> 수정 불가능
     private LocalDateTime regDate; // 날짜
 
+    // 좋아요 증가
+    public void increaseLikes() {
+        this.likes++;
+    }
+
+    // 좋아요 취소
+    public void decreaseLikes() {
+        this.likes = Math.max(0, this.likes - 1);  // 음수 방지
+    }
 
 }
