@@ -37,7 +37,8 @@ public class PageController {
             if (page == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid page data");
             }
-            log.info("Received page data: " + page);
+            log.info("여기야 여기 Received page data: " + page);
+
             PageDocument savedPage = pageService.savePage(page);
             log.info(savedPage.get_id());
             return ResponseEntity.status(HttpStatus.CREATED)

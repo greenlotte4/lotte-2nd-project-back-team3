@@ -13,7 +13,7 @@ import java.util.List;
 
 @Repository
 public interface PageRepository extends MongoRepository<PageDocument, String> {
-    List<PageDocument> findByUidAndDeletedAtIsNull(String uid);
-    List<PageDocument> findByUidAndDeletedAtIsNotNull(String uid);
+    List<PageDocument> findByOwnerAndDeletedAtIsNull(String uid);
+    List<PageDocument> findByOwnerAndDeletedAtIsNotNull(String uid);
     List<PageDocument> findTop3ByDeletedAtIsNullOrderByUpdatedAtDesc();
 }
