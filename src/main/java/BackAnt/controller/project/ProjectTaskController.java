@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /*
     날 짜 : 2024/12/4(수)
@@ -66,5 +67,21 @@ public class ProjectTaskController {
         return ResponseEntity.noContent().build();
     }
 
+    // 작업 드래그앤드랍시 변경된 위치와 상태를 업데이트
+    @PutMapping("/updatePosition/{taskId}")
+    public ResponseEntity<ProjectTaskDTO> updateTaskPosition(
+            @PathVariable Long taskId,
+            @RequestBody Map<String, Long> request) {
+
+        Long newStateId = request.get("stateId");
+        int newPosition = request.get("position").intValue();
+
+        log.info("taskId: "+ taskId + "newStateId : " + newStateId + "newPosition : " + newPosition);
+
+        ProjectTaskDTO updatedTask = projectTaskService.updateTaskState(taskId, newStateId, newPosition);
+        log.info("updatedTask: ", updatedTask);
+
+        return ResponseEntity.ok(updatedTask);
+    }
 
 }
