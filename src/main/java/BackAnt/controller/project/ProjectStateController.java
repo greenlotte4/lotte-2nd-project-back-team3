@@ -45,10 +45,41 @@ public class ProjectStateController {
         }
     }
 
+    // 프로젝트 작업상태 수정
+    @PutMapping("/update/{stateId}")
+    public ResponseEntity<ProjectStateDTO> updateState(
+            @PathVariable Long stateId,
+            @RequestBody ProjectStateDTO projectStateDTO) {
 
+        log.info("stateId : " + stateId);
+        log.info("projectStateDTO : " + projectStateDTO);
 
+        try {
+            ProjectStateDTO updatedState = projectStateService.updateState(stateId, projectStateDTO);
+            return ResponseEntity.ok(updatedState);
+        } catch (IllegalArgumentException e) {
+            log.error("State update failed: ", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            log.error("Internal Server Error: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
+    // 프로젝트 작업상태 삭제
+    @DeleteMapping("/delete/{stateId}")
+    public ResponseEntity<Void> deleteState(@PathVariable Long stateId) {
 
+        log.info("stateId : " + stateId);
+
+        try {
+            projectStateService.deleteState(stateId);
+            return ResponseEntity.noContent().build(); // 성공 시 204 No Content 반환
+        } catch (Exception e) {
+            log.error("Error deleting state: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
 
 }
