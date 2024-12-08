@@ -104,6 +104,7 @@ public class ChannelService {
         // 채널에 멤버가 1명만 남은 경우, 소유자가 나가면 채널 삭제
         if (members.size() == 1) {
             // 소유자가 유일한 멤버일 경우, 채널 삭제
+            channelMemberRepository.delete(members.get(0));
             channelRepository.delete(channel);
             return;  // 채널이 삭제되었으므로 더 이상 진행할 필요 없음
         }
