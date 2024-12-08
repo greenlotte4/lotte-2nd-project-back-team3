@@ -91,5 +91,35 @@ public class ProjectTaskService {
 
     }
 
+    // 작업 드래그앤드랍시 프로젝트 작업 상태 수정
+    @Transactional
+    public ProjectTaskDTO updateTaskState(Long taskId, Long newStateId, int newPosition) {
+
+        // 기존 작업 조회
+        ProjectTask projectTask = projectTaskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+        log.info("projectTask : " + projectTask);
+
+        // 새로운 작업 상태 조회
+        ProjectState newState = projectStateRepository.findById(newStateId)
+                .orElseThrow(() -> new IllegalArgumentException("State not found with ID: " + newStateId));
+        log.info("newState : " + newState);
+
+
+        // 기존 작업의 작업상태와 위치를 업데이트
+        projectTask.setState(newState);
+        projectTask.setPosition(newPosition);
+
+        // 변경된 작업 저장
+        ProjectTask updatedTask = projectTaskRepository.save(projectTask);
+        log.info("updatedTask : " + updatedTask);
+
+        return modelMapper.map(updatedTask, ProjectTaskDTO.class);
+
+
+    }
+
+
+
 
 }
