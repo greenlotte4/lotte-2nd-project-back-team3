@@ -18,4 +18,7 @@ public interface DriveFileRepository extends JpaRepository<DriveFileEntity, Inte
 
     // folderId가 null인 행을 조회하는 메서드
     List<DriveFileEntity> findBydriveFolderIdIsNull();
+
+    // 파람의 folderId와 동일한 파일 찾기
+    List<DriveFileEntity> findByDriveFolderId(String driveFolderId);
 }

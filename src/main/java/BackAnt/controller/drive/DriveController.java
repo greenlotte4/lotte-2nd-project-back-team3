@@ -7,6 +7,8 @@ import BackAnt.service.DriveFileService;
 import BackAnt.service.DriveFolderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,9 +46,10 @@ public class DriveController {
     @GetMapping("/folder/myDriveSelectView/{driveFolderId}")
     public ResponseEntity<?> MyDriveSelectView(@PathVariable String driveFolderId){
         log.info("asdfasdf : " + driveFolderId);
-        List<MyDriveViewDTO> myDriveDTOs = driveFolderService.MyDriveSelectView(driveFolderId);
+        Map<String, Object> MySelectDrive = driveFolderService.MyDriveSelectView(driveFolderId);
+//        List<MyDriveViewDTO> myDriveDTOs = driveFolderService.MyDriveSelectView(driveFolderId);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(myDriveDTOs);
+                .body(MySelectDrive);
     }
 
     @PostMapping("/files/insert")
@@ -57,4 +60,14 @@ public class DriveController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(driveFile);
     }
+
+    @GetMapping("/files/MyDriveFileDownload")
+    public ResponseEntity<?> MyDriveFileDownload(@RequestParam int driveFileId){
+        log.info(driveFileService.MyDriveFileDownload(driveFileId));
+        return driveFileService.MyDriveFileDownload(driveFileId);
+
+
+
+    }
+
 }
