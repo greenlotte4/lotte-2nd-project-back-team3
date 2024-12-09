@@ -147,4 +147,24 @@ public class UserService {
             return userDTO;
         }).toList();
     }
+
+    public List<UserDTO> getAllMembersByCompany(Long companyId) {
+        // Company 조회
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new IllegalArgumentException("회사를 찾을 수 없습니다."));
+
+        // 회사별 모든 사용자 조회
+        List<User> users = userRepository.findAllByCompany(company);
+
+        // Entity -> DTO 변환
+        return users.stream().map(user -> {
+            UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+            if (user.getDepartment() != null) {
+                userDTO.setDepartmentName(user.getDepartment().getName());
+                userDTO.setDepartmentId(user.getDepartment().getId());
+            }
+            return userDTO;
+        }).toList();
+    }
+
 }
