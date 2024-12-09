@@ -58,6 +58,18 @@ public class ProjectController {
         return ResponseEntity.ok(project);
     }
 
+    // 프로젝트 수정
+    @PutMapping("/update/{projectId}")
+    public ResponseEntity<ProjectDTO> updateProject(@PathVariable Long projectId, @RequestBody ProjectDTO projectDTO) {
+        log.info("projectId: " + projectId);
+        log.info("projectDTO: " + projectDTO);
+
+        ProjectDTO updatedProject = projectService.updateProject(projectId, projectDTO);
+        log.info("updatedProject: " + updatedProject);
+
+        return ResponseEntity.ok(updatedProject);
+    }
+
 
 
 
