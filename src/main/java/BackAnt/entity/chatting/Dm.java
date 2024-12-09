@@ -19,12 +19,4 @@ public class Dm extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToMany
-    @JoinTable(
-            name = "dm_members",
-            joinColumns = @JoinColumn(name = "dm_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<User> members;
 }

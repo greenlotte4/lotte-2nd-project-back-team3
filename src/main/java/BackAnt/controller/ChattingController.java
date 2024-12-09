@@ -111,10 +111,18 @@ public class ChattingController {
 
     // 디엠방 생성 (1:1 비공개 채팅)
     @PostMapping("/dm")
-    public ResponseEntity<DmResponseDTO> createDm(@RequestBody DmCreateDTO dmCreateDTO, @RequestParam Long senderId) {
+    public ResponseEntity<ResultDTO<Long>> createDm(@RequestBody DmCreateDTO dmCreateDTO) {
         // DM 방 생성 및 첫 번째 메시지 처리
-        DmResponseDTO response = dmService.createDm(dmCreateDTO, senderId);
+        ResultDTO<Long> response = dmService.createDm(dmCreateDTO);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    // 디엠방 가져오기 by userId
+    @GetMapping("/dm")
+    public ResponseEntity<List<DmResponseDTO>> getDm(@RequestParam Long userId)
+    {
+        List<DmResponseDTO> dmResponseDTOs = dmService.getDmsByUserId(userId);
+        return new ResponseEntity<>(dmResponseDTOs, HttpStatus.OK);
     }
 
     // 디엠 메시지 보내기
