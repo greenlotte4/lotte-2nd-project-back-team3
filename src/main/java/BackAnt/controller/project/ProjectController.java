@@ -1,7 +1,13 @@
 package BackAnt.controller.project;
 
 import BackAnt.dto.project.ProjectDTO;
+import BackAnt.entity.User;
+import BackAnt.entity.project.Project;
+import BackAnt.repository.ProjectRepository;
+import BackAnt.repository.UserRepository;
+import BackAnt.service.ProjectCollaboratorService;
 import BackAnt.service.ProjectService;
+import BackAnt.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
@@ -24,6 +30,10 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final ModelMapper modelMapper;
+    private final UserService userService;
+    private final ProjectRepository projectRepository;
+    private final ProjectCollaboratorService projectCollaboratorService;
+    private final UserRepository userRepository;
 
     // 프로젝트 저장
     @PostMapping("/add")
