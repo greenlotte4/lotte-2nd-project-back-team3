@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,6 +53,7 @@ public class CalendarService {
                 .name(calendarDTO.getName())
                 .user(userRepository.findByUid(calendarDTO.getUser_id()).orElseThrow(() -> new EntityNotFoundException("user값이 없습니다.")))
                 .view(calendarDTO.getUser_id())
+                .color(calendarDTO.getColor())
                 .build();
 
         log.info("5555"+calendar);
@@ -59,11 +61,15 @@ public class CalendarService {
         calendarRepository.save(calendar);
     }
 
-    public void updateCalendar (int no, String newName) {
+    public void updateCalendar (int no, String newName, String color) {
         Calendar calendar = calendarRepository.findById(no).orElseThrow(() -> new EntityNotFoundException("이 id의 Calendar가 없습니다."));
 
         log.info("123123432432"+calendar);
-        calendar.updateName(newName);
+        if(Objects.equals(color, "not")){
+            calendar.updateName(newName);
+        }else {
+            calendar.update(newName, color);
+        }
         log.info("123123432432"+calendar);
         calendarRepository.save(calendar);
 
@@ -89,7 +95,6 @@ public class CalendarService {
                 .location(scheduleDTO.getLocation())
                 .start(scheduleDTO.getStart())
                 .end(scheduleDTO.getEnd())
-                .uid(scheduleDTO.getUid())
                 .build();
 
         scheduleRepository.save(schedule);
@@ -97,13 +102,34 @@ public class CalendarService {
     }
 
     public List<ScheduleDTO> selectSchedule (String uid) {
-        List<Schedule> schedules = scheduleRepository.findScheduleByUidOrderByStartAsc(uid);
-        log.info("schedule123::::::::::"+schedules);
 
-        return schedules.stream()
+        List<Calendar> calendarIds = calendarRepository.findAllByView(uid);
+
+        List<Integer> cIds = new ArrayList<>();
+
+        calendarIds.forEach(calendar -> {
+            cIds.add(calendar.getCalendarId());
+        });
+
+        log.info("iddddddddddddd"+cIds);
+
+
+        List<Schedule> scheduless = new ArrayList<>();
+
+        cIds.forEach(cId -> {
+            List<Schedule> sch = scheduleRepository.findByCalendarCalendarIdOrderByStartAsc(cId);
+            scheduless.addAll(sch);
+        });
+
+        log.info("cccccccccccccccccccccccccccc"+ scheduless);
+
+
+        return scheduless.stream()
                 .map(schedule -> {
                     ScheduleDTO dto = modelMapper.map(schedule, ScheduleDTO.class); // 기본 매핑
                     dto.setCalendarId(schedule.getCalendar().getCalendarId()); // calendarId 수동 설정
+                    dto.setColor(schedule.getCalendar().getColor());
+                    log.info("5555"+dto);
                     return dto;
                 })
                 .toList();
@@ -149,8 +175,6 @@ public class CalendarService {
                 .replace("]", "");;
 
         Schedule schedule = scheduleRepository.findById(scheduleDTO.getId()).orElseThrow(() -> new EntityNotFoundException("이 id의 Schedule 이 없습니다."));
-        String uid = schedule.getUid();
-        scheduleDTO.setUid(uid);
         modelMapper.map(scheduleDTO, schedule);
 
         schedule.updateAttendees(internalAttendees, externalAttendees);

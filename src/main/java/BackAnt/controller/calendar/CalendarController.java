@@ -38,13 +38,13 @@ public class CalendarController {
         calendarService.insertCalendar(calendar);
     }
 
-    @PutMapping("/update/{no}/{newName}")
-    public void update(@PathVariable int no, @PathVariable String newName) {
+    @PutMapping("/update/{no}/{newName}/{color}")
+    public void update(@PathVariable int no, @PathVariable String newName, @PathVariable String color) {
 
         log.info("11111111111"+no);
         log.info("22222222222"+newName);
-
-        calendarService.updateCalendar(no, newName);
+        log.info("33333333333"+color);
+        calendarService.updateCalendar(no, newName, color);
     }
 
     @DeleteMapping("/delete/{no}")
