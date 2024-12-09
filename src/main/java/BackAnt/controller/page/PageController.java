@@ -95,10 +95,11 @@ public class PageController {
     }
 
     // page List 조회 (DELETED | MODIFIED | UID)
-    @GetMapping("/list/{type}")
-    public ResponseEntity<List<PageDocument>> selectByUid(@PathVariable String type) {
+    @GetMapping("/list/{type}/{uid}")
+    public ResponseEntity<List<PageDocument>> selectByUid(@PathVariable String type,
+                                                          @PathVariable (required = false) String uid) {
         try {
-            String uid = "ghkdtnqls95";
+
             List<PageDocument> pages;
 
             switch (type) {
