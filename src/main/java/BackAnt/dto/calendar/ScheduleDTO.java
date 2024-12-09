@@ -24,6 +24,6 @@ public class ScheduleDTO {
     private LocalDateTime end;
     private String uid;
 
-
+    private String color;
 
 }

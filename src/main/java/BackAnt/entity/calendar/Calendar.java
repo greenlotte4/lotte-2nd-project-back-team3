@@ -11,7 +11,6 @@ import lombok.*;
 */
 
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
@@ -26,10 +25,15 @@ public class Calendar {
 
     private String name;
     private String view;
-
+    private String color;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "uid", nullable = false)  // 외래 키 설정
     private User user;
+
+    public void update (String name, String color){
+        this.name = name;
+        this.color = color;
+    }
 
     public void updateName (String name){
         this.name = name;

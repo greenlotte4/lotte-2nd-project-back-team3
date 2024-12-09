@@ -13,5 +13,5 @@ public class CalendarDTO {
     private String name;
     private String user_id;
     private String view;
-
+    private String color;
 }
