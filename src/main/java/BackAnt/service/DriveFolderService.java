@@ -51,8 +51,10 @@ public class DriveFolderService {
             if (folderOpt.isPresent()) {
                 DriveFolderDocument folder = folderOpt.get();
 
+//                // 폴더 이름을 스택에 추가
+//                folderStack.push(folder.getDriveFolderName());
                 // 폴더 이름을 스택에 추가
-                folderStack.push(folder.getDriveFolderName());
+                folderStack.push(driveFolderId);
 
                 // 부모 폴더 ID를 얻음, 없으면 null
                 driveFolderId = folder.getDriveParentFolderId(); // 필드가 없으면 null 반환
@@ -76,7 +78,8 @@ public class DriveFolderService {
     //새폴더생성
     public DriveNewFolderInsertDTO FolderNewInsert(DriveNewFolderInsertDTO driveNewFolderInsertDTO) {
         String driveFolderId = driveNewFolderInsertDTO.getDriveFolderId(); // 상위 폴더 ID
-
+        String newFolderId = UUID.randomUUID().toString();
+        log.info("dhkfkfkfkfk : " + newFolderId);
         String parentFolderPath = "/uploads/drive";
 
         // 상위 폴더 경로 계산
@@ -85,11 +88,23 @@ public class DriveFolderService {
         }
 
         // 새로운 폴더 경로 생성
-        String newFolderPath = parentFolderPath + "/" + driveNewFolderInsertDTO.getDriveFolderName();
+        String newFolderName = driveNewFolderInsertDTO.getDriveFolderName();
+        String newFolderPaths = parentFolderPath + "/" + newFolderName;
+        String newFolderPath = parentFolderPath + "/" + newFolderId;
 
         // 실제 서버 경로 (user.dir을 기반으로 경로 생성)
         String USER_DIR = System.getProperty("user.dir"); // 현재 작업 디렉터리 (배포 시 경로 자동화)
         Path path = Paths.get(USER_DIR + newFolderPath); // 최종 경로에 새로운 폴더 경로 추가
+
+        // 중복된 폴더 이름 처리
+        int counter = 1;
+        while (Files.exists(path)) {
+            // 중복된 폴더 이름으로 변경
+            newFolderName = driveNewFolderInsertDTO.getDriveFolderName() + " (" + counter + ")";
+            newFolderPath = parentFolderPath + "/" + newFolderId;
+            path = Paths.get(USER_DIR + parentFolderPath + "/" + newFolderId);
+            counter++;
+        }
 
 
         // 디렉터리가 존재하지 않으면 생성
@@ -103,7 +118,7 @@ public class DriveFolderService {
 
         // 새로운 폴더 객체 생성
         DriveFolderDocument newFolder = DriveFolderDocument.builder()
-                .driveFolderName(driveNewFolderInsertDTO.getDriveFolderName())
+                .driveFolderName(newFolderName)
                 .driveFolderPath(newFolderPath) // 경로 설정
                 .driveParentFolderId(driveNewFolderInsertDTO.getDriveFolderId()) // 상위 폴더 ID
                 .driveFolderSize(driveNewFolderInsertDTO.getDriveFolderSize())
@@ -118,7 +133,7 @@ public class DriveFolderService {
         return modelMapper.map(driveFolderRepository.save(newFolder), DriveNewFolderInsertDTO.class);
     }
 
-
+//폴더파일조회
     public Map<String, Object> MyDriveView() {
         List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findFirstWithFolders();
         List<DriveFileEntity> MyDriveFiles = driveFileRepository.findBydriveFolderIdIsNull();
@@ -134,15 +149,21 @@ public class DriveFolderService {
 //                .map(folder -> modelMapper.map(folder, MyDriveViewDTO.class))
 //                .collect(Collectors.toList());
 //
-
-    public List<MyDriveViewDTO> MyDriveSelectView(String driveFolderId){
+//선택된폴더파일조회
+    public  Map<String, Object> MyDriveSelectView(String driveFolderId){
         List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findWithSelectFolders(driveFolderId);
+        List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderId(driveFolderId);
 
-        List<MyDriveViewDTO> myDriveViewDTOList = MyDriveFolders.stream()
-                .map(folder -> modelMapper.map(folder, MyDriveViewDTO.class))
-                .collect(Collectors.toList());
+        Map<String, Object> response = new HashMap<>();
+        response.put("folders", MyDriveFolders);  // MyDriveFolders를 "folders"라는 키로 추가
+        response.put("files", MyDriveFiles);     // MyDriveFiles를 "files"라는 키로 추가
 
 
-        return myDriveViewDTOList;
+//        List<MyDriveViewDTO> myDriveViewDTOList = MyDriveFolders.stream()
+//                .map(folder -> modelMapper.map(folder, MyDriveViewDTO.class))
+//                .collect(Collectors.toList());
+
+
+        return response;
     }
 }
