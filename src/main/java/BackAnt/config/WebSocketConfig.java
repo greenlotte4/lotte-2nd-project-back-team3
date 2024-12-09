@@ -1,10 +1,12 @@
 package BackAnt.config;
 
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.*;
 
+@Log4j2
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
@@ -18,8 +20,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        log.info("도달??");
         registry.addEndpoint("/ws") // WebSocket 연결 엔드포인트
-                .setAllowedOrigins("*"); // CORS 허용
+                .setAllowedOrigins("*"); // 허용할 클라이언트 도메인 지정
     }
 
     @Override

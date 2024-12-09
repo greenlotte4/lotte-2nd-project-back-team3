@@ -36,6 +36,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 회사별 유저 조회 (페이징 처리)
     Page<User> findAllByCompany(Company company, Pageable pageable);
 
+    // 부서별 유저 조회
+    List<User> findByDepartmentId(Long departmentId);
+
     List<User> findAllByCompany(Company company);
 
 }
