@@ -131,8 +131,6 @@ public class UserController {
         }
     }
 
-
-
     // 이메일 인증처리
     @GetMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@RequestParam String token) {
@@ -144,8 +142,6 @@ public class UserController {
                     .body(new ApiResponseDTO<>(false, "이메일 인증 실패: " + e.getMessage(), null));
         }
     }
-
-
 
     // 로그인
     @PostMapping("/login")
@@ -236,16 +232,28 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    // 회사별 유저 리스트 조회 (페이징)
     @GetMapping("/list")
     public ResponseEntity<Page<UserDTO>> getMembers(
             @RequestParam Long company,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<UserDTO> members = userService.getMembersByCompany(company, page - 1, size); // Spring Data는 0-based 페이지
+        Page<UserDTO> members = userService.getMembersByCompany(company, page - 1, size);
 
         log.info("ㅇㅇ" + members.getContent().get(0).getDepartmentName());
         return ResponseEntity.ok(members);
+    }
+
+    // 부서별 유저 리스트 조회
+    @GetMapping("/select/{departmentId}")
+    public ResponseEntity<List<UserDTO>> getUsersByDepartmentId(@PathVariable Long departmentId) {
+        try {
+            List<UserDTO> users = userService.getUsersByDepartmentId(departmentId);
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/all")

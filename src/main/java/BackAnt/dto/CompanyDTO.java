@@ -9,7 +9,7 @@ import java.time.LocalTime;
 /*
     날짜 : 2024/11/29
     이름 : 최준혁
-    내용 : Company 엔티티 생성
+    내용 : CompanyDTO 생성
 */
 
 @Getter

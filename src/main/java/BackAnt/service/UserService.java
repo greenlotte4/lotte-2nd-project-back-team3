@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /*
     날짜 : 2024/11/29
@@ -167,4 +168,12 @@ public class UserService {
         }).toList();
     }
 
+    // 부서별 사용자 조회
+    public List<UserDTO> getUsersByDepartmentId(Long departmentId) {
+        List<User> users = userRepository.findByDepartmentId(departmentId);
+
+        return users.stream()
+                .map(user -> modelMapper.map(user, UserDTO.class))
+                .collect(Collectors.toList());
+    }
 }
