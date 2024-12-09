@@ -21,6 +21,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws") // WebSocket 연결 엔드포인트
                 .setAllowedOrigins("*"); // CORS 허용
     }
+
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
         registration.setMessageSizeLimit(128 * 1024)
