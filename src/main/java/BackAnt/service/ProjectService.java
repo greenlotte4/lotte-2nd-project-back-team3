@@ -9,6 +9,7 @@ import BackAnt.repository.ProjectRepository;
 import BackAnt.repository.ProjectStateRepository;
 import BackAnt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -89,7 +90,21 @@ public class ProjectService {
         return modelMapper.map(project, ProjectDTO.class);
     }
 
+    // 프로젝트 수정
+    public ProjectDTO updateProject(Long projectId, ProjectDTO projectDTO) {
 
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+        log.info("project: " + project);
+
+        project.setProjectName(projectDTO.getProjectName());
+        project.setStatus(projectDTO.getStatus());
+
+        Project updatedProject = projectRepository.save(project);
+        return modelMapper.map(updatedProject, ProjectDTO.class);
+
+
+    }
 
 
 
