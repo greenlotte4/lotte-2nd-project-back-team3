@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DmResponseDTO {
     private Long dmId;  // 생성된 디엠방 ID
-    private String message;  // 첫 메시지 내용
+    private String dmName;
+    private String lastMessage;
 }
