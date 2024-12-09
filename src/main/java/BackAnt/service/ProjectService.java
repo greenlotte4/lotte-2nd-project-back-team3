@@ -12,7 +12,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -102,7 +106,6 @@ public class ProjectService {
 
         Project updatedProject = projectRepository.save(project);
         return modelMapper.map(updatedProject, ProjectDTO.class);
-
 
     }
 
