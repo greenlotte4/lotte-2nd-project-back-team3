@@ -254,4 +254,11 @@ public class UserController {
         List<UserDTO> allMembers = userService.getAllMembers();
         return ResponseEntity.ok(allMembers);
     }
+
+    @GetMapping("/all/company/{companyId}")
+    public ResponseEntity<List<UserDTO>> getAllMembersByCompany(@PathVariable Long companyId) {
+        List<UserDTO> members = userService.getAllMembersByCompany(companyId);
+        return ResponseEntity.ok(members);
+    }
+
 }

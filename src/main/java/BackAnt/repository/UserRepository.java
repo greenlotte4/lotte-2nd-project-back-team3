@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 /*
     날짜 : 2024/11/29
@@ -34,4 +35,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 회사별 유저 조회 (페이징 처리)
     Page<User> findAllByCompany(Company company, Pageable pageable);
+
+    List<User> findAllByCompany(Company company);
+
 }
