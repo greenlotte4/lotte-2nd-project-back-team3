@@ -7,7 +7,9 @@ package BackAnt.repository;
 */
 
 import BackAnt.entity.DriveFileEntity;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,4 +23,7 @@ public interface DriveFileRepository extends JpaRepository<DriveFileEntity, Inte
 
     // 파람의 folderId와 동일한 파일 찾기
     List<DriveFileEntity> findByDriveFolderId(String driveFolderId);
+
+    @Query("SELECT f FROM DriveFileEntity f WHERE f.driveFilePath LIKE CONCAT(:path, '%')")
+    List<DriveFileEntity> findBydriveFilePathStartingWith(@Param("path") String path);
 }
