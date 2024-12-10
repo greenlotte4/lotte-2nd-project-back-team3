@@ -1,5 +1,6 @@
 package BackAnt.entity.project;
 
+import BackAnt.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -45,7 +46,8 @@ public class ProjectTask {
     @JoinColumn(name = "state_id", nullable = false)
     private ProjectState state; // 작업이 속한 상태
 
-    // 나중에 추가해야함
+    // ProjectTask가 여러 User를 직접 참조하는 구조는 일반적으로 중간 테이블 없이 불가능해
+    // ProjectTaskAssignment를 따로 만듬
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "assigned_user_id")
 //    private User assignedUser;  // 작업 담당자

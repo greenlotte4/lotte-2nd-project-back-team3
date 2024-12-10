@@ -1,4 +1,4 @@
-package BackAnt.repository;
+package BackAnt.repository.project;
 
 import BackAnt.entity.project.ProjectTask;
 import org.springframework.data.jpa.repository.JpaRepository;
