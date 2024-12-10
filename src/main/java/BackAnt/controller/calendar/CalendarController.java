@@ -1,5 +1,6 @@
 package BackAnt.controller.calendar;
 
+import BackAnt.dto.UserDTO;
 import BackAnt.dto.calendar.CalendarDTO;
 import BackAnt.service.calendar.CalendarService;
 import lombok.RequiredArgsConstructor;
@@ -25,15 +26,25 @@ public class CalendarController {
 
     @GetMapping("/select/{uid}")
     public List<CalendarDTO> calendarList(@PathVariable String uid){
-        log.info("44444"+uid);
-        log.info("123543"+calendarService.selectCalendar(uid));
-        return calendarService.selectCalendar(uid);
+        List<CalendarDTO> dtos = calendarService.selectCalendar(uid);
+        log.info("디티오"+dtos);
+        return dtos;
+    }
+
+    @GetMapping("/select/modal/{uid}")
+    public List<CalendarDTO> calendarModalList(@PathVariable String uid){
+        return calendarService.selectCalendarModal(uid);
+    }
+
+    @GetMapping("/select/share/{uid}")
+    public List<UserDTO> calendarshareList(@PathVariable String uid){
+        log.info("공유캘린더 아이디는???"+uid);
+        return calendarService.selectShare(uid);
     }
 
     @PostMapping("/insert")
     public void calendar(@RequestBody CalendarDTO calendar) {
 
-        log.info("44444"+calendar);
 
         calendarService.insertCalendar(calendar);
     }
@@ -41,16 +52,30 @@ public class CalendarController {
     @PutMapping("/update/{no}/{newName}/{color}")
     public void update(@PathVariable int no, @PathVariable String newName, @PathVariable String color) {
 
-        log.info("11111111111"+no);
-        log.info("22222222222"+newName);
-        log.info("33333333333"+color);
         calendarService.updateCalendar(no, newName, color);
     }
 
     @DeleteMapping("/delete/{no}")
     public void delete(@PathVariable int no) {
-        log.info("11111111111"+no);
         calendarService.deleteCalendar(no);
+    }
+
+    @PutMapping("/share/{id}")
+    public void updateShare(@PathVariable String id, @RequestBody String userIds) {
+
+        log.info("아이아이아이아이아이"+id);
+        log.info("아이아이아이아이아이"+userIds);
+
+        calendarService.shareCalendar(id, userIds);
+    }
+
+    @DeleteMapping("/delete/share/{id}/{userId}")
+    public void deleteShare(@PathVariable String id, @PathVariable String userId) {
+        log.info("2222222222222222"+ id);
+        log.info("2222222222222222"+ userId);
+
+        calendarService.deleteShare(id, userId);
+
     }
 
 }
