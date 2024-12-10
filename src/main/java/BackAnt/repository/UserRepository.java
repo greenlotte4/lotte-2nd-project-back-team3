@@ -25,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 아이디로 사용자 조회
     Optional<User> findByUid(String uid);
 
+    Optional<User> findById(Long id);
+
     // 이메일로 사용자 조회
     Optional<User> findByEmail(String email);
 
@@ -43,4 +45,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByDepartmentId(Long departmentId);
 
     List<User> findAllByCompany(Company company);
+
+    // 회사 ID로 사용자 조회 (+ 페이징)
+    Page<User> findByCompanyId(Long companyId, Pageable pageable);
 }
