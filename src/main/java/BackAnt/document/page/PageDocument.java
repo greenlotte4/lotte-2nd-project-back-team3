@@ -1,5 +1,6 @@
 package BackAnt.document.page;
 
+import BackAnt.dto.page.PageDTO;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -29,6 +30,9 @@ public class PageDocument {
     private String content; // JSON 형식의 데이터
 
     private String owner; // 주인
+    private String ownerName;
+    private String ownerImage;
+
     private String uid; // 작성자
 
     private LocalDateTime deletedAt = null;
@@ -37,4 +41,17 @@ public class PageDocument {
     private LocalDateTime updatedAt;
 
     private String componentId;
+
+    public PageDTO convertToDTO(PageDocument page) {
+        return PageDTO.builder()
+                ._id(page.get_id())
+                .title(page.getTitle())
+                .owner(page.getOwner())
+                .ownerName(page.getOwnerName())
+                .ownerImage(page.getOwnerImage())
+                .content(page.getContent())
+                .updatedAt(page.getUpdatedAt())
+                .build();
+    }
 }
+

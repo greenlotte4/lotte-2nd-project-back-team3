@@ -16,4 +16,6 @@ public interface PageRepository extends MongoRepository<PageDocument, String> {
     List<PageDocument> findByOwnerAndDeletedAtIsNull(String uid);
     List<PageDocument> findByOwnerAndDeletedAtIsNotNull(String uid);
     List<PageDocument> findTop3ByDeletedAtIsNullOrderByUpdatedAtDesc();
+
+    List<PageDocument> findBy_idInAndOwnerNot(List<String> ids, String owner);
 }

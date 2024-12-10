@@ -1,16 +1,21 @@
-package BackAnt.service;
+package BackAnt.service.page;
 
 import BackAnt.document.page.PageDocument;
 import BackAnt.dto.page.PageDTO;
 import BackAnt.repository.mongoDB.page.PageRepository;
+import BackAnt.repository.page.PageCollaboratorRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /*
     날 짜 : 2024/11/29(금)
@@ -25,6 +30,25 @@ public class PageService {
 
     private final PageRepository pageRepository;
     private final ModelMapper modelMapper;
+    private final PageCollaboratorRepository pageCollaboratorRepository;
+    private final MongoTemplate mongoTemplate;
+    private final PageCollaboratorService pageCollaboratorService;
+    // 사용자의 공유된 페이지 목록 조회
+    public List<PageDTO> getSharedPages(String userId) {
+        // 1. 사용자가 협업자로 등록된 페이지 ID 목록 조회
+        List<String> sharedPageIds = pageCollaboratorService.getCollaboratedPageIds(userId);
+
+        // 2. 페이지 ID 목록으로 실제 페이지 데이터 조회
+        Query query = new Query(Criteria.where("_id").in(sharedPageIds)
+                .and("deletedAt").is(null));  // 삭제되지 않은 페이지만 조회
+
+        List<PageDocument> pages = mongoTemplate.find(query, PageDocument.class);
+
+        // 3. PageDocument를 PageDTO로 변환
+        return pages.stream()
+                .map(page -> page.convertToDTO(page))
+                .collect(Collectors.toList());
+    }
 
     public PageDocument savePage(PageDTO page){
         PageDocument pageDocument = modelMapper.map(page, PageDocument.class);

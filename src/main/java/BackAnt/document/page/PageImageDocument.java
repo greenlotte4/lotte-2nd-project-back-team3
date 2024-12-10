@@ -23,6 +23,5 @@ public class PageImageDocument {
 
     private String name;
     private String path;
-    // TODO ex) http://localhost/uploads/path - 배포시 IP는 어떻게? 고민 요망
 
 }
