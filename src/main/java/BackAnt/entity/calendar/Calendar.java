@@ -4,6 +4,9 @@ import BackAnt.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /*
     날짜 : 2024/12/02
     이름 : 하정훈
@@ -24,11 +27,17 @@ public class Calendar {
     private int calendarId;
 
     private String name;
-    private String view;
+
     private String color;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "uid", nullable = false)  // 외래 키 설정
     private User user;
+
+    @OneToMany(mappedBy = "calendar", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<Schedule> schedules = new ArrayList<>();
+
+    private String view;
 
     public void update (String name, String color){
         this.name = name;
@@ -37,6 +46,10 @@ public class Calendar {
 
     public void updateName (String name){
         this.name = name;
+    }
+
+    public void updateView (String view){
+        this.view = view;
     }
 
 }

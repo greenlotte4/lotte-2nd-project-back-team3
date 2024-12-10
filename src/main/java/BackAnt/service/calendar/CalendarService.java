@@ -1,13 +1,17 @@
 package BackAnt.service.calendar;
 
 import BackAnt.controller.calendar.ScheduleController;
+import BackAnt.dto.UserDTO;
 import BackAnt.dto.calendar.CalendarDTO;
 import BackAnt.dto.calendar.ScheduleDTO;
+import BackAnt.entity.User;
 import BackAnt.entity.calendar.Calendar;
 import BackAnt.entity.calendar.Schedule;
+import BackAnt.entity.calendar.ViewCalendar;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.calendar.CalendarRepository;
 import BackAnt.repository.calendar.ScheduleRepository;
+import BackAnt.repository.calendar.ViewCalendarRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -30,9 +34,39 @@ public class CalendarService {
     private final CalendarRepository calendarRepository;
     private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
+    private final ViewCalendarRepository viewCalendarRepository;
 
 
     public List<CalendarDTO> selectCalendar (String uid){
+
+        log.info("유아이디"+uid);
+
+        List<ViewCalendar> cIds = viewCalendarRepository.findByUserId(Long.parseLong(uid));
+
+        List<Integer> calendarIds = new ArrayList<>();
+
+        cIds.forEach(viewCalendar -> {
+            calendarIds.add(viewCalendar.getCalendar().getCalendarId());
+        });
+
+        log.info("캘린더번호"+calendarIds);
+
+        List<Calendar> calendars = calendarRepository.findAllById(calendarIds);
+
+        log.info("45678"+calendars);
+
+        return calendars.stream()
+                .map(calendar -> {
+                    CalendarDTO calendarDTO = modelMapper.map(calendar, CalendarDTO.class);
+                    calendarDTO.setUser_id(calendar.getUser() != null ? calendar.getUser().getUid() : null);
+                    return calendarDTO;
+                })
+                .toList();
+    }
+
+    public List<CalendarDTO> selectCalendarModal (String uid){
+
+        log.info("유아이디"+uid);
 
         List<Calendar> calendars = calendarRepository.findAllByUser_Uid(uid);
 
@@ -52,13 +86,21 @@ public class CalendarService {
         Calendar calendar = Calendar.builder()
                 .name(calendarDTO.getName())
                 .user(userRepository.findByUid(calendarDTO.getUser_id()).orElseThrow(() -> new EntityNotFoundException("user값이 없습니다.")))
-                .view(calendarDTO.getUser_id())
                 .color(calendarDTO.getColor())
                 .build();
 
+
+
         log.info("5555"+calendar);
 
-        calendarRepository.save(calendar);
+        Calendar calendar123 = calendarRepository.save(calendar);
+
+        ViewCalendar view = ViewCalendar.builder()
+                .user(calendar.getUser())
+                .calendar(calendar123)
+                .build();
+
+        viewCalendarRepository.save(view);
     }
 
     public void updateCalendar (int no, String newName, String color) {
@@ -103,12 +145,25 @@ public class CalendarService {
 
     public List<ScheduleDTO> selectSchedule (String uid) {
 
-        List<Calendar> calendarIds = calendarRepository.findAllByView(uid);
+        log.info("유아이디값이 머징" + uid);
 
-        List<Integer> cIds = new ArrayList<>();
+        List<ViewCalendar> cIds = viewCalendarRepository.findByUserId(Long.parseLong(uid));
+
+        List<Integer> calIds = new ArrayList<>();
+
+        cIds.forEach(viewCalendar -> {
+            calIds.add(viewCalendar.getCalendar().getCalendarId());
+        });
+
+        log.info("캘린더번호"+calIds);
+
+        List<Calendar> calendarIds = calendarRepository.findAllById(calIds);
+
+
+        List<Integer> Ids = new ArrayList<>();
 
         calendarIds.forEach(calendar -> {
-            cIds.add(calendar.getCalendarId());
+            Ids.add(calendar.getCalendarId());
         });
 
         log.info("iddddddddddddd"+cIds);
@@ -116,7 +171,7 @@ public class CalendarService {
 
         List<Schedule> scheduless = new ArrayList<>();
 
-        cIds.forEach(cId -> {
+        Ids.forEach(cId -> {
             List<Schedule> sch = scheduleRepository.findByCalendarCalendarIdOrderByStartAsc(cId);
             scheduless.addAll(sch);
         });
@@ -184,6 +239,52 @@ public class CalendarService {
 
     public void deleteSchedule (int no) {
         scheduleRepository.deleteById(no);
+    }
+
+    public void shareCalendar (String id, String ids) {
+
+        String cleanedStr = ids.replaceAll("[\\[\\]\\s]", "");
+        log.info("666666666666666666666666666"+cleanedStr);
+
+        List<String> lists = Arrays.asList(cleanedStr.split(","));
+        log.info("666666666666666666666666666"+lists);
+
+        lists.forEach(list -> {
+            ViewCalendar viewCalendar = ViewCalendar.builder()
+                    .calendar(calendarRepository.findById(Integer.parseInt(id)).orElseThrow(() -> new EntityNotFoundException("이 id의 Schedule 이 없습니다.")))
+                    .user(userRepository.findById(Long.parseLong(list)).orElseThrow(() -> new EntityNotFoundException("이 id의 Schedule 이 없습니다.")))
+                    .build();
+            viewCalendarRepository.save(viewCalendar);
+        });
+
+    }
+
+    public List<UserDTO> selectShare (String id) {
+
+        List<ViewCalendar> calendars = viewCalendarRepository.findByCalendar_CalendarId(Integer.parseInt(id));
+
+        List<Long> ids = new ArrayList<>();
+
+        calendars.forEach(viewCalendar -> {
+            ids.add(viewCalendar.getUser().getId());
+        });
+
+
+        List<User> users = userRepository.findAllById(ids);
+
+        return users.stream()
+                .map(user -> modelMapper.map(user, UserDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public void deleteShare (String cId, String uId) {
+
+        ViewCalendar viewCalendar = viewCalendarRepository.findByCalendar_CalendarIdAndUserId(Integer.parseInt(cId), Long.parseLong(uId));
+
+        log.info(viewCalendar);
+
+        viewCalendarRepository.delete(viewCalendar);
+
     }
 
 }
