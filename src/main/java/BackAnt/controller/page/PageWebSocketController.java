@@ -26,7 +26,6 @@ public class PageWebSocketController {
         log.info("Message content: " + pageDTO);
 
         try {
-            pageDTO.set_id(id);
             pageService.updatePageInRealTime(pageDTO);
             return pageDTO;  // 다른 클라이언트들에게 변경사항 브로드캐스트
         } catch (Exception e) {

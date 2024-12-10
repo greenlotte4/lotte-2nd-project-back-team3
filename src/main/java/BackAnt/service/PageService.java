@@ -72,10 +72,10 @@ public class PageService {
         pageRepository.save(page);
     }
 
+    // TODO : redis 임시 저장 후 DB 반영 되도록 수정
     @Transactional
     public void updatePageInRealTime(PageDTO pageDTO) {
         try {
-            log.info("Updating page in real time: " + pageDTO);
             PageDocument page = pageRepository.findById(pageDTO.get_id())
                     .orElseThrow(() -> new RuntimeException("Page not found"));
 
