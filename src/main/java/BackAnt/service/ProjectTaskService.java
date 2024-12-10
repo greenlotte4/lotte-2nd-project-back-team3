@@ -1,5 +1,6 @@
 package BackAnt.service;
 
+import BackAnt.dto.project.ProjectAssignedUserDTO;
 import BackAnt.dto.project.ProjectTaskDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.project.ProjectState;
@@ -44,16 +45,18 @@ public class ProjectTaskService {
 
         // 1. ProjectTask 생성 및 저장
         ProjectTask task = modelMapper.map(taskDTO, ProjectTask.class);
+
         // 상태 확인 및 연결
         ProjectState projectState = projectStateRepository.findById(taskDTO.getStateId())
                 .orElseThrow(() -> new IllegalArgumentException("State not found with ID: " + taskDTO.getStateId()));
         task.setState(projectState);
+
         // 작업 저장
         ProjectTask savedTask = projectTaskRepository.save(task);
 
         // 2. ProjectTaskAssignment 생성 및 저장
-        if (taskDTO.getAssignedUserIds() != null && !taskDTO.getAssignedUserIds().isEmpty()) {
-            List<ProjectTaskAssignment> assignments = taskDTO.getAssignedUserIds().stream().map(userId -> {
+        if (taskDTO.getAssignedUser() != null && !taskDTO.getAssignedUser().isEmpty()) {
+            List<ProjectTaskAssignment> assignments = taskDTO.getAssignedUser().stream().map(userId -> {
                 User user = userRepository.findById(userId)
                         .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
                 return ProjectTaskAssignment.builder()
@@ -65,8 +68,19 @@ public class ProjectTaskService {
             projectTaskAssignmentRepository.saveAll(assignments);
         }
 
-        return modelMapper.map(savedTask, ProjectTaskDTO.class);
+        // 3. 할당된 사용자 정보를 taskDTO에 설정
+        ProjectTaskDTO responseDTO = modelMapper.map(savedTask, ProjectTaskDTO.class);
+
+        // ProjectTaskAssignment에서 할당된 사용자들의 ID를 가져와서 할당
+        List<Long> assignedUserIds = projectTaskAssignmentRepository.findByTaskId(savedTask.getId()).stream()
+                .map(assignment -> assignment.getUser().getId())
+                .collect(Collectors.toList());
+
+        responseDTO.setAssignedUser(assignedUserIds); // 작업의 assignedUser 필드에 ID 목록을 설정
+
+        return responseDTO;
     }
+
 
     // 특정 상태 id로 작업 조회
     public List<ProjectTaskDTO> getTasksWithAssignedUsers(Long stateId) {
@@ -77,17 +91,36 @@ public class ProjectTaskService {
                 .map(task -> {
                     ProjectTaskDTO taskDTO = modelMapper.map(task, ProjectTaskDTO.class);
 
-                    // 프로젝트 작업에 할당된 사용자 IDs를 가져오기 위해 project_task_assignment을 조회
+                    // 프로젝트 작업에 할당된 사용자 ID들을 가져오기 위해 project_task_assignment을 조회
                     List<Long> assignedUserIds = projectTaskAssignmentRepository.findByTaskId(task.getId())
                             .stream()
                             .map(assignment -> assignment.getUser().getId()) // User ID만 추출
                             .collect(Collectors.toList());
 
-                    taskDTO.setAssignedUserIds(assignedUserIds); // 해당 작업에 할당된 사용자 ID 목록 설정
+                    taskDTO.setAssignedUser(assignedUserIds); // 해당 작업에 할당된 사용자 ID 목록 설정
+
+                    // 각 할당된 사용자 ID에 대해 User 정보를 가져와 ProjectAssignedUserDTO로 변환
+                    List<ProjectAssignedUserDTO> assignedUsers = assignedUserIds.stream()
+                            .map(userId -> {
+                                User user = userRepository.findById(userId)
+                                        .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+                                return ProjectAssignedUserDTO.builder()
+                                        .id(user.getId())
+                                        .name(user.getName())
+                                        .position(user.getPosition())
+                                        .profileImageUrl(user.getProfileImageUrl())
+                                        .build();
+                            })
+                            .collect(Collectors.toList());
+
+                    taskDTO.setAssignedUserDetails(assignedUsers); // 상세 사용자 정보 설정
+
                     return taskDTO;
                 })
                 .collect(Collectors.toList());
     }
+
 
 
     // 프로젝트 작업 수정
