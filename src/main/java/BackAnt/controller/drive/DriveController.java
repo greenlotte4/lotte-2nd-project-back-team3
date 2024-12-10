@@ -1,5 +1,6 @@
 package BackAnt.controller.drive;
 
+import BackAnt.dto.drive.DriveFolderNameDTO;
 import BackAnt.dto.drive.DriveNewFileInsertDTO;
 import BackAnt.dto.drive.DriveNewFolderInsertDTO;
 import BackAnt.dto.drive.MyDriveViewDTO;
@@ -69,5 +70,19 @@ public class DriveController {
 
 
     }
+@PostMapping("/folder/name")
+    public ResponseEntity<?> DriveFolderFind(@RequestBody DriveFolderNameDTO driveFolderNameDTO){
+        log.info("머라머라머라 : " + driveFolderNameDTO);
+    DriveNewFolderInsertDTO FolderNameDto = driveFolderService.DriveFolderFind(driveFolderNameDTO);
 
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(FolderNameDto);
+}
+@GetMapping("/folder/trash/{driveFolderNameId}")
+public ResponseEntity<?> DriveFolderTrash(@PathVariable String driveFolderNameId){
+    log.info("고양이야옹 : " + driveFolderNameId);
+
+    driveFolderService.DriveFolderTrash(driveFolderNameId);
+    return null;
+}
 }
