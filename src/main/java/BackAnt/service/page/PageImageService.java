@@ -1,4 +1,4 @@
-package BackAnt.service;
+package BackAnt.service.page;
 
 import BackAnt.document.page.PageImageDocument;
 import BackAnt.repository.mongoDB.page.PageImageRepository;

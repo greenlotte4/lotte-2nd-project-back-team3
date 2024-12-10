@@ -1,11 +1,10 @@
 package BackAnt.controller.page;
 
 import BackAnt.dto.page.PageDTO;
-import BackAnt.service.PageService;
+import BackAnt.service.page.PageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.messaging.handler.annotation.*;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 @Log4j2

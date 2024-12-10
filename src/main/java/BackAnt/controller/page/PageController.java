@@ -1,9 +1,12 @@
 package BackAnt.controller.page;
 
 import BackAnt.document.page.PageDocument;
+import BackAnt.dto.page.PageCollaboratorDTO;
 import BackAnt.dto.page.PageDTO;
-import BackAnt.service.PageImageService;
-import BackAnt.service.PageService;
+import BackAnt.repository.page.PageCollaboratorRepository;
+import BackAnt.service.page.PageCollaboratorService;
+import BackAnt.service.page.PageImageService;
+import BackAnt.service.page.PageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
@@ -14,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /*
     날 짜 : 2024/11/28(목)
@@ -27,9 +31,10 @@ import java.util.List;
 @RequestMapping("/api/page")
 public class PageController {
 
+    private final PageCollaboratorService pageCollaboratorService;
     private final PageService pageService;
     private final PageImageService pageImageService;// MongoDB와 연결된 리포지토리
-    private final ModelMapper modelMapper;
+    private final PageCollaboratorRepository collaboratorRepository;
 
     @PostMapping("/create")
     public ResponseEntity<String> createPage(@RequestBody PageDTO page) {
@@ -40,6 +45,7 @@ public class PageController {
             log.info("여기야 여기 Received page data: " + page);
 
             PageDocument savedPage = pageService.savePage(page);
+
             log.info(savedPage.get_id());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(savedPage.get_id());
@@ -93,7 +99,11 @@ public class PageController {
         }
         return ResponseEntity.ok(page); // 페이지가 존재할 경우 200 반환
     }
-
+    @GetMapping("/shared/{userId}")
+    public ResponseEntity<List<PageDTO>> getSharedPages(@PathVariable String userId) {
+        List<PageDTO> sharedPages = pageService.getSharedPages(userId);
+        return ResponseEntity.ok(sharedPages);
+    }
     // page List 조회 (DELETED | MODIFIED | UID)
     @GetMapping("/list/{type}/{uid}")
     public ResponseEntity<List<PageDocument>> selectByUid(@PathVariable String type,
@@ -150,5 +160,33 @@ public class PageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to restore page");
         }
+    }
+
+    // 페이지 협업자 목록 조회
+    @GetMapping("/{pageId}/collaborators")
+    public ResponseEntity<List<PageCollaboratorDTO>> getCollaborators(@PathVariable String pageId) {
+        List<PageCollaboratorDTO> collaborators = pageCollaboratorService.getCollaborators(pageId);
+        return ResponseEntity.ok(collaborators);
+    }
+
+    //  페이지 협업자 추가
+
+    @PostMapping("/{pageId}/collaborators")
+    public ResponseEntity<List<PageCollaboratorDTO>> addCollaborators(
+            @PathVariable String pageId,
+            @RequestBody Map<String, List<PageCollaboratorDTO>> request) {
+        log.info("request : "+request);
+        List<PageCollaboratorDTO> collaborators = request.get("collaborators");
+        List<PageCollaboratorDTO> addedCollaborators = pageCollaboratorService.addCollaborators(pageId, collaborators);
+        return ResponseEntity.ok(addedCollaborators);
+    }
+
+    // 페이지 협업자 삭제
+    @DeleteMapping("/{pageId}/collaborators/{userId}")
+    public ResponseEntity<Void> removeCollaborator(
+            @PathVariable String pageId,
+            @PathVariable String userId) {
+        pageCollaboratorService.removeCollaborator(pageId, userId);
+        return ResponseEntity.ok().build();
     }
 }
