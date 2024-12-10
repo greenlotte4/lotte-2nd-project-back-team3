@@ -3,6 +3,11 @@ package BackAnt.dto.project;
 import lombok.*;
 
 import java.time.LocalDateTime;
+/*
+    날 짜 : 2024/12/10(화)
+    담당자 : 강은경
+    내 용 : ProjectCollaboratorDTO 를 위한 DTO 생성
+*/
 
 @Getter
 @Setter
