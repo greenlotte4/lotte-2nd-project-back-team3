@@ -1,8 +1,10 @@
 package BackAnt.controller.project;
 
 import BackAnt.dto.project.ProjectTaskDTO;
+import BackAnt.repository.project.ProjectTaskAssignmentRepository;
 import BackAnt.repository.project.ProjectTaskRepository;
 import BackAnt.service.ProjectTaskService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,7 @@ public class ProjectTaskController {
 
     private final ProjectTaskService projectTaskService;
     private final ProjectTaskRepository projectTaskRepository;
+    private final ProjectTaskAssignmentRepository projectTaskAssignmentRepository;
 
 
     // 프로젝트 작업 등록
@@ -60,12 +63,20 @@ public class ProjectTaskController {
     }
 
     // 작업 개별 삭제
+    @Transactional
     @DeleteMapping("/delete/{taskId}")
     public ResponseEntity<Void> deleteTaskById(@PathVariable Long taskId) {
         log.info("taskId : " + taskId);
+
+        // 작업에 할당된 담당자 삭제
+        projectTaskAssignmentRepository.deleteByTaskId(taskId);
+
+        // 작업 삭제
         projectTaskRepository.deleteById(taskId);
+
         return ResponseEntity.noContent().build();
     }
+
 
     // 작업 드래그앤드랍시 변경된 위치와 상태를 업데이트
     @PutMapping("/updatePosition/{taskId}")

@@ -125,20 +125,21 @@ public class ProjectTaskService {
 
     // 프로젝트 작업 수정
     @Transactional
-    public ProjectTaskDTO updateTask(Long taskId, ProjectTaskDTO projectTaskDTO ) {
+    public ProjectTaskDTO updateTask(Long taskId, ProjectTaskDTO projectTaskDTO) {
+        log.info("taskId: " + taskId);
+        log.info("projectTaskDTO: " + projectTaskDTO);
 
-        // 수정할 작업 가져오기
+        // 1. 수정할 작업 가져오기
         ProjectTask existingTask = projectTaskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
-        log.info("existingTask : " + existingTask);
+        log.info("existingTask: " + existingTask);
 
-
-        // 프로젝트 작업상태 확인
+        // 2. 작업 상태 확인 및 연결
         ProjectState projectState = projectStateRepository.findById(projectTaskDTO.getStateId())
                 .orElseThrow(() -> new IllegalArgumentException("State not found with ID: " + projectTaskDTO.getStateId()));
-        log.info("projectState : " + projectState);
+        existingTask.setState(projectState);
 
-        // 기존 작업의 필드 업데이트
+        // 3. 기존 작업 필드 업데이트
         existingTask.setTitle(projectTaskDTO.getTitle());
         existingTask.setContent(projectTaskDTO.getContent());
         existingTask.setPriority(projectTaskDTO.getPriority());
@@ -146,15 +147,61 @@ public class ProjectTaskService {
         existingTask.setSize(projectTaskDTO.getSize());
         existingTask.setDueDate(projectTaskDTO.getDueDate());
         existingTask.setPosition(projectTaskDTO.getPosition());
-        existingTask.setState(projectState);
 
-        // 변경 내용 저장
+        // 작업의 담당자 수정
+        if (projectTaskDTO.getAssignedUser() != null) {
+            // 기존 담당자 목록 가져오기
+            List<Long> currentAssignedUserIds = projectTaskAssignmentRepository.findByTaskId(taskId).stream()
+                    .map(assignment -> assignment.getUser().getId())
+                    .collect(Collectors.toList());
+
+            // 새로 할당할 사용자 목록 가져오기
+            List<Long> newAssignedUserIds = projectTaskDTO.getAssignedUser();
+
+            // 기존 담당자 중 삭제된 사용자 처리
+            List<Long> usersToRemove = currentAssignedUserIds.stream()
+                    .filter(id -> !newAssignedUserIds.contains(id)) // 새 목록에 없는 사용자는 삭제
+                    .collect(Collectors.toList());
+
+            // 삭제할 담당자 삭제
+            projectTaskAssignmentRepository.deleteByTaskIdAndUserIdIn(taskId, usersToRemove);
+
+            // 추가할 사용자 처리 (새로 추가된 사용자만 추가)
+            List<Long> usersToAdd = newAssignedUserIds.stream()
+                    .filter(id -> !currentAssignedUserIds.contains(id)) // 새 목록에 있는데 기존 목록에는 없는 사용자는 추가
+                    .collect(Collectors.toList());
+
+            if (!usersToAdd.isEmpty()) {
+                List<ProjectTaskAssignment> assignments = usersToAdd.stream().map(userId -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                    return ProjectTaskAssignment.builder()
+                            .task(existingTask)
+                            .user(user)
+                            .build();
+                }).collect(Collectors.toList());
+
+                projectTaskAssignmentRepository.saveAll(assignments);  // 새 사용자 할당
+            }
+        }
+
+        // 수정된 작업 저장
         ProjectTask updatedTask = projectTaskRepository.save(existingTask);
-        log.info("updatedTask : " + updatedTask);
 
-        return modelMapper.map(updatedTask, ProjectTaskDTO.class);
+        // 수정된 작업 DTO 반환
+        ProjectTaskDTO responseDTO = modelMapper.map(updatedTask, ProjectTaskDTO.class);
 
+        // 할당된 사용자 정보 가져오기
+        List<Long> assignedUserIds = projectTaskAssignmentRepository.findByTaskId(updatedTask.getId()).stream()
+                .map(assignment -> assignment.getUser().getId())
+                .collect(Collectors.toList());
+
+        responseDTO.setAssignedUser(assignedUserIds);
+
+        return responseDTO;
     }
+
+
 
     // 작업 드래그앤드랍시 프로젝트 작업 상태 수정
     @Transactional
