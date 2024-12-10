@@ -1,11 +1,10 @@
 package BackAnt.controller.project;
 
 import BackAnt.dto.UserDTO;
-import BackAnt.dto.project.ProjectDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.project.Project;
-import BackAnt.repository.ProjectCollaboratorRepository;
-import BackAnt.repository.ProjectRepository;
+import BackAnt.repository.project.ProjectCollaboratorRepository;
+import BackAnt.repository.project.ProjectRepository;
 import BackAnt.repository.UserRepository;
 import BackAnt.service.ProjectCollaboratorService;
 import BackAnt.service.ProjectService;

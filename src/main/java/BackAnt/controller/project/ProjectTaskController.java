@@ -1,7 +1,7 @@
 package BackAnt.controller.project;
 
 import BackAnt.dto.project.ProjectTaskDTO;
-import BackAnt.repository.ProjectTaskRepository;
+import BackAnt.repository.project.ProjectTaskRepository;
 import BackAnt.service.ProjectTaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -44,7 +44,7 @@ public class ProjectTaskController {
     public ResponseEntity<List<ProjectTaskDTO>> getTasksByStateId(@PathVariable Long stateId) {
         log.info("stateId : " + stateId);
 
-        List<ProjectTaskDTO> tasks = projectTaskService.getTasksByStateId(stateId);
+        List<ProjectTaskDTO> tasks = projectTaskService.getTasksWithAssignedUsers(stateId);
         log.info("tasks : " + tasks);
         return ResponseEntity.ok(tasks);
     }
@@ -76,7 +76,7 @@ public class ProjectTaskController {
         Long newStateId = request.get("stateId");
         int newPosition = request.get("position").intValue();
 
-        log.info("taskId: "+ taskId + "newStateId : " + newStateId + "newPosition : " + newPosition);
+        log.info("taskId: " + taskId + "newStateId : " + newStateId + "newPosition : " + newPosition);
 
         ProjectTaskDTO updatedTask = projectTaskService.updateTaskState(taskId, newStateId, newPosition);
         log.info("updatedTask: ", updatedTask);

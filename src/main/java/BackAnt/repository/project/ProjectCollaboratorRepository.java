@@ -1,4 +1,4 @@
-package BackAnt.repository;
+package BackAnt.repository.project;
 
 import BackAnt.entity.User;
 import BackAnt.entity.project.Project;

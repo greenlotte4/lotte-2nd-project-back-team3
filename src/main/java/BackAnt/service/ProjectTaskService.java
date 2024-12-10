@@ -1,10 +1,14 @@
 package BackAnt.service;
 
 import BackAnt.dto.project.ProjectTaskDTO;
+import BackAnt.entity.User;
 import BackAnt.entity.project.ProjectState;
 import BackAnt.entity.project.ProjectTask;
-import BackAnt.repository.ProjectStateRepository;
-import BackAnt.repository.ProjectTaskRepository;
+import BackAnt.entity.project.ProjectTaskAssignment;
+import BackAnt.repository.project.ProjectStateRepository;
+import BackAnt.repository.project.ProjectTaskAssignmentRepository;
+import BackAnt.repository.project.ProjectTaskRepository;
+import BackAnt.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -28,35 +32,63 @@ public class ProjectTaskService {
     private final ProjectTaskRepository projectTaskRepository;
     private final ModelMapper modelMapper;
     private final ProjectStateRepository projectStateRepository;
+    private final UserRepository userRepository;
+    private final ProjectTaskAssignmentRepository projectTaskAssignmentRepository;
 
 
     // 프로젝트 작업 등록
     @Transactional
     public ProjectTaskDTO createTask(ProjectTaskDTO taskDTO) {
-        ProjectTask task = modelMapper.map(taskDTO, ProjectTask.class);
 
+        log.info("taskDTO : " + taskDTO);
+
+        // 1. ProjectTask 생성 및 저장
+        ProjectTask task = modelMapper.map(taskDTO, ProjectTask.class);
         // 상태 확인 및 연결
         ProjectState projectState = projectStateRepository.findById(taskDTO.getStateId())
                 .orElseThrow(() -> new IllegalArgumentException("State not found with ID: " + taskDTO.getStateId()));
         task.setState(projectState);
-
         // 작업 저장
-        //task.setPosition(projectState.getTasks().size()); // position 기본값 설정
         ProjectTask savedTask = projectTaskRepository.save(task);
+
+        // 2. ProjectTaskAssignment 생성 및 저장
+        if (taskDTO.getAssignedUserIds() != null && !taskDTO.getAssignedUserIds().isEmpty()) {
+            List<ProjectTaskAssignment> assignments = taskDTO.getAssignedUserIds().stream().map(userId -> {
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                return ProjectTaskAssignment.builder()
+                        .task(savedTask)
+                        .user(user)
+                        .build();
+            }).collect(Collectors.toList());
+
+            projectTaskAssignmentRepository.saveAll(assignments);
+        }
 
         return modelMapper.map(savedTask, ProjectTaskDTO.class);
     }
 
     // 특정 상태 id로 작업 조회
-    public List<ProjectTaskDTO> getTasksByStateId(Long stateId) {
-
+    public List<ProjectTaskDTO> getTasksWithAssignedUsers(Long stateId) {
         List<ProjectTask> tasks = projectTaskRepository.findAllByStateId(stateId);
-        log.info("tasks : " + tasks);
 
+        // 각 작업에 할당된 사용자 ID들을 수집하여 ProjectTaskDTO에 매핑
         return tasks.stream()
-                .map(task -> modelMapper.map(task, ProjectTaskDTO.class))
+                .map(task -> {
+                    ProjectTaskDTO taskDTO = modelMapper.map(task, ProjectTaskDTO.class);
+
+                    // 프로젝트 작업에 할당된 사용자 IDs를 가져오기 위해 project_task_assignment을 조회
+                    List<Long> assignedUserIds = projectTaskAssignmentRepository.findByTaskId(task.getId())
+                            .stream()
+                            .map(assignment -> assignment.getUser().getId()) // User ID만 추출
+                            .collect(Collectors.toList());
+
+                    taskDTO.setAssignedUserIds(assignedUserIds); // 해당 작업에 할당된 사용자 ID 목록 설정
+                    return taskDTO;
+                })
                 .collect(Collectors.toList());
     }
+
 
     // 프로젝트 작업 수정
     @Transactional

@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -21,8 +22,8 @@ public class ProjectTaskDTO {
     private LocalDate dueDate; // 작업 마감일
     private int position; // 작업 순서
     private Long stateId; // 상태 ID
-    private Long assignedUserId; // 작업 담당자 ID
-    private String assignedUserName; // 작업 담당자 이름 (추가)
     private LocalDateTime createdAt; // 생성 날짜
     private LocalDateTime updatedAt; // 수정 날짜
+
+    private List<Long> assignedUserIds; // 작업 담당자 ID 목록 추가
 }
