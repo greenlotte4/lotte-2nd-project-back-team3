@@ -1,14 +1,18 @@
 package BackAnt.service.page;
 
+import BackAnt.document.page.PageDocument;
 import BackAnt.dto.page.PageCollaboratorDTO;
+import BackAnt.dto.page.PageDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.page.PageCollaborator;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.page.PageCollaboratorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,14 +20,30 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Log4j2
 public class PageCollaboratorService {
+    private final ModelMapper modelMapper;
 
 
     private final PageCollaboratorRepository pageCollaboratorRepository;
     private final UserRepository userRepository;
 
+    public PageCollaborator addOwner(PageDocument page){
+        log.info("addOwner"+page);
+        User user = userRepository.findByUid(page.getOwner())
+                .orElseThrow(() -> new RuntimeException("User not found with uid: " + page.getOwner()));
+       PageCollaborator owner = PageCollaborator.builder()
+                .pageId(page.get_id())
+                .user(user)
+                .isOwner(true)
+                .type(0)
+                .invitedAt(page.getCreatedAt())
+                .build();
+
+        PageCollaborator savedOwner = pageCollaboratorRepository.save(owner);
+        return savedOwner;
+    }
     // 사용자가 협업자로 있는 페이지 목록 조회
     public List<String> getCollaboratedPageIds(String userId) {
-        List<PageCollaborator> collaborators = pageCollaboratorRepository.findByUser_Uid(userId);
+        List<PageCollaborator> collaborators = pageCollaboratorRepository.findByUser_UidAndIsOwnerFalse(userId);
         return collaborators.stream()
                 .map(PageCollaborator::getPageId)
                 .collect(Collectors.toList());
@@ -66,6 +86,17 @@ public class PageCollaboratorService {
         pageCollaboratorRepository.deleteByPageIdAndUser_Uid(pageId, userId);
     }
 
+    // Entity를 DTO로 변환
+    private PageCollaborator convertToEntity(PageCollaboratorDTO collaboratorDTO) {
+        return PageCollaborator.builder()
+                .id(collaboratorDTO.getId())
+                .pageId(collaboratorDTO.getPageId())
+                .user(userRepository.findById(collaboratorDTO.getUser_id()).orElseThrow())
+                .invitedAt(collaboratorDTO.getInvitedAt())
+                .isOwner(collaboratorDTO.isOwner())
+                .type(collaboratorDTO.getType())
+                .build();
+    }
     // Entity를 DTO로 변환
     private PageCollaboratorDTO convertToDTO(PageCollaborator collaborator) {
         return PageCollaboratorDTO.builder()

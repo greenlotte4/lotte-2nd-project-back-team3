@@ -62,6 +62,10 @@ public class PageService {
      return pageRepository.findTop3ByDeletedAtIsNullOrderByUpdatedAtDesc();
 
     }
+    public List<PageDocument> getPageByTemplate() {
+        return pageRepository.findByIsTemplateTrue();
+
+    }
     public List<PageDocument> getPagesByUid(String uid){
         return pageRepository.findByOwnerAndDeletedAtIsNull(uid); // 삭제되지 않은 게시물
     }
@@ -96,7 +100,7 @@ public class PageService {
         pageRepository.save(page);
     }
 
-    // TODO : redis 임시 저장 후 DB 반영 되도록 수정
+    // TODO : redis 임시 저장 후 DB 반영 되도록 수정할까 ?
     @Transactional
     public void updatePageInRealTime(PageDTO pageDTO) {
         try {
