@@ -11,4 +11,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
 
     List<Schedule> findByCalendarCalendarIdOrderByStartAsc(Integer calendarId);
 
+    List<Schedule> findAllByCalendarCalendarId(Integer calendarId);
+
 }

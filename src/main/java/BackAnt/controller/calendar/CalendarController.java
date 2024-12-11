@@ -57,6 +57,7 @@ public class CalendarController {
 
     @DeleteMapping("/delete/{no}")
     public void delete(@PathVariable int no) {
+
         calendarService.deleteCalendar(no);
     }
 

@@ -25,5 +25,5 @@ public class ScheduleDTO {
     private String uid;
 
     private String color;
-
+    private String action;
 }
