@@ -74,7 +74,7 @@ public class BoardFileDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class DownloadInfo {
+    public static class DownloadInfoDTO {
         private String boardFileSName;
         private String boardFileOName;
     }

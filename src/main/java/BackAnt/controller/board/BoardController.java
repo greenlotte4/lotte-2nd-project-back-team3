@@ -80,6 +80,21 @@ public class BoardController {
         return ResponseEntity.status(HttpStatus.OK).body(viewDTO);
     }
 
+//    // 글 상세 조회 (- 파일 다운로드 기능)
+//    @GetMapping("/view/{id}/files")
+//    public ResponseEntity<BoardResponseViewDTO> getBoardFilesById(
+//            @PathVariable Long id) {
+//
+//        log.info("getBoardFilesById!!!");
+//
+//
+//
+//        BoardResponseViewDTO viewDTO = boardService.getBoardsById(id);
+//
+//
+//        return ResponseEntity.status(HttpStatus.OK).body(null);
+//    }
+
     // 글 상세 조회 (- 좋아요 기능)
     @PostMapping("/view/{id}/like")
     public ResponseEntity<Map<String, Object>> toggleLike(@PathVariable Long id) {

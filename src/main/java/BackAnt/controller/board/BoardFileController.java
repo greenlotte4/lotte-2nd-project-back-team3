@@ -2,16 +2,22 @@
 package BackAnt.controller.board;
 
 import BackAnt.dto.board.BoardFileDTO;
+import BackAnt.dto.board.BoardResponseViewDTO;
+import BackAnt.entity.board.BoardFile;
 import BackAnt.service.board.BoardFileService;
 import BackAnt.service.board.BoardFileValidatorService;
 import BackAnt.service.board.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /*
     날 짜 : 2024/12/10(화)
@@ -55,6 +61,23 @@ public class BoardFileController {
     }
 
 
-    // 글 보기 (파일 다운로드)
+    // 글 상세 조회 - (파일 다운로드 기능 화면 조회)
+    @GetMapping("/view/{id}/files")
+    public List<BoardFile> boardFileDownload(@PathVariable int id) {
+        log.info("파일 다운로드 기능 컨트롤러 getBoardFilesById!!!" + id);
+        //return boardFileService.boardFileDownload(id);
+        List<BoardFile> listBoardFile = boardFileService.getBoardFiles(id);
 
+        log.info("파일 목록: "+listBoardFile);
+
+        return listBoardFile;
+    }
+
+
+    // 파일 다운로드 처리
+    @GetMapping("/files/download/{boardFileId}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable int boardFileId) {
+        log.info("파일 다운로드 요청 boardFileId: {}", boardFileId);
+        return boardFileService.boardFileDownload(boardFileId);
+    }
 }
