@@ -2,6 +2,7 @@ package BackAnt.entity.board;
 
 import BackAnt.dto.board.BoardFileDTO;
 import BackAnt.entity.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,10 +35,12 @@ public class BoardFile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int boardFileId; // 파일 고유 번호
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Board board;     // 게시글과의 연관 관계
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private User boardFileMaker; // 파일 등록한 사용자
@@ -83,5 +86,14 @@ public class BoardFile {
         this.boardFileExt = ext;
     }
 
+    // 파일 정보 업데이트 메서드
+    public void updateFileInfo(String originalName, String savedName,
+                               String path, long size, String ext) {
+        this.boardFileOName = originalName;
+        this.boardFileSName = savedName;
+        this.boardFilePath = path;
+        this.boardFileSize = size;
+        this.boardFileExt = ext;
+    }
 
 }
