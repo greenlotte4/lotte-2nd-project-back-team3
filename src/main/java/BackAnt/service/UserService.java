@@ -176,4 +176,13 @@ public class UserService {
                 .map(user -> modelMapper.map(user, UserDTO.class))
                 .collect(Collectors.toList());
     }
+
+    public void updateUserName(String newName, String uid){
+        User user = userRepository.findByUid(uid).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        user.updateName(newName);
+
+        userRepository.save(user);
+    }
+
 }

@@ -87,6 +87,7 @@ public class UserController {
     public ResponseEntity<UserDTO> getUserByUid(@PathVariable String uid) {
         User user = userService.getUserByUid(uid);
         UserDTO userDTO = modelMapper.map(user, UserDTO.class); // DTO 변환
+        userDTO.setDepartmentName(user.getDepartment().getName());
         log.info("userdto" + userDTO.toString());
         return ResponseEntity.ok(userDTO);
     }
@@ -267,6 +268,13 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> getAllMembersByCompany(@PathVariable Long companyId) {
         List<UserDTO> members = userService.getAllMembersByCompany(companyId);
         return ResponseEntity.ok(members);
+    }
+
+    @PutMapping("/name/{name}/{uid}")
+    public void nameUpdate(@PathVariable String name, @PathVariable String uid) {
+        log.info("네임ㅇ넹미넹미ㅔㅇ넴ㅇ넴ㄴ이ㅔㅁㄴ에ㅣㅁㄴ에"+name);
+        log.info("네임ㅇ넹미넹미ㅔㅇ넴ㅇ넴ㄴ이ㅔㅁㄴ에ㅣㅁㄴ에"+uid);
+        userService.updateUserName(name, uid);
     }
 
 }
