@@ -78,4 +78,9 @@ public class User {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    public void updateName(String newName){
+        this.name = newName;
+    }
+
 }

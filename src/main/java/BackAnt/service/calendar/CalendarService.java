@@ -287,8 +287,6 @@ public class CalendarService {
         log.info("스케줄은 과연???"+schedule);
         List<ViewCalendar> viewCalendars = viewCalendarRepository.findByCalendar_CalendarId(schedule.getCalendar().getCalendarId());
         viewCalendars.forEach(viewCalendar -> {
-            dto.setColor((calendarRepository.findById(viewCalendar.getCalendar().getCalendarId()).orElseThrow(() -> new EntityNotFoundException("이 id의 Schedule 이 없습니다."))).getColor());
-            dto.setCalendarId(viewCalendar.getCalendar().getCalendarId());
             String destination = "/topic/schedules/" + viewCalendar.getUser().getId();
             log.info("경로" + destination);
             messagingTemplate.convertAndSend(destination, dto);
