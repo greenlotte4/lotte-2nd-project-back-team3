@@ -37,7 +37,9 @@ public class Calendar {
     @ToString.Exclude
     private List<Schedule> schedules = new ArrayList<>();
 
-    private String view;
+    @OneToMany(mappedBy = "calendar", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<ViewCalendar> viewCalendars = new ArrayList<>();
 
     public void update (String name, String color){
         this.name = name;
@@ -48,8 +50,6 @@ public class Calendar {
         this.name = name;
     }
 
-    public void updateView (String view){
-        this.view = view;
-    }
+
 
 }

@@ -32,11 +32,8 @@ public class ScheduleController {
     private final DepartmentService departmentService;
 
     @PostMapping("/insert")
-    public void insert(@RequestBody ScheduleDTO scheduleDTO) {
-        log.info("sch:::::::::::::"+scheduleDTO);
-
-        calendarService.insertSchedule(scheduleDTO);
-
+    public ScheduleDTO insert(@RequestBody ScheduleDTO scheduleDTO) {
+       return calendarService.insertSchedule(scheduleDTO);
     }
 
     @GetMapping("/select/{uid}")

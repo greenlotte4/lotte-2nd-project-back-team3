@@ -13,6 +13,4 @@ public interface CalendarRepository extends JpaRepository<Calendar, Integer> {
 
     List<Calendar> findAllByUser_Uid(String userId);
 
-    @Query("SELECT c FROM Calendar c WHERE c.view LIKE %:view%")
-    List<Calendar> findAllByViewLike(@Param("view") String view);
 }
