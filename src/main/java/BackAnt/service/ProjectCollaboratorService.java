@@ -8,6 +8,7 @@ import BackAnt.repository.project.ProjectCollaboratorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class ProjectCollaboratorService {
     private final ProjectCollaboratorRepository projectCollaboratorRepository;
     private final ModelMapper modelMapper;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
     // 프로젝트별 협업자 추가
@@ -39,6 +41,9 @@ public class ProjectCollaboratorService {
                .build();
 
        projectCollaboratorRepository.save(projectCollaborator);
+
+
+
     }
 
     // 프로젝트별 협업자 조회
@@ -61,6 +66,11 @@ public class ProjectCollaboratorService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 협업자가 존재하지 않습니다."));
 
         projectCollaboratorRepository.delete(collaborator);
+
+        // 2. WebSocket을 통한 실시간 알림 전송
+       /* String destination = "/topic/project/" + dto.getTargetId();
+        log.info("경로" + destination);
+        messagingTemplate.convertAndSend(destination, dto);*/
     }
 
 }
