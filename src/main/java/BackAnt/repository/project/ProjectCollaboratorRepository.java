@@ -31,4 +31,10 @@ public interface ProjectCollaboratorRepository extends JpaRepository<ProjectColl
     // 프로젝트 id와 사용자 id를 기준으로 협업자 조회
     Optional<ProjectCollaborator> findByProjectIdAndUserId(Long projectId, Long userId);
 
+    // 프로젝트 id 기준으로 조회
+    List<ProjectCollaborator> findByProject_Id(Long projectId);
+
+
+
+
 }

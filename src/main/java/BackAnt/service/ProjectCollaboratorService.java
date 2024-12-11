@@ -1,6 +1,7 @@
 package BackAnt.service;
 
 import BackAnt.dto.UserDTO;
+import BackAnt.dto.project.ProjectCollaboratorDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.project.Project;
 import BackAnt.entity.project.ProjectCollaborator;
@@ -67,10 +68,20 @@ public class ProjectCollaboratorService {
 
         projectCollaboratorRepository.delete(collaborator);
 
+        List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(projectId);
+        log.info("1111111111projectCollaborators : " + projectCollaborators);
+
+        ProjectCollaboratorDTO dto = modelMapper.map(collaborator, ProjectCollaboratorDTO.class);
+        log.info("dto : " + dto);
+
+
         // 2. WebSocket을 통한 실시간 알림 전송
-       /* String destination = "/topic/project/" + dto.getTargetId();
-        log.info("경로" + destination);
-        messagingTemplate.convertAndSend(destination, dto);*/
+        projectCollaborators.forEach(projectCollaborator -> {
+            String destination = "/topic/project/" + projectCollaborator.getUser().getId();
+            log.info("경로" + destination);
+            messagingTemplate.convertAndSend(destination, collaborator.getUser().getId());
+        });
+
     }
 
 }
