@@ -78,6 +78,23 @@ public class ProjectTaskService {
 
         responseDTO.setAssignedUser(assignedUserIds); // 작업의 assignedUser 필드에 ID 목록을 설정
 
+        // 4. 각 할당된 사용자 ID에 대해 User 정보를 가져와 ProjectAssignedUserDTO로 변환
+        List<ProjectAssignedUserDTO> assignedUsers = assignedUserIds.stream()
+                .map(userId -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+                    return ProjectAssignedUserDTO.builder()
+                            .id(user.getId())
+                            .name(user.getName())
+                            .position(user.getPosition())
+                            .profileImageUrl(user.getProfileImageUrl())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        responseDTO.setAssignedUserDetails(assignedUsers); // 상세 사용자 정보 설정
+
         return responseDTO;
     }
 
@@ -197,6 +214,24 @@ public class ProjectTaskService {
                 .collect(Collectors.toList());
 
         responseDTO.setAssignedUser(assignedUserIds);
+
+        // 각 할당된 사용자 ID에 대해 User 정보를 가져와 ProjectAssignedUserDTO로 변환
+        List<ProjectAssignedUserDTO> assignedUsers = assignedUserIds.stream()
+                .map(userId -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+                    return ProjectAssignedUserDTO.builder()
+                            .id(user.getId())
+                            .name(user.getName())
+                            .position(user.getPosition())
+                            .profileImageUrl(user.getProfileImageUrl())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        responseDTO.setAssignedUserDetails(assignedUsers); // 상세 사용자 정보 설정
+
 
         return responseDTO;
     }

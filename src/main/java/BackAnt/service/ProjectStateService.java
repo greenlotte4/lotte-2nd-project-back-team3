@@ -6,6 +6,7 @@ import BackAnt.entity.project.ProjectState;
 import BackAnt.entity.project.ProjectTask;
 import BackAnt.repository.project.ProjectRepository;
 import BackAnt.repository.project.ProjectStateRepository;
+import BackAnt.repository.project.ProjectTaskAssignmentRepository;
 import BackAnt.repository.project.ProjectTaskRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class ProjectStateService {
     private final ProjectStateRepository projectStateRepository;
     private final ModelMapper modelMapper;
     private final ProjectTaskRepository projectTaskRepository;
+    private final ProjectTaskAssignmentRepository projectTaskAssignmentRepository;
 
 
     // 프로젝트 상태 등록
@@ -85,16 +87,23 @@ public class ProjectStateService {
     @Transactional
     public void deleteState(Long stateId) {
 
-        // 1. 해당 작업상태에 속한 모든 작업 삭제
+        // 해당 작업상태에 속한 모든 작업 조회
         List<ProjectTask> tasks = projectTaskRepository.findAllByStateId(stateId);
+
+        // 작업과 관련된 작업담당자 삭제
+        for (ProjectTask task : tasks) {
+            projectTaskAssignmentRepository.deleteByTaskId(task.getId());  // 해당 작업에 대한 작업담당자 삭제
+        }
+
+        // 작업 삭제
         projectTaskRepository.deleteAll(tasks);
 
-        // 2. 작업 상태 삭제
+        // 작업 상태 삭제
         projectStateRepository.deleteById(stateId);
-
     }
 
 
-    
+
+
 
 }
