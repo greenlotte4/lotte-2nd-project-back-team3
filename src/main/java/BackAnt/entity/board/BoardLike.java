@@ -33,8 +33,9 @@ public class BoardLike {
     @Column(name = "board_id")
     private Long boardId; // 좋아요가 눌린 게시글 번호
 
-    @Column(name = "user_id")
-    private Long uid; // 좋아요를 누른 사용자의 ID
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private User user; // 좋아요를 누른 사용자의 ID
 
     @Column(length = 20)
     private String nick;  // 좋아요 누른 사용자 닉네임 (조회 성능 개선용)
@@ -45,9 +46,9 @@ public class BoardLike {
     private LocalDateTime regDate; // 좋아요가 등록된 시간
 
 
-    public BoardLike(Long boardId, Long uid, String nick, String regIp) {
+    public BoardLike(Long boardId, Long uid, String nick, String regIp, User user) {
         this.boardId = boardId;
-        this.uid = uid;
+        this.user = user;
         this.nick = nick;
         this.regIp = regIp;
     }

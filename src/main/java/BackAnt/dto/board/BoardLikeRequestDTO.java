@@ -1,5 +1,6 @@
 package BackAnt.dto.board;
 
+import BackAnt.entity.User;
 import BackAnt.entity.board.BoardLike;
 import lombok.*;
 
@@ -25,10 +26,10 @@ public class BoardLikeRequestDTO {
     private String regIp;
 
 
-    public BoardLike toEntity() {
+    public BoardLike toEntity(User user) {
         return BoardLike.builder()
                 .boardId(this.boardId)
-                .uid(this.uid)
+                .user(user)
                 .nick(this.nick)
                 .regIp(this.regIp)
                 .build();

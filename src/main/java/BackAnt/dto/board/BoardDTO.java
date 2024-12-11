@@ -23,21 +23,27 @@ public class BoardDTO {
     private String cate2; // 카테고리2
 
     private String title;    // 게시글 제목
-
-    private int comment = 0; // 게시글 댓글 0
-
     private String content;  // 게시글 내용
+    private long writer;   // 작성자
 
-    private String writer;   // 작성자
-
+    @Builder.Default
     private int file = 0; // 파일 0
 
+    @Builder.Default
     private int hit = 0; // 조회수 처음에 0
 
+    @Builder.Default
     private int likes = 0; // 좋아요 처음에 0
 
-    private String regIp; // 작성일시
+    @Builder.Default
+    private int comment = 0; // 게시글 댓글 0
 
+    private String regIp; // 작성일시
     private LocalDateTime regDate; // 작성일
+
+
+
+
+
 
 }

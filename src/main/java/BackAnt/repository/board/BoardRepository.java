@@ -2,13 +2,14 @@ package BackAnt.repository.board;
 
 import BackAnt.dto.board.BoardDTO;
 import BackAnt.entity.board.Board;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-import java.util.Optional;
 
 /*
     날 짜 : 2024/12/02(월)
@@ -37,7 +38,8 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
             "ORDER BY b.regDate DESC")
     List<BoardDTO> findAllBoardDTOs();
 
-
-
-
+    // 최신 글 순으로 정렬
+//    List<Board> findAllByOrderByRegDateDesc();
+    //Page<Board> findAllByOrderByRegDateDesc(Pageable pageable);
+    Page<Board> findAllByOrderByRegDateDesc(Pageable pageable);
 }
