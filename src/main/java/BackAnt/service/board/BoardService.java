@@ -1,8 +1,8 @@
-package BackAnt.service;
+package BackAnt.service.board;
 
 import BackAnt.JWT.JwtProvider;
 import BackAnt.dto.board.BoardDTO;
-import BackAnt.dto.board.BoardLikeRequestDTO;
+import BackAnt.dto.board.BoardFileDTO;
 import BackAnt.dto.board.BoardResponseViewDTO;
 import BackAnt.entity.board.Board;
 import BackAnt.entity.User;
@@ -16,11 +16,13 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import java.util.stream.Collectors;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+
 
 /*
     날 짜 : 2024/12/02(월)
@@ -39,21 +41,18 @@ public class BoardService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final JwtProvider jwtProvider;
+    private final BoardFileService boardFileService;
 
 
     // 글 목록 조회
-    public List<BoardDTO> getFindAllBoards() {
-        try {
-            log.info("게시글 목록 조회 시작 -------------");
-            List<Board> boards = boardRepository.findAllWithWriter();
-            return boards.stream()
-                    .map(board -> modelMapper.map(board, BoardDTO.class))
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.error("게시글 목록 조회 중 오류 발생: ", e);
-            throw new RuntimeException("게시글 목록을 가져오는데 실패했습니다.", e);
-        }
+//    public List<Board> getFindAllBoards() {
+//        log.info("게시글 목록 조회 시작 (서비스)-----------------");
+//        return boardRepository.findAllByOrderByRegDateDesc();
+//    }
+    public Page<Board> getFindAllBoards(Pageable pageable) {
+        return boardRepository.findAllByOrderByRegDateDesc(pageable);
     }
+
 
 
     // 글 상세 조회
@@ -67,12 +66,14 @@ public class BoardService {
         boardRepository.save(board);
 
         // 기본 매핑
-        return modelMapper.map(board, BoardResponseViewDTO.class);
+        BoardResponseViewDTO dto = modelMapper.map(board, BoardResponseViewDTO.class);
+        dto.setWriter(board.getWriter().getUid());
+        return dto;
     }
 
     // 글 상세 조회 - (좋아요 기능)
     public boolean toggleLike(Long boardId) {
-        // JWT에서 사용자 정보 추출
+        // Jwt 에서 사용자 정보 추출
         String jwt = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         Claims claims = jwtProvider.getClaims(jwt);
         String uid = claims.get("uid", String.class);
@@ -91,17 +92,17 @@ public class BoardService {
                     return new IllegalArgumentException("게시글이 존재하지 않습니다.");
                 });
 
-        boolean exists = boardLikeRepository.existsByBoardIdAndUid(boardId, user.getId());
+        boolean exists = boardLikeRepository.existsByBoardIdAndUserId(boardId, user.getId());
 
         if (exists) {
             log.info("좋아요 취소 진행 - 게시글: {}, 사용자: {}", boardId, uid);
-            boardLikeRepository.deleteByBoardIdAndUid(boardId, user.getId());
+            boardLikeRepository.deleteByBoardIdAndUserId(boardId, user.getId());
             board.setLikes(board.getLikes() - 1);
         } else {
             log.info("좋아요 추가 진행 - 게시글: {}, 사용자: {}", boardId, uid);
             BoardLike boardLike = BoardLike.builder()
                     .boardId(boardId)
-                    .uid(user.getId())
+                    .user(user)
                     .nick(user.getName())
                     .build();
             boardLikeRepository.save(boardLike);
@@ -128,20 +129,39 @@ public class BoardService {
     // 글쓰기
     @Transactional
     public Long save(BoardDTO boardDTO, HttpServletRequest req) {
+        log.info("안녕하시렵니가? 글쓰기 서비스 입니다...");
         try {
             // DTO → Entity 변환
             Board board = modelMapper.map(boardDTO, Board.class);
+            board.setRegIp(req.getRemoteAddr()); // 클라이언트 IP 주소 저장
 
-            // IP 설정
-            board.setRegIp(req.getRemoteAddr());
+            // 작성자 정보 DB 조회
+            User user = userRepository.findById(boardDTO.getWriter())
+                    .orElseThrow(() -> new RuntimeException("글쓰기 사용자를 찾을 수 없습니다."));
 
-            // 임시 사용자 설정 (실제로는 로그인된 사용자 정보를 사용해야 함)
-            User user = userRepository.findByUid("qwer123")
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+
             board.setWriter(user);
+            log.info("글쓰기 서비스 board 작성자 ID: {}", user.getId());
 
+            // 게시글 DB 저장
             Board savedBoard = boardRepository.save(board);
-            log.info("게시글 저장 성공: {}", savedBoard.getId());
+            log.info("게시글 저장 성공 (글쓰기 성공 -!) : {}", savedBoard.getId());
+
+            // 파일 처리
+//            if (files != null && !files.isEmpty()) {
+//                BoardFileDTO.UploadRequest fileRequest = BoardFileDTO.UploadRequest.builder()
+//                        .boardId(savedBoard.getId())
+//                        .userId(user.getId())
+//                        .build();
+//
+//                for (MultipartFile file : files) {
+//                    if (!file.isEmpty()) {
+//                        boardFileService.uploadFile(fileRequest, file);
+//                    }
+//                }
+//            }
+
+            // 저장된 게시글 ID 반환
             return savedBoard.getId();
 
         } catch (Exception e) {
@@ -151,15 +171,62 @@ public class BoardService {
     }
 
     // 글수정
-    public void updateBoard(Long id, BoardDTO boardDTO) {
-        Board board = boardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+    @Transactional
+    public BoardDTO updateBoard(Long id, BoardDTO boardDTO) {
+        log.info("글 수정 서비스");
 
-        // DTO 데이터를 엔티티로 매핑
+
+        // 현재 사용자 정보 가져오기
+        String uid = getCurrentUserUid();
+        log.info("사용자 정보"+id);
+
+        // 게시글 조회 및 권한 확인
+        Board board = validateAndGetBoard(id, uid);
+        log.info("게시글 조회 및 권한 확인"+board);
+
+        // DTO -> Entity 매핑 (변경된 필드만)
         modelMapper.map(boardDTO, board);
-        boardRepository.save(board); // 변경된 엔티티 저장
+        log.info("변경된 필드만"+boardDTO);
+
+
+        // 저장 및 DTO 변환하여 반환
+        Board savedBoard = boardRepository.save(board);
+        log.info("변경된 필드만"+savedBoard);
+        return modelMapper.map(savedBoard, BoardDTO.class);
+
     }
 
+    // 현재 사용자 UID 조회
+    private String getCurrentUserUid() {
+        String jwt = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
+        Claims claims = jwtProvider.getClaims(jwt);
+        return claims.get("uid", String.class);
+    }
+
+    // 게시글 조회 및 권한 검증
+    private Board validateAndGetBoard(Long id, String uid) {
+        // 사용자 확인
+        User user = userRepository.findByUid(uid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 게시글 조회
+        Board board = boardRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
+
+        // 권한 확인
+        if (!board.getWriter().equals(user.getUid())) {
+            throw new IllegalArgumentException("게시글 수정 권한이 없습니다.");
+        }
+
+        return board;
+    }
+
+
+    // 글 삭제
+    public void deleteBoard(Long id) {
+        log.info("🗑️ 게시글 삭제 id: {}", id);
+        boardRepository.deleteById(id);
+    }
 
 
 }

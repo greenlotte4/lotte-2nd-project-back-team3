@@ -4,6 +4,7 @@ import BackAnt.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -63,8 +64,12 @@ public class Board {
     private String regIp; // 작성자 IP
 
     @CreationTimestamp
-    @Column(updatable = false) // 날짜 한 번 저장 된 후 -> 수정 불가능
+    @Column(name = "reg_date", updatable = false)  // 날짜 한 번 저장 된 후 -> 수정 불가능
     private LocalDateTime regDate; // 날짜
+
+    @UpdateTimestamp
+    @Column(name = "update_date")
+    private LocalDateTime updateDate; // 글 수정된 날짜
 
     // 좋아요 증가
     public void increaseLikes() {
