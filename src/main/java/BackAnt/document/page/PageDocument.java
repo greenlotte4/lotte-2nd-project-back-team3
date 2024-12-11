@@ -2,6 +2,9 @@ package BackAnt.document.page;
 
 import BackAnt.dto.page.PageDTO;
 import lombok.*;
+import org.springframework.cglib.core.Local;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -34,13 +37,14 @@ public class PageDocument {
     private String ownerImage;
 
     private String uid; // 작성자
-
+    private boolean isTemplate;
     private LocalDateTime deletedAt = null;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
-
-    private String componentId;
 
     public PageDTO convertToDTO(PageDocument page) {
         return PageDTO.builder()

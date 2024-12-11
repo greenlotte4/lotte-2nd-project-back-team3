@@ -19,6 +19,8 @@ public class PageDTO {
     private String ownerImage;
 
     private String uid;
+    private boolean isTemplate;
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     private int isDeleted;

@@ -34,7 +34,7 @@ public class PageController {
     private final PageCollaboratorService pageCollaboratorService;
     private final PageService pageService;
     private final PageImageService pageImageService;// MongoDB와 연결된 리포지토리
-    private final PageCollaboratorRepository collaboratorRepository;
+
 
     @PostMapping("/create")
     public ResponseEntity<String> createPage(@RequestBody PageDTO page) {
@@ -46,7 +46,9 @@ public class PageController {
 
             PageDocument savedPage = pageService.savePage(page);
 
-            log.info(savedPage.get_id());
+
+            pageCollaboratorService.addOwner(savedPage);
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(savedPage.get_id());
         } catch (Exception e) {
@@ -104,7 +106,7 @@ public class PageController {
         List<PageDTO> sharedPages = pageService.getSharedPages(userId);
         return ResponseEntity.ok(sharedPages);
     }
-    // page List 조회 (DELETED | MODIFIED | UID)
+    // page List 조회 (DELETED | UID | Template)
     @GetMapping("/list/{type}/{uid}")
     public ResponseEntity<List<PageDocument>> selectByUid(@PathVariable String type,
                                                           @PathVariable (required = false) String uid) {
@@ -119,8 +121,9 @@ public class PageController {
                 case "uid":
                     pages = pageService.getPagesByUid(uid);
                     break;
-                case "modified":
-                    pages = pageService.getPageByUpdatedAt();
+                case "template" :
+                    pages = pageService.getPageByTemplate();
+                    log.info("이거 찐으로 되나");
                     break;
                 default: // type 오류
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -170,7 +173,6 @@ public class PageController {
     }
 
     //  페이지 협업자 추가
-
     @PostMapping("/{pageId}/collaborators")
     public ResponseEntity<List<PageCollaboratorDTO>> addCollaborators(
             @PathVariable String pageId,
