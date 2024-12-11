@@ -42,6 +42,8 @@ public class DriveFolderDocument {
 
     private LocalDateTime driveFolderUpdatedAt;
 
+    private LocalDateTime driveFolderDeletedAt;
+
     private int driveFolderShareType = 0;//(0이면 공유중아님, 1이면 공유중)
 
     private int driveFolderIsDeleted = 0;//(0이면 휴지통X, 1이면 휴지통)

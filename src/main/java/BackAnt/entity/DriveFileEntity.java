@@ -50,5 +50,8 @@ public class DriveFileEntity {
     @CreationTimestamp
     private LocalDateTime driveFileUpdatedAt;
 
+    @CreationTimestamp
+    private LocalDateTime driveFileDeletedAt;
+
 
 }
