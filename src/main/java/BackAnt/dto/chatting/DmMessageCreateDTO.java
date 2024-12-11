@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DmMessageCreateDTO {
-    private String message;  // 메시지 내용
+    private String content;  // 메시지 내용
+    private Long  senderId;
 }

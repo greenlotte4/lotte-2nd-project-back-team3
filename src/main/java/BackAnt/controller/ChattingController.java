@@ -62,9 +62,9 @@ public class ChattingController {
 
     // 채널 메시지 보내기
     @PostMapping("/channel/{id}/messages")
-    public ResponseEntity<Void> sendMessage(@PathVariable Long id, @RequestBody ChannelMessageCreateDTO channelMessageCreateDTO) {
-        channelMessageService.sendMessage(id ,channelMessageCreateDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<ResultDTO<Long>> sendMessage(@PathVariable Long id, @RequestBody ChannelMessageCreateDTO channelMessageCreateDTO) {
+        Long channelMessageId = channelMessageService.sendMessage(id, channelMessageCreateDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResultDTO<>(channelMessageId));
     }
 
     // 메시지 검색 (채널 내 키워드로)
@@ -127,10 +127,10 @@ public class ChattingController {
 
     // 디엠 메시지 보내기
     @PostMapping("/dm/{dmId}/messages")
-    public ResponseEntity<Void> sendDmMessage(@PathVariable Long dmId, @RequestParam Long senderId, @RequestBody DmMessageCreateDTO dmMessageCreateDTO) {
+    public ResponseEntity<ResultDTO<Long>> sendDmMessage(@PathVariable Long dmId, @RequestBody DmMessageCreateDTO dmMessageCreateDTO) {
         // DM 메시지 보내기
-        dmService.sendMessage(dmId, senderId, dmMessageCreateDTO.getMessage());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        Long messageId = dmService.sendMessage(dmId, dmMessageCreateDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResultDTO<>(messageId));
     }
 
     // 디엠 메시지 조회

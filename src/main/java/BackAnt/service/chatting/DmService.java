@@ -1,6 +1,7 @@
 package BackAnt.service.chatting;
 
 import BackAnt.dto.chatting.DmCreateDTO;
+import BackAnt.dto.chatting.DmMessageCreateDTO;
 import BackAnt.dto.chatting.DmMessageResponseDTO;
 import BackAnt.dto.chatting.DmResponseDTO;
 import BackAnt.dto.common.ResultDTO;
@@ -63,14 +64,15 @@ public class DmService {
 
     // 메시지 보내기 (기존 DM 방에서 메시지 송신)
     @Transactional
-    public void sendMessage(Long dmId, Long senderId, String content) {
-        User sender = getUserById(senderId);
+    public Long sendMessage(Long dmId, DmMessageCreateDTO dmMessageCreateDTO) {
+        User sender = getUserById(dmMessageCreateDTO.getSenderId());
         Dm dm = dmRepository.findById(dmId)
                 .orElseThrow(() -> new RuntimeException("디엠 방을 찾을 수 없습니다"));
 
 
-        DmMessage dmMessage = new DmMessage(dm, sender, content);
+        DmMessage dmMessage = new DmMessage(dm, sender, dmMessageCreateDTO.getContent());
         dmMessageRepository.save(dmMessage);
+        return dmMessage.getId();
     }
 
     // DM 방 중복 생성 방지 및 생성
