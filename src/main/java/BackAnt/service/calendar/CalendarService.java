@@ -164,7 +164,6 @@ public class CalendarService {
         log.info("뷰캘린더는 어떨까?" + viewCalendars);
         // 2. WebSocket을 통한 실시간 알림 전송
         viewCalendars.forEach(viewCalendar -> {
-
             String destination = "/topic/schedules/" + viewCalendar.getUser().getId();
             log.info("경로" + destination);
             messagingTemplate.convertAndSend(destination, dto);
