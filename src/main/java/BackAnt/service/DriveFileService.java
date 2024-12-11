@@ -36,54 +36,14 @@ public class DriveFileService {
     private final ModelMapper modelMapper;
     private final String USER_DIR = System.getProperty("user.dir"); // 현재 위치에서 /uploads를 붙혀주기때문에 배포 시 문제 없음
 
-//    //상위추적경로 메서드
-//    public String buildFolderPath(String driveFolderId, String parentFolderPath) {
-//        if (driveFolderId == null) {
-//            throw new IllegalArgumentException("driveFolderId는 null일 수 없습니다.");
-//        }
-//
-//        // 경로를 누적할 스택
-//        Deque<String> folderStack = new LinkedList<>();
-//
-//        // MongoDB에서 최상위 폴더까지 반복적으로 부모 폴더를 조회
-//        while (driveFolderId != null) {
-//            log.info("현재 추적 중인 폴더 ID: {}", driveFolderId);
-//
-//            // 데이터베이스에서 현재 폴더 조회
-//            Optional<DriveFolderDocument> folderOpt = driveFolderRepository.finddriveFolderNameById(driveFolderId);
-//            if (folderOpt.isPresent()) {
-//                DriveFolderDocument folder = folderOpt.get();
-//
-//                // 폴더 이름을 스택에 추가
-//                folderStack.push(driveFolderId);
-//
-//                // 부모 폴더 ID를 얻음, 없으면 null
-//                driveFolderId = folder.getDriveParentFolderId(); // 필드가 없으면 null 반환
-//                log.info("이 ID는 먼데? : " + driveFolderId);
-//            } else {
-//                // 폴더를 찾을 수 없을 경우 예외 발생
-//                throw new RuntimeException("폴더를 찾을 수 없습니다: " + driveFolderId);
-//            }
-//        }
-//
-//        // 기본 경로에 상위 폴더들을 연결 (fullPath는 초기값으로 parentFolderPath를 가짐)
-//        StringBuilder fullPath = new StringBuilder(parentFolderPath);
-//        while (!folderStack.isEmpty()) {
-//            fullPath.append("/").append(folderStack.pop());
-//        }
-//
-//        log.info("최종 생성된 경로: {}", fullPath);
-//        return fullPath.toString();
-//    }
 
-    //파일 등록
 // 파일 등록
     public List<DriveNewFileInsertDTO> fileInsert(DriveNewFileInsertDTO driveNewFileInsertDTO) {
         String driveFolderId = driveNewFileInsertDTO.getDriveFolderId(); // 상위 폴더 ID
         log.info("driveFolderId: " + driveFolderId);
 
         // 기본 경로 설정
-        String parentFolderPath = "/uploads/drive";
+        String parentFolderPath = "/uploads/drive/my";
         String drivePath = "";
 
         // 상위 폴더 ID가 있는 경우 경로 확인
