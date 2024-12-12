@@ -58,6 +58,4 @@ public class ProjectTask {
     @UpdateTimestamp
     private LocalDateTime updatedAt; // 수정 날짜
 
-
-
 }

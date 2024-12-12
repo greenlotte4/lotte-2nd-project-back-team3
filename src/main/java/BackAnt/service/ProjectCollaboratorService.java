@@ -68,18 +68,24 @@ public class ProjectCollaboratorService {
 
         projectCollaboratorRepository.delete(collaborator);
 
+        // 웹소켓 쏴주기 위한 프로젝트 id에 따른 협업자 조회
         List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(projectId);
         log.info("1111111111projectCollaborators : " + projectCollaborators);
 
         ProjectCollaboratorDTO dto = modelMapper.map(collaborator, ProjectCollaboratorDTO.class);
-        log.info("dto : " + dto);
 
+        dto.setProjectId((collaborator.getProject().getId()));
+        dto.setUserId(collaborator.getUser().getId());
+        dto.setUsername(collaborator.getUser().getName());
+        dto.setAction("collaboratorDelete");
+
+        log.info("dto : " + dto);
 
         // 2. WebSocket을 통한 실시간 알림 전송
         projectCollaborators.forEach(projectCollaborator -> {
             String destination = "/topic/project/" + projectCollaborator.getUser().getId();
             log.info("경로" + destination);
-            messagingTemplate.convertAndSend(destination, collaborator.getUser().getId());
+            messagingTemplate.convertAndSend(destination, dto);
         });
 
     }

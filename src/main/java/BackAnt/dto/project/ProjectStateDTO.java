@@ -18,5 +18,5 @@ public class ProjectStateDTO {
     private Long projectId; // 프로젝트 ID
     private List<ProjectTaskDTO> tasks; // 상태 내 작업 목록
 
-
+    private String action;  // 웹소켓을 쏴주기 위한 액션
 }
