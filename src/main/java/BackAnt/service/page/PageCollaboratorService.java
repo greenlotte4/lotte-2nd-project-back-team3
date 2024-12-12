@@ -82,8 +82,11 @@ public class PageCollaboratorService {
     }
 
     // 페이지 협업자 삭제
-    public void removeCollaborator(String pageId, String userId) {
-        pageCollaboratorRepository.deleteByPageIdAndUser_Uid(pageId, userId);
+    public void removeCollaborator(String pageId, long userId) {
+        pageCollaboratorRepository.deleteByPageIdAndUser_Id(pageId, userId);
+    }
+    public void removeCollaboratorsByPageId(String pageId) {
+        pageCollaboratorRepository.deleteByPageId(pageId);
     }
 
     // Entity를 DTO로 변환

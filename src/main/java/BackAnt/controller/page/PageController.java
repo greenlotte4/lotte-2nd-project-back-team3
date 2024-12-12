@@ -7,6 +7,7 @@ import BackAnt.repository.page.PageCollaboratorRepository;
 import BackAnt.service.page.PageCollaboratorService;
 import BackAnt.service.page.PageImageService;
 import BackAnt.service.page.PageService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
@@ -106,7 +107,7 @@ public class PageController {
         List<PageDTO> sharedPages = pageService.getSharedPages(userId);
         return ResponseEntity.ok(sharedPages);
     }
-    // page List 조회 (DELETED | UID | Template)
+    // page List 조회 ( DELETED | UID )
     @GetMapping("/list/{type}/{uid}")
     public ResponseEntity<List<PageDocument>> selectByUid(@PathVariable String type,
                                                           @PathVariable (required = false) String uid) {
@@ -120,10 +121,6 @@ public class PageController {
                     break;
                 case "uid":
                     pages = pageService.getPagesByUid(uid);
-                    break;
-                case "template" :
-                    pages = pageService.getPageByTemplate();
-                    log.info("이거 찐으로 되나");
                     break;
                 default: // type 오류
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -140,14 +137,29 @@ public class PageController {
                     .body(List.of()); // 빈 리스트 반환
         }
     }
+    @GetMapping("/template/list")
+    public ResponseEntity<List<PageDocument>> selectTemplates() {
 
-    // page 삭제 (SOFT | HARD)
+            log.info("컨트롤러 입성");
+            List<PageDocument> pages = pageService.getPageByTemplate();
+            log.info("pages"+pages);
+            return ResponseEntity.ok()
+                            .body(pages); // 빈 리스트 반환
+
+    }
+
+    // page 삭제 ( SOFT | HARD )
+    @Transactional
     @DeleteMapping("/{id}/{type}")
     public String softDeletePageById(@PathVariable String id,@PathVariable String type) {
         if (type.equals("soft")) {
             return pageService.DeleteById(id, "soft");
         }
+
         if (type.equals("hard")){
+            log.info("pageId로 협업자 삭제 시도 id - "+id);
+            pageCollaboratorService.removeCollaboratorsByPageId(id);
+            log.info("협업자 삭제 완료 ");
             return pageService.DeleteById(id,"hard");
         }
         return "Deleted Failed...";
@@ -184,10 +196,11 @@ public class PageController {
     }
 
     // 페이지 협업자 삭제
+    @Transactional
     @DeleteMapping("/{pageId}/collaborators/{userId}")
     public ResponseEntity<Void> removeCollaborator(
             @PathVariable String pageId,
-            @PathVariable String userId) {
+            @PathVariable long userId) {
         pageCollaboratorService.removeCollaborator(pageId, userId);
         return ResponseEntity.ok().build();
     }
