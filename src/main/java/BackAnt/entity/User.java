@@ -55,9 +55,13 @@ public class User {
     private String position; // 직위
     private String phoneNumber; // 연락처
     private String profileImageUrl; // 프로필 사진 URL
+    private LocalDate joinDate; // 입사일
 
     private LocalDateTime lastLoginAt; // 마지막 로그인 시간
     private Boolean isActive = true; // 계정 활성화 여부 (기본값: true)
+
+    private double annualLeaveTotal; // 총 부여된 연차 (일 단위)
+    private double annualLeaveUsed;  // 사용한 연차 (일 단위)
 
     @CreationTimestamp
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성 시간
@@ -79,8 +83,7 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
-    public void updateName(String newName){
-        this.name = newName;
+    public double getRemainingLeave() {
+        return annualLeaveTotal - annualLeaveUsed;
     }
-
 }

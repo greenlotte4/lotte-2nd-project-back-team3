@@ -21,6 +21,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -113,6 +115,8 @@ public class UserService {
         User user = modelMapper.map(adminDTO, User.class);
         user.setCompany(company); // 회사 매핑
         user.setPassword(passwordEncoder.encode(adminDTO.getPassword())); // 비밀번호 암호화
+        user.setRole(Role.ADMIN);
+        user.setPosition("대표이사");
         return userRepository.save(user);
     }
 
@@ -176,6 +180,22 @@ public class UserService {
                 .map(user -> modelMapper.map(user, UserDTO.class))
                 .collect(Collectors.toList());
     }
+
+    // 회사 대표이사 조회
+    // BoardService.java 또는 해당 서비스 클래스
+    public List<User> getUsersByCompanyAndPosition(Long companyId, String position) {
+        // 회사 ID로 회사 객체 조회
+        Optional<Company> company = companyRepository.findById(companyId);
+
+        if (company.isPresent()) {
+            // Company 객체와 Position으로 사용자 조회
+            return userRepository.findByCompanyAndPosition(company.get(), position);
+        }
+
+        // 회사가 없을 경우 빈 리스트 반환
+        return Collections.emptyList();
+    }
+
 
     public void updateUserName(String newName, String uid){
         User user = userRepository.findByUid(uid).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
