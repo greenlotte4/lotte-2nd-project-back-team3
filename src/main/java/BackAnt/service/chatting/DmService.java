@@ -122,15 +122,17 @@ public class DmService {
 
         // DmMessage -> DmMessageResponseDTO 변환
         return messages.stream()
-                .map(dmMessage -> new DmMessageResponseDTO(
-                        dmMessage.getId(),
-                        dmMessage.getContent(),
-                        dmMessage.getSender().getId(), // senderId 추가
-                        dmMessage.getSender().getName(), // senderName 추가
-                        dmMessage.getDm().getId(), // dmId 추가
-                        dmMessage.getIsRead(), // isRead 추가
-                        dmMessage.getCreatedAt().toString() // timestamp 추가 (날짜 포맷 필요 시 포맷 수정 가능)
-                ))
+                .map(dmMessage -> DmMessageResponseDTO.builder()
+                        .id(dmMessage.getId())
+                        .content(dmMessage.getContent())
+                        .senderId(dmMessage.getSender().getId())
+                        .senderName(dmMessage.getSender().getName())
+                        .userProfile(dmMessage.getSender().getProfileImageUrl())
+                        .dmId(dmMessage.getDm().getId())
+                        .isRead(dmMessage.getIsRead())
+                        .createdAt(dmMessage.getCreatedAt().toString())
+                        .build()
+                )
                 .collect(Collectors.toList());
     }
 

@@ -107,7 +107,12 @@ public class ChattingController {
         return ResponseEntity.ok(messages); // 상태 코드 200과 함께 메시지 리스트 반환
     }
 
-
+    // 채널 멤버 조회
+    @GetMapping("/channel/{channelId}/members")
+    public ResponseEntity<List<ChannelMemberResponseDTO>> getChannelMembers(@PathVariable Long channelId) {
+        List<ChannelMemberResponseDTO> members = channelService.getChannelMembers(channelId);
+        return ResponseEntity.ok(members);
+    }
 
     // 디엠방 생성 (1:1 비공개 채팅)
     @PostMapping("/dm")
