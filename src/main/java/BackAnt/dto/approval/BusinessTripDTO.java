@@ -18,6 +18,7 @@ public class BusinessTripDTO implements ApprovalRequestDTO {
     private String userName;
     private String department;
     private String companyName;
+    private String approverName; // 승인자 이름 추가
     private String type;
     private String status;
     private String title;
@@ -36,6 +37,7 @@ public class BusinessTripDTO implements ApprovalRequestDTO {
                 businessTrip.getUserName(),
                 businessTrip.getDepartment(),
                 businessTrip.getCompanyName(),
+                null, // approverName은 후에 설정
                 businessTrip.getType(),
                 businessTrip.getStatus(),
                 businessTrip.getTitle(),

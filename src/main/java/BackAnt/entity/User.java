@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -58,6 +59,8 @@ public class User {
     private LocalDate joinDate; // 입사일
 
     private LocalDateTime lastLoginAt; // 마지막 로그인 시간
+
+    @Builder.Default
     private Boolean isActive = true; // 계정 활성화 여부 (기본값: true)
 
     private double annualLeaveTotal; // 총 부여된 연차 (일 단위)
