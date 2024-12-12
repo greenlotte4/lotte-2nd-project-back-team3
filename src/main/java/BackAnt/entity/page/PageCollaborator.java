@@ -23,7 +23,7 @@ public class PageCollaborator {
     private String pageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id",nullable = false, referencedColumnName = "id")
     private User user; // 소속된 사용자
 
     @CreationTimestamp
