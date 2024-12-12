@@ -105,9 +105,10 @@ public ResponseEntity<?> DriveFolderTrash(    @PathVariable(required = false) St
     }
     //복원
     @PostMapping("/folder/toDrive")
-    public ResponseEntity<?> TrashFolderDrive(@RequestBody List<String> driveFolderId) throws IOException {
-        log.info("마요야 보고시펑 : " + driveFolderId);
-        return driveFolderService.ToMyDrive(driveFolderId);
+    public ResponseEntity<?> TrashFolderDrive(@RequestBody DriveFolderFileToTrashDTO driveFolderFileToTrashDTO) throws IOException {
+        log.info("마요야 밥은 : " + driveFolderFileToTrashDTO.getDriveFolderId());
+        log.info("마요야 먹었어? : " + driveFolderFileToTrashDTO.getSelectedDriveFileIds());
+        return driveFolderService.ToMyDrive(driveFolderFileToTrashDTO.getDriveFolderId(), driveFolderFileToTrashDTO.getSelectedDriveFileIds());
     }
 
     //휴지통으로
