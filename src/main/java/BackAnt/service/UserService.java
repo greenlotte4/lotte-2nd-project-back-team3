@@ -20,10 +20,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.io.File;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -48,6 +51,7 @@ public class UserService {
 
     private final InviteService inviteService;
 
+    private final ImageService imageService;
 
     // 매퍼 사용 엔티티 - DTO 상호전환
     public UserDTO toDTO(User user) {
@@ -181,6 +185,63 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+
+    public void updateUserInfo(String info, String uid, String type){
+        User user = userRepository.findByUid(uid).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+        if(Objects.equals(type, "name")){
+            user.updateName(info);
+        }else if(Objects.equals(type, "email")){
+            user.updateEmail(info);
+        }else if(Objects.equals(type, "phoneNumber")){
+            user.updatePhoneNumber(info);
+        }
+        userRepository.save(user);
+    }
+
+    public void updateUserProfile(String uid, MultipartFile profileImage){
+
+        log.info("1231231233333333333333333333333");
+
+        User user = userRepository.findByUid(uid).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        log.info(user.getProfileImageUrl());
+
+        File oldFile = new File(user.getProfileImageUrl());
+        if (oldFile.exists()) {
+            boolean result = oldFile.delete();
+            if (result){
+                log.info("profile 이미지가 교체되었습니다.");
+            }
+        }
+        try {
+            // 이미지 업로드 처리
+            if (profileImage != null && !profileImage.isEmpty()) {
+                String imageUrl = imageService.uploadImage(profileImage);
+                log.info(imageUrl);
+                user.updateProfileImageUrl(imageUrl);
+                userRepository.save(user);
+            }
+        }  catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public boolean passUpdateCheck (String uid , String pass, String type) {
+
+        User user = userRepository.findByUid(uid).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        if(Objects.equals(type, "check")){
+            return passwordEncoder.matches(pass, user.getPassword());
+        } else if (Objects.equals(type, "update")){
+            user.setPassword(passwordEncoder.encode(pass));
+            userRepository.save(user);
+            return true;
+        }
+
+        return false;
+    }
+
     // 회사 대표이사 조회
     // BoardService.java 또는 해당 서비스 클래스
     public List<User> getUsersByCompanyAndPosition(Long companyId, String position) {
@@ -197,12 +258,6 @@ public class UserService {
     }
 
 
-    public void updateUserName(String newName, String uid){
-        User user = userRepository.findByUid(uid).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
 
-        user.updateName(newName);
-
-        userRepository.save(user);
-    }
 
 }
