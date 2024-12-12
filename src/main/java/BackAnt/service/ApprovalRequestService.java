@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Log4j2
@@ -116,6 +117,10 @@ public class ApprovalRequestService {
         }
 
         approvalRequest.setStatus(status);
+
+        if(status.equals("승인")){
+            approvalRequest.setSubmissionDate(LocalDate.now());
+        }
         approvalRequestRepository.save(approvalRequest);
     }
 
