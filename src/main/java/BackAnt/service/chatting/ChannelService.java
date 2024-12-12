@@ -2,6 +2,7 @@ package BackAnt.service.chatting;
 
 import BackAnt.dto.chatting.ChannelCreateDTO;
 import BackAnt.dto.chatting.ChannelMemberAddDTO;
+import BackAnt.dto.chatting.ChannelMemberResponseDTO;
 import BackAnt.dto.chatting.ChannelResponseDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.chatting.Channel;
@@ -130,6 +131,15 @@ public class ChannelService {
                 .findByChannelIdAndUserId(channel.getId(), currentOwner.getId())
                 .orElseThrow(() -> new RuntimeException("소유자는 채널 멤버가 아닙니다"));
         channelMemberRepository.delete(channelMember);
+    }
+
+    public List<ChannelMemberResponseDTO> getChannelMembers(Long channelId) {
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new RuntimeException("채널을 찾을 수 없습니다"));
+
+        return channelMemberRepository.findByChannel(channel).stream()
+                .map(ChannelMemberResponseDTO::fromEntity)
+                .toList();
     }
 }
 

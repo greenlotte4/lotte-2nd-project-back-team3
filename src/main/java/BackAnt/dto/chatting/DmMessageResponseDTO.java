@@ -15,6 +15,7 @@ public class DmMessageResponseDTO {
     private String content;
     private Long senderId;
     private String senderName;
+    private String userProfile;
     private Long dmId;  // DM ID
     private Boolean isRead;
     private String createdAt;  // 메시지 시간 (로컬 시간 형식으로 반환)
@@ -26,6 +27,7 @@ public class DmMessageResponseDTO {
                 .content(dmMessage.getContent())
                 .senderId(dmMessage.getSender().getId())
                 .senderName(dmMessage.getSender().getName())
+                .userProfile(dmMessage.getSender().getProfileImageUrl())
                 .dmId(dmMessage.getDm().getId())
                 .isRead(dmMessage.getIsRead())
                 .createdAt(dmMessage.getCreatedAt().toString())  // 메시지 시간
