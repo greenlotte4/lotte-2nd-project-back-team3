@@ -86,8 +86,17 @@ public class User {
     public double getRemainingLeave() {
         return annualLeaveTotal - annualLeaveUsed;
     }
-    
+
     public void updateName(String newName){
         this.name = newName;
+    }
+    public void updateEmail(String newEmail){
+        this.email = newEmail;
+    }
+    public void updatePhoneNumber(String newPhoneNumber){
+        this.phoneNumber = newPhoneNumber;
+    }
+    public void updateProfileImageUrl(String newProfileImageUrl){
+        this.profileImageUrl = newProfileImageUrl;
     }
 }

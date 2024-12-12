@@ -26,9 +26,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -271,7 +273,25 @@ public class UserController {
         return ResponseEntity.ok(members);
     }
 
-    // 회사의 대표이사 조회
+
+    @PutMapping("/info/{info}/{uid}/{type}")
+    public void infoUpdate(@PathVariable String info, @PathVariable String uid, @PathVariable String type) {
+            userService.updateUserInfo(info, uid, type);
+    }
+
+    @PutMapping("/img/{uid}")
+    public void imgUpdate(@PathVariable String uid,  @RequestParam("profileImage") MultipartFile profileImage) {
+        userService.updateUserProfile(uid, profileImage);
+    }
+
+
+    @PostMapping("/password/{type}")
+    public boolean  passwordUpdate(@RequestBody UserDTO userDTO, @PathVariable String type) {
+        log.info("유유유유유유유유유"+userDTO.getPassword());
+        log.info("유유유유유유유유유유"+type);
+        return userService.passUpdateCheck(userDTO.getUid(), userDTO.getPassword(), type);
+    }
+
     @GetMapping("/ceo")
     public List<User> getUsersByCompanyAndPosition(
             @RequestParam Long companyId,
@@ -279,12 +299,4 @@ public class UserController {
 
         return userService.getUsersByCompanyAndPosition(companyId, position);
     }
-
-    @PutMapping("/name/{name}/{uid}")
-    public void nameUpdate(@PathVariable String name, @PathVariable String uid) {
-        log.info("네임ㅇ넹미넹미ㅔㅇ넴ㅇ넴ㄴ이ㅔㅁㄴ에ㅣㅁㄴ에"+name);
-        log.info("네임ㅇ넹미넹미ㅔㅇ넴ㅇ넴ㄴ이ㅔㅁㄴ에ㅣㅁㄴ에"+uid);
-        userService.updateUserName(name, uid);
-    }
-
 }
