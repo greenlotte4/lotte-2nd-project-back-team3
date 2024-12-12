@@ -86,4 +86,8 @@ public class User {
     public double getRemainingLeave() {
         return annualLeaveTotal - annualLeaveUsed;
     }
+    
+    public void updateName(String newName){
+        this.name = newName;
+    }
 }
