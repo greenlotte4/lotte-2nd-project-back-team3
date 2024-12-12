@@ -6,6 +6,7 @@ import BackAnt.entity.chatting.Channel;
 import BackAnt.entity.chatting.ChannelMessage;
 import BackAnt.entity.chatting.Dm;
 import BackAnt.entity.chatting.DmMember;
+import BackAnt.entity.enums.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,6 +27,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUid(String uid);
 
     Optional<User> findById(Long id);
+
+    // status가 ACTIVE인 사용자 조회
+    List<User> findByStatus(Status status);
 
     // 이메일로 사용자 조회
     Optional<User> findByEmail(String email);

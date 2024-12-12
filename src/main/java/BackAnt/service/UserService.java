@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.io.File;
 import java.util.List;
@@ -74,8 +75,10 @@ public class UserService {
     }
 
     // 회원 회원가입
+// 회원 회원가입
     public User registerUser(UserRegisterRequestDTO userDTO) throws Exception {
         Department department = null;
+
         // 초대 상태 업데이트
         if (userDTO.getTokenid() != null) {
             Optional<Invite> optionalInvite = inviteRepository.findById(userDTO.getTokenid());
@@ -92,6 +95,16 @@ public class UserService {
             }
         }
 
+        // 입사일 설정 (DTO에서 받아온 값 사용)
+        LocalDate joinDate = LocalDate.parse(userDTO.getJoinDate());
+
+        // 총 연차 계산: 입사일이 null이 아닌 경우 계산
+        double annualLeaveTotal = 0.0;
+        if (joinDate != null) {
+            long monthsSinceJoin = ChronoUnit.MONTHS.between(joinDate, LocalDate.now());
+            annualLeaveTotal = monthsSinceJoin; // 한 달에 1일 기준
+        }
+
         // User 엔티티 생성 및 저장
         User user = User.builder()
                 .name(userDTO.getName())
@@ -105,11 +118,14 @@ public class UserService {
                 .position(userDTO.getPosition())
                 .company(department.getCompany())
                 .department(department)
+                .joinDate(joinDate) // 입사일 저장
+                .annualLeaveTotal(annualLeaveTotal) // 계산된 총 연차 저장
                 .status(Status.ACTIVE)
                 .build();
 
         return userRepository.save(user);
     }
+
 
     // 관리자 회원가입
     public User createUser(AdminRequestDTO adminDTO) {

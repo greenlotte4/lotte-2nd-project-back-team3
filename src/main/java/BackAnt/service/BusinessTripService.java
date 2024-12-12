@@ -33,7 +33,6 @@ public class BusinessTripService {
 
         log.info("입성");
 
-        // 프론트에서 받은 Approver 데이터를 JPA 컨텍스트에 포함
         // Approver에 연결된 User를 조회하거나 생성
         User approverUser = userRepository.findById(requestDto.getApprover().getId())
                 .orElseThrow(() -> new RuntimeException("Approver User not found"));
@@ -54,7 +53,6 @@ public class BusinessTripService {
                 .userName(requestDto.getUserName())
                 .department(requestDto.getDepartment())
                 .companyName(requestDto.getCompanyName())
-                .submissionDate(LocalDate.now())
                 .title(requestDto.getTitle())
                 .organization(requestDto.getOrganization())
                 .purpose(requestDto.getPurpose())
