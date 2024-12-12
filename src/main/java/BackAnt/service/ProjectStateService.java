@@ -1,17 +1,17 @@
 package BackAnt.service;
 
+import BackAnt.dto.project.ProjectCollaboratorDTO;
 import BackAnt.dto.project.ProjectStateDTO;
 import BackAnt.entity.project.Project;
+import BackAnt.entity.project.ProjectCollaborator;
 import BackAnt.entity.project.ProjectState;
 import BackAnt.entity.project.ProjectTask;
-import BackAnt.repository.project.ProjectRepository;
-import BackAnt.repository.project.ProjectStateRepository;
-import BackAnt.repository.project.ProjectTaskAssignmentRepository;
-import BackAnt.repository.project.ProjectTaskRepository;
+import BackAnt.repository.project.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +32,8 @@ public class ProjectStateService {
     private final ModelMapper modelMapper;
     private final ProjectTaskRepository projectTaskRepository;
     private final ProjectTaskAssignmentRepository projectTaskAssignmentRepository;
+    private final ProjectCollaboratorRepository projectCollaboratorRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
     // 프로젝트 상태 등록
@@ -47,8 +49,22 @@ public class ProjectStateService {
         // 엔티티 저장
         ProjectState savedState = projectStateRepository.save(projectState);
 
-        return modelMapper.map(savedState, ProjectStateDTO.class);
+        ProjectStateDTO dto = modelMapper.map(savedState, ProjectStateDTO.class);
+        dto.setAction("stateInsert");
+        log.info("dto : " + dto);
 
+        // 웹소켓을 쏴주기 위한 프로젝트 id에 따른 협업자 조회
+        List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(project.getId());
+        log.info("projectCollaborators : " + projectCollaborators);
+
+        // 2. WebSocket을 통한 실시간 알림 전송
+        projectCollaborators.forEach(projectCollaborator -> {
+            String destination = "/topic/project/" + projectCollaborator.getUser().getId();
+            log.info("경로" + destination);
+            messagingTemplate.convertAndSend(destination, dto);
+        });
+
+        return dto;
     }
 
 
@@ -78,7 +94,22 @@ public class ProjectStateService {
         ProjectState updatedState = projectStateRepository.save(existingState);
         log.info("updatedState : " + updatedState);
 
-        return modelMapper.map(updatedState, ProjectStateDTO.class);
+        ProjectStateDTO dto = modelMapper.map(updatedState, ProjectStateDTO.class);
+        dto.setAction("stateUpdate");
+        log.info("dto : " + dto);
+
+        // 웹소켓을 쏴주기 위한 프로젝트 id에 따른 협업자 조회
+        List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(updatedState.getProject().getId());
+        log.info("projectCollaborators : " + projectCollaborators);
+
+        // 2. WebSocket을 통한 실시간 알림 전송
+        projectCollaborators.forEach(projectCollaborator -> {
+            String destination = "/topic/project/" + projectCollaborator.getUser().getId();
+            log.info("경로" + destination);
+            messagingTemplate.convertAndSend(destination, dto);
+        });
+
+        return dto;
 
 
     }
@@ -86,6 +117,10 @@ public class ProjectStateService {
     // 프로젝트 작업 상태 삭제
     @Transactional
     public void deleteState(Long stateId) {
+
+        // 해당 작업 상태 조회
+        ProjectState projectState = projectStateRepository.findById(stateId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 작업 상태가 존재하지 않습니다."));
 
         // 해당 작업상태에 속한 모든 작업 조회
         List<ProjectTask> tasks = projectTaskRepository.findAllByStateId(stateId);
@@ -100,9 +135,27 @@ public class ProjectStateService {
 
         // 작업 상태 삭제
         projectStateRepository.deleteById(stateId);
+
+        // 해당 작업 상태의 프로젝트 정보 가져오기
+        Project project = projectState.getProject();
+        log.info("project : " + project);
+
+        ProjectStateDTO dto = modelMapper.map(projectState, ProjectStateDTO.class);
+        dto.setAction("stateDelete");
+        log.info("dto : " + dto);
+
+        // 웹소켓을 쏴주기 위한 프로젝트 id에 따른 협업자 조회
+        List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(project.getId());
+        log.info("projectCollaborators : " + projectCollaborators);
+
+        // 2. WebSocket을 통한 실시간 알림 전송
+        projectCollaborators.forEach(projectCollaborator -> {
+            String destination = "/topic/project/" + projectCollaborator.getUser().getId();
+            log.info("경로" + destination);
+            messagingTemplate.convertAndSend(destination, dto);
+        });
+
     }
-
-
 
 
 

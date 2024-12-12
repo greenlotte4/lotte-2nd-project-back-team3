@@ -22,4 +22,6 @@ public class ProjectCollaboratorDTO {
     private String username; // 사용자 이름
     private int type; // 프로젝트 권한 (0:ADMIN, 1:WRITE, 2:READ)
     private LocalDateTime invitedAt; // 초대 날짜
+
+    private String action; // 웹소켓 액션에 따라 처리하기 위함
 }

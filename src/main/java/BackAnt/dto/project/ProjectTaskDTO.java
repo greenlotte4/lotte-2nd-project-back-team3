@@ -32,4 +32,5 @@ public class ProjectTaskDTO {
 
     private List<Long> assignedUser; // 작업 담당자 데이터(프론트에서 받아온 작업담당자 insert 하기 위함)
     private List<ProjectAssignedUserDTO> assignedUserDetails; // 해당 작업담당자에 해당하는 user 정보 넘기기 위함
+    private String action; // 웹소켓을 전송하기 위한 액션 추가
 }

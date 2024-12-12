@@ -3,9 +3,11 @@ package BackAnt.service;
 import BackAnt.dto.project.ProjectAssignedUserDTO;
 import BackAnt.dto.project.ProjectTaskDTO;
 import BackAnt.entity.User;
+import BackAnt.entity.project.ProjectCollaborator;
 import BackAnt.entity.project.ProjectState;
 import BackAnt.entity.project.ProjectTask;
 import BackAnt.entity.project.ProjectTaskAssignment;
+import BackAnt.repository.project.ProjectCollaboratorRepository;
 import BackAnt.repository.project.ProjectStateRepository;
 import BackAnt.repository.project.ProjectTaskAssignmentRepository;
 import BackAnt.repository.project.ProjectTaskRepository;
@@ -14,6 +16,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,6 +38,8 @@ public class ProjectTaskService {
     private final ProjectStateRepository projectStateRepository;
     private final UserRepository userRepository;
     private final ProjectTaskAssignmentRepository projectTaskAssignmentRepository;
+    private final ProjectCollaboratorRepository projectCollaboratorRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
     // 프로젝트 작업 등록
@@ -94,6 +99,21 @@ public class ProjectTaskService {
                 .collect(Collectors.toList());
 
         responseDTO.setAssignedUserDetails(assignedUsers); // 상세 사용자 정보 설정
+
+        responseDTO.setAction("taskInsert");
+        log.info("responseDTO : " + responseDTO);
+
+        // 웹소켓을 쏴주기 위한 프로젝트 id에 다른 협업자 조회
+        log.info("해당 작업상태에 해당하는 projectId : " + projectState.getProject().getId());
+        List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(projectState.getProject().getId());
+        log.info("projectCollaborators : " + projectCollaborators);
+
+        // 2. WebSocket을 통한 실시간 알림 전송
+        projectCollaborators.forEach(projectCollaborator -> {
+            String destination = "/topic/project/" + projectCollaborator.getUser().getId();
+            log.info("경로" + destination);
+            messagingTemplate.convertAndSend(destination, responseDTO);
+        });
 
         return responseDTO;
     }
