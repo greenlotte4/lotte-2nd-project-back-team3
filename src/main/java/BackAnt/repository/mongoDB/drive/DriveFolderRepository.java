@@ -32,6 +32,8 @@ public interface DriveFolderRepository extends MongoRepository<DriveFolderDocume
 
     List<DriveFolderDocument> findBydriveFolderPathStartingWith(String path);
 
+    Optional<DriveFolderDocument> findBydriveFolderPath(String folderPath);
+
 
 
 }

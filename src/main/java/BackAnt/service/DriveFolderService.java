@@ -131,31 +131,44 @@ public class DriveFolderService {
         return response;
     }
 
-    //휴지통폴더파일조회
+
+// 휴지통에서 상위 폴더와 독립 파일만 조회
     public Map<String, Object> MyTrashView() {
-        List<DriveFolderDocument> MyTrashFolders = driveFolderRepository.findFirstWithDeleteFolders();
-        List<DriveFileEntity> MyTrashFiles = driveFileRepository.findByDriveFolderIdIsNullAndDriveIsDeleted(1);
+        // isDeleted가 1인 상위 폴더만 조회
+        List<DriveFolderDocument> MyTrashFolders = driveFolderRepository.findFirstWithDeleteFolders()
+                .stream()
+                .filter(folder -> folder.getDriveParentFolderId() == null) // 상위 폴더만 필터링
+                .collect(Collectors.toList());
+
+        // isDeleted가 1인 독립 파일만 조회
+        List<DriveFileEntity> MyTrashFiles = driveFileRepository.findByDriveIsDeleted(1);
+
         log.info("휴지통 파일...나와..? 야옹.. : " + MyTrashFiles);
 
         Map<String, Object> response = new HashMap<>();
-        response.put("folders", MyTrashFolders);  // MyDriveFolders를 "folders"라는 키로 추가
-        response.put("files", MyTrashFiles);     // MyDriveFiles를 "files"라는 키로 추가
+        response.put("folders", MyTrashFolders);  // 상위 폴더만 추가
+        response.put("files", MyTrashFiles);     // 독립 파일만 추가
 
         return response;
     }
 
-    //휴지통선택된폴더파일조회
+    // 휴지통에서 선택된 폴더와 독립 파일 조회
     public Map<String, Object> MyTrashSelectView(String driveFolderId) {
-        List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findWithSelectDeleteFolders(driveFolderId);
-        List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderIdAndDriveIsDeleted(driveFolderId,1);
+        // 선택된 폴더만 조회
+        List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findWithSelectDeleteFolders(driveFolderId)
+                .stream()
+                .filter(folder -> folder.getDriveParentFolderId() == null) // 상위 폴더만 필터링
+                .collect(Collectors.toList());
+
+        // 선택된 폴더 내 파일 조회
+        List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderIdAndDriveIsDeleted(driveFolderId, 1);
 
         log.info("오잉 : " + MyDriveFolders);
         log.info("오이잉 :" + MyDriveFiles);
+
         Map<String, Object> response = new HashMap<>();
-        response.put("folders", MyDriveFolders);  // MyDriveFolders를 "folders"라는 키로 추가
-        response.put("files", MyDriveFiles);     // MyDriveFiles를 "files"라는 키로 추가
-
-
+        response.put("folders", MyDriveFolders);  // 상위 폴더만 추가
+        response.put("files", MyDriveFiles);     // 독립 파일만 추가
 
         return response;
     }
@@ -229,42 +242,150 @@ public class DriveFolderService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("파일과 폴더를 찾을 수 없습니다.");
         }
     }
-//복원하기
-    public ResponseEntity<?> ToMyDrive(List<String> driveFolderIdList) throws IOException {
-        boolean isUpdated = false; // 업데이트 여부를 추적하기 위한 변수
-        log.info("이건 몇개나오냐 : "  + driveFolderIdList);
-        for (String driveFolderId : driveFolderIdList) {
-            log.info("이거 몇개나와? : " + driveFolderId);
-            Optional<DriveFolderDocument> driveFolderPath = driveFolderRepository.finddriveFolderNameById(driveFolderId);
-            if(driveFolderPath.isPresent()) {
-                String path = driveFolderPath.get().getDriveFolderPath();
-                List<DriveFolderDocument> folders = driveFolderRepository.findBydriveFolderPathStartingWith(path);
-                List<DriveFileEntity> files = driveFileRepository.findBydriveFilePathStartingWith(path);
-                for (DriveFolderDocument folder : folders) {
-                    if (folder.getDriveFolderIsDeleted() == 1) { // 복원할 대상만
-                        folder.setDriveFolderIsDeleted(0);
-                        folder.setDriveFolderDeletedAt(LocalDateTime.now());
-                    }
-                }
-                driveFolderRepository.saveAll(folders);
 
-                for (DriveFileEntity file : files) {
-                    if (file.getDriveIsDeleted() == 1) { // 복원할 대상만
-                        file.setDriveIsDeleted(0);
-                        file.setDriveFileDeletedAt(LocalDateTime.now());
-                    }
-                }
-                driveFileRepository.saveAll(files);
+    //복원원원
+    public ResponseEntity<?> ToMyDrive(List<String> driveFolderIdList, List<Integer> selectedDriveFileIds) throws IOException {
+        boolean isUpdated = false;
 
-                isUpdated = true;
+        // 1. 파일 복원 처리
+        if (selectedDriveFileIds != null && !selectedDriveFileIds.isEmpty()) {
+            for (int driveFileId : selectedDriveFileIds) {
+                isUpdated |= restoreFileWithParents(driveFileId);
             }
         }
 
-        if (isUpdated) {
-            return ResponseEntity.ok("Moved to trash successfully.");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Drive folder not found.");
+        // 2. 폴더 복원 처리
+        if (driveFolderIdList != null && !driveFolderIdList.isEmpty()) {
+            for (String driveFolderId : driveFolderIdList) {
+                isUpdated |= restoreFolderWithParents(driveFolderId);
+            }
         }
+
+        // 3. 결과 반환
+        if (isUpdated) {
+            return ResponseEntity.ok("Folders and files restored successfully.");
+        } else if ((driveFolderIdList == null || driveFolderIdList.isEmpty()) &&
+                (selectedDriveFileIds == null || selectedDriveFileIds.isEmpty())) {
+            return ResponseEntity.badRequest().body("No IDs provided.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Drive folder or files not found.");
+        }
+    }
+
+    // 파일 및 상위 폴더 복원
+    private boolean restoreFileWithParents(int fileId) {
+        Optional<DriveFileEntity> fileOpt = driveFileRepository.findById(fileId);
+        boolean isUpdated = false;
+
+        if (fileOpt.isPresent()) {
+            DriveFileEntity file = fileOpt.get();
+
+            // 현재 파일 복원
+            if (file.getDriveIsDeleted() == 1) {
+                file.setDriveIsDeleted(0);
+                file.setDriveFileDeletedAt(LocalDateTime.now());
+                driveFileRepository.save(file);
+                isUpdated = true;
+            }
+
+            // 상위 폴더 복원
+            String filePath = file.getDriveFilePath();
+            String parentPath = filePath.substring(0, filePath.lastIndexOf('/'));
+            isUpdated |= restoreParentFoldersRecursively(parentPath);
+        }
+
+        return isUpdated;
+    }
+
+    // 특정 폴더 및 상위 폴더 복원
+    private boolean restoreFolderWithParents(String folderId) {
+        Optional<DriveFolderDocument> folderOpt = driveFolderRepository.findById(folderId);
+        boolean isUpdated = false;
+
+        if (folderOpt.isPresent()) {
+            DriveFolderDocument folder = folderOpt.get();
+
+            // 현재 폴더 복원
+            if (folder.getDriveFolderIsDeleted() == 1) {
+                folder.setDriveFolderIsDeleted(0);
+                folder.setDriveFolderDeletedAt(LocalDateTime.now());
+                driveFolderRepository.save(folder);
+                isUpdated = true;
+            }
+
+            // 상위 폴더 복원
+            String parentFolderId = folder.getDriveParentFolderId();
+            while (parentFolderId != null) {
+                Optional<DriveFolderDocument> parentOpt = driveFolderRepository.findById(parentFolderId);
+                if (parentOpt.isPresent()) {
+                    DriveFolderDocument parentFolder = parentOpt.get();
+                    if (parentFolder.getDriveFolderIsDeleted() == 1) {
+                        parentFolder.setDriveFolderIsDeleted(0);
+                        parentFolder.setDriveFolderDeletedAt(LocalDateTime.now());
+                        driveFolderRepository.save(parentFolder);
+                        isUpdated = true;
+                    }
+                    parentFolderId = parentFolder.getDriveParentFolderId();
+                } else {
+                    break;
+                }
+            }
+
+            // 최상위 폴더인 경우 하위 내용 복원
+            if (folder.getDriveParentFolderId() == null) {
+                restoreChildren(folder.getDriveFolderPath());
+            }
+        }
+
+        return isUpdated;
+    }
+
+    // 특정 경로의 하위 폴더 및 파일 복원
+    private void restoreChildren(String folderPath) {
+        // 하위 폴더 복원
+        List<DriveFolderDocument> subFolders = driveFolderRepository.findBydriveFolderPathStartingWith(folderPath);
+        for (DriveFolderDocument subFolder : subFolders) {
+            if (subFolder.getDriveFolderIsDeleted() == 1) {
+                subFolder.setDriveFolderIsDeleted(0);
+                subFolder.setDriveFolderDeletedAt(LocalDateTime.now());
+            }
+        }
+        driveFolderRepository.saveAll(subFolders);
+
+        // 하위 파일 복원
+        List<DriveFileEntity> files = driveFileRepository.findBydriveFilePathStartingWith(folderPath);
+        for (DriveFileEntity file : files) {
+            if (file.getDriveIsDeleted() == 1) {
+                file.setDriveIsDeleted(0);
+                file.setDriveFileDeletedAt(LocalDateTime.now());
+            }
+        }
+        driveFileRepository.saveAll(files);
+    }
+
+    // 부모 폴더 경로를 재귀적으로 복원
+    private boolean restoreParentFoldersRecursively(String parentPath) {
+        Optional<DriveFolderDocument> parentOpt = driveFolderRepository.findBydriveFolderPath(parentPath);
+        boolean isUpdated = false;
+
+        while (parentOpt.isPresent()) {
+            DriveFolderDocument parentFolder = parentOpt.get();
+
+            if (parentFolder.getDriveFolderIsDeleted() == 1) {
+                parentFolder.setDriveFolderIsDeleted(0);
+                parentFolder.setDriveFolderDeletedAt(LocalDateTime.now());
+                driveFolderRepository.save(parentFolder);
+                isUpdated = true;
+            }
+
+            if (parentFolder.getDriveParentFolderId() != null) {
+                parentOpt = driveFolderRepository.findById(parentFolder.getDriveParentFolderId());
+            } else {
+                break;
+            }
+        }
+
+        return isUpdated;
     }
 
 
