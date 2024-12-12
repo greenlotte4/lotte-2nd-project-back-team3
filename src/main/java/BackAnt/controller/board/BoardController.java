@@ -41,9 +41,42 @@ public class BoardController {
     private final ModelMapper modelMapper;
 
     // 글 목록 조회
+//    @GetMapping("/list")
+//    public ResponseEntity<Page<BoardDTO>> getFindAllBoards(
+//            @PageableDefault(size = 10,
+//            sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable) {
+//
+//        log.info("게시글 목록 컨트롤러 시작 -------------");
+//        log.info("요청받은 페이징 정보: 페이지 번호 = {}, 페이지 크기 = {}, 정렬 = {}",
+//                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+//
+//        try {
+//            // 페이징 처리된 Board 엔티티 리스트 가져오기
+//            Page<Board> boards = boardService.getFindAllBoards(pageable);
+//            log.info("조회된 Board 데이터 (엔티티): 페이지 번호 = {}, 총 페이지 수 = {}, 총 요소 수 = {}",
+//                    boards.getNumber(), boards.getTotalPages(), boards.getTotalElements());
+//
+//            // 커스텀 매핑 설정
+//            modelMapper.typeMap(Board.class, BoardDTO.class).addMappings(mapper ->
+//                    mapper.map(src -> src.getWriter().getId(), BoardDTO::setWriterId)
+//            );
+//
+//            // Page<Board>를 Page<BoardDTO>로 변환
+//            Page<BoardDTO> boardDTOs = boards.map(board -> modelMapper.map(board, BoardDTO.class));
+//            log.info("변환된 BoardDTO 데이터: 페이지 크기 = {}, 변환된 요소 수 = {}",
+//                    boardDTOs.getSize(), boardDTOs.getContent().size());
+//
+//            return ResponseEntity.ok(boardDTOs);
+//        } catch (Exception e) {
+//            log.error("게시글 목록 조회 중 오류 발생: ", e);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//    }
+
     @GetMapping("/list")
     public ResponseEntity<Page<BoardDTO>> getFindAllBoards(
             @PageableDefault(size = 10, sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable) {
+
         log.info("게시글 목록 컨트롤러 시작 -------------");
         log.info("요청받은 페이징 정보: 페이지 번호 = {}, 페이지 크기 = {}, 정렬 = {}",
                 pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
@@ -54,13 +87,14 @@ public class BoardController {
             log.info("조회된 Board 데이터 (엔티티): 페이지 번호 = {}, 총 페이지 수 = {}, 총 요소 수 = {}",
                     boards.getNumber(), boards.getTotalPages(), boards.getTotalElements());
 
-            // 커스텀 매핑 설정
-            modelMapper.typeMap(Board.class, BoardDTO.class).addMappings(mapper ->
-                    mapper.map(src -> src.getWriter().getId(), BoardDTO::setWriter)
-            );
+            // Page<Board> -> Page<BoardDTO>로 변환
+            Page<BoardDTO> boardDTOs = boards.map(board -> {
+                BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class);
+                boardDTO.setWriterId(board.getWriter() != null ? board.getWriter().getId() : null);
+                boardDTO.setWriterName(board.getWriter() != null ? board.getWriter().getName() : "익명");
+                return boardDTO;
+            });
 
-            // Page<Board>를 Page<BoardDTO>로 변환
-            Page<BoardDTO> boardDTOs = boards.map(board -> modelMapper.map(board, BoardDTO.class));
             log.info("변환된 BoardDTO 데이터: 페이지 크기 = {}, 변환된 요소 수 = {}",
                     boardDTOs.getSize(), boardDTOs.getContent().size());
 
@@ -70,6 +104,7 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
 
     // 글 상세 조회

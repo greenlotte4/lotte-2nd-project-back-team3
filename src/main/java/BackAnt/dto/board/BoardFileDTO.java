@@ -22,24 +22,6 @@ import java.util.List;
 @ToString
 public class BoardFileDTO {
 
-//    // 공통 필드
-//    private int boardFileId;
-//    private Integer boardId;
-//    private Integer userId;
-//
-//    // 업로드용 필드
-//    private MultipartFile file;  // 업로드시에만 사용
-//
-//    // 다운로드용 필드
-//    private String boardFileSName;  // 서버에 저장된 실제 파일명
-//
-//    // 조회용 필드
-//    private String boardFileOName;
-//    private double boardFileSize;
-//    private String boardFileExt;
-//    private String uploadedAt;
-//    private String boardFolderId;
-
     // 업로드 요청용 DTO
     @Getter
     @Setter
@@ -48,9 +30,10 @@ public class BoardFileDTO {
     @Builder
     public static class UploadRequest {
 
-        private long boardId;
-        private long writer;  // Board 객체를 직접 받음
+        private Long boardId;
+        private Long writerId;  // Board 객체를 직접 받음
         private MultipartFile boardFile;    // User 객체를 직접 받음
+
         // MultipartFile은 여기서 제외 - @RequestPart로 별도 처리
     }
 

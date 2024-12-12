@@ -45,15 +45,9 @@ public class BoardService {
 
 
     // 글 목록 조회
-//    public List<Board> getFindAllBoards() {
-//        log.info("게시글 목록 조회 시작 (서비스)-----------------");
-//        return boardRepository.findAllByOrderByRegDateDesc();
-//    }
     public Page<Board> getFindAllBoards(Pageable pageable) {
         return boardRepository.findAllByOrderByRegDateDesc(pageable);
     }
-
-
 
     // 글 상세 조회
     public BoardResponseViewDTO getBoardsById(Long id) {
@@ -67,7 +61,7 @@ public class BoardService {
 
         // 기본 매핑
         BoardResponseViewDTO dto = modelMapper.map(board, BoardResponseViewDTO.class);
-        dto.setWriter(board.getWriter().getUid());
+        dto.setWriter(""+board.getWriter().getId());
         return dto;
     }
 
@@ -126,7 +120,7 @@ public class BoardService {
         return boardLikeRepository.countByBoardId(boardId);
     }
 
-    // 글쓰기
+    // 글 쓰기
     @Transactional
     public Long save(BoardDTO boardDTO, HttpServletRequest req) {
         log.info("안녕하시렵니가? 글쓰기 서비스 입니다...");
@@ -136,7 +130,7 @@ public class BoardService {
             board.setRegIp(req.getRemoteAddr()); // 클라이언트 IP 주소 저장
 
             // 작성자 정보 DB 조회
-            User user = userRepository.findById(boardDTO.getWriter())
+            User user = userRepository.findById(boardDTO.getWriterId())
                     .orElseThrow(() -> new RuntimeException("글쓰기 사용자를 찾을 수 없습니다."));
 
 
@@ -147,20 +141,6 @@ public class BoardService {
             Board savedBoard = boardRepository.save(board);
             log.info("게시글 저장 성공 (글쓰기 성공 -!) : {}", savedBoard.getId());
 
-            // 파일 처리
-//            if (files != null && !files.isEmpty()) {
-//                BoardFileDTO.UploadRequest fileRequest = BoardFileDTO.UploadRequest.builder()
-//                        .boardId(savedBoard.getId())
-//                        .userId(user.getId())
-//                        .build();
-//
-//                for (MultipartFile file : files) {
-//                    if (!file.isEmpty()) {
-//                        boardFileService.uploadFile(fileRequest, file);
-//                    }
-//                }
-//            }
-
             // 저장된 게시글 ID 반환
             return savedBoard.getId();
 
@@ -170,7 +150,7 @@ public class BoardService {
         }
     }
 
-    // 글수정
+    // 글 수정
     @Transactional
     public BoardDTO updateBoard(Long id, BoardDTO boardDTO) {
         log.info("글 수정 서비스");

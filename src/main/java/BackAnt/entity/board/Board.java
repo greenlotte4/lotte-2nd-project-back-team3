@@ -46,8 +46,7 @@ public class Board {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;  // 게시글 내용
 
-    @ManyToOne(fetch = FetchType.EAGER)
-//    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id", nullable = false)
     @ToString.Exclude  // ToString 순환 참조 방지
     private User writer; // 게시글 작성자 (User Entity )속
