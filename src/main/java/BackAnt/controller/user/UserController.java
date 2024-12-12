@@ -7,6 +7,7 @@ import BackAnt.dto.RequestDTO.UserRegisterRequestDTO;
 import BackAnt.dto.ResponseDTO.ApiResponseDTO;
 import BackAnt.dto.UserDTO;
 import BackAnt.dto.common.ResponseDTO;
+import BackAnt.entity.Company;
 import BackAnt.entity.Invite;
 import BackAnt.entity.User;
 import BackAnt.security.MyUserDetails;
@@ -268,6 +269,15 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> getAllMembersByCompany(@PathVariable Long companyId) {
         List<UserDTO> members = userService.getAllMembersByCompany(companyId);
         return ResponseEntity.ok(members);
+    }
+
+    // 회사의 대표이사 조회
+    @GetMapping("/ceo")
+    public List<User> getUsersByCompanyAndPosition(
+            @RequestParam Long companyId,
+            @RequestParam String position) {
+
+        return userService.getUsersByCompanyAndPosition(companyId, position);
     }
 
     @PutMapping("/name/{name}/{uid}")
