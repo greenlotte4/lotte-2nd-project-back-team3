@@ -39,7 +39,8 @@ public class ProjectStateService {
     // 프로젝트 상태 등록
     public ProjectStateDTO addState(ProjectStateDTO projectStateDTO) {
         // 프로젝트 조회
-        Project project = projectRepository.findById(projectStateDTO.getProjectId())
+        long ProjectId = projectStateDTO.getProjectId();
+        Project project = projectRepository.findById(ProjectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
         // dto -> 엔티티 변환
@@ -51,7 +52,9 @@ public class ProjectStateService {
 
         ProjectStateDTO dto = modelMapper.map(savedState, ProjectStateDTO.class);
         dto.setAction("stateInsert");
-        log.info("dto : " + dto);
+        dto.setProjectId(ProjectId);
+
+        log.info("웹소켓 쏘기 전 프로젝트 상태 등록 dto : " + dto);
 
         // 웹소켓을 쏴주기 위한 프로젝트 id에 따른 협업자 조회
         List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(project.getId());
@@ -113,7 +116,7 @@ public class ProjectStateService {
 
 
     }
-    
+
     // 프로젝트 작업 상태 삭제
     @Transactional
     public void deleteState(Long stateId) {
