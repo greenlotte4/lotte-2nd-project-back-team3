@@ -14,4 +14,6 @@ public class CalendarDTO {
     private String user_id;
     private String view;
     private String color;
+
+    private boolean share;
 }
