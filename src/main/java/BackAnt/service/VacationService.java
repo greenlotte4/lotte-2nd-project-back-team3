@@ -1,5 +1,6 @@
 package BackAnt.service;
 
+import BackAnt.dto.NotificationDTO;
 import BackAnt.dto.RequestDTO.VacationRequestDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.approval.Approver;
@@ -13,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ public class VacationService {
     private final UserRepository userRepository;
     private final ApproverRepository approverRepository;
     private final ImageService imageService;
+    private final NotificationService notificationService;
 
     // 휴가 신청 로직
     @Transactional
@@ -65,5 +69,20 @@ public class VacationService {
                 .build();
 
         vactionRepository.save(vacation);
+
+        // WebSocket을 통한 실시간 알림 전송
+        NotificationDTO notification = NotificationDTO.builder()
+                .targetType("USER")
+                .targetId(approver.getUser().getId()) // Approver ID
+                .message(requestDto.getUserName() + "님이 휴가를 신청했습니다.")
+                .metadata(Map.of(
+                        "url", "/antwork/admin/approval",
+                        "type", "휴가신청",
+                        "title", requestDto.getTitle()
+                ))
+                .createdAt(LocalDateTime.now())
+                .isRead(false)
+                .build();
+        notificationService.createAndSendNotification(notification);
     }
 }

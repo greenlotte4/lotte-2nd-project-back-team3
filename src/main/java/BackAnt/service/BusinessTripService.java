@@ -1,5 +1,6 @@
 package BackAnt.service;
 
+import BackAnt.dto.NotificationDTO;
 import BackAnt.dto.RequestDTO.BusinessTripRequestDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.approval.Approver;
@@ -15,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class BusinessTripService {
     private final ApproverRepository approverRepository;
     private final EntityManager entityManager;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     // 출장신청
     @Transactional
@@ -83,6 +87,21 @@ public class BusinessTripService {
 
         // BusinessTrip 저장
         businessTripRepository.save(businessTrip);
+
+        // WebSocket을 통한 실시간 알림 전송
+        NotificationDTO notification = NotificationDTO.builder()
+                .targetType("USER")
+                .targetId(approver.getUser().getId()) // Approver ID
+                .message(requestDto.getUserName() + "님이 출장을 신청했습니다.")
+                .metadata(Map.of(
+                        "url", "/antwork/admin/approval",
+                        "type", "출장신청",
+                        "title", requestDto.getTitle()
+                ))
+                .createdAt(LocalDateTime.now())
+                .isRead(false)
+                .build();
+        notificationService.createAndSendNotification(notification);
     }
 
 }
