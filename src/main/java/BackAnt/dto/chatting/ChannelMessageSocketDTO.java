@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class ChannelMessageSocketDTO {
     Long id;
     Long senderId;
+    String userName;
     String content;
     String createdAt;
 }
