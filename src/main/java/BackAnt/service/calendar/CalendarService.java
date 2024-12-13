@@ -50,13 +50,25 @@ public class CalendarService {
         List<Calendar> calendars = calendarRepository.findAllById(calendarIds);
 
 
-        return calendars.stream()
+        List<CalendarDTO> dtos = calendars.stream()
                 .map(calendar -> {
                     CalendarDTO calendarDTO = modelMapper.map(calendar, CalendarDTO.class);
                     calendarDTO.setUser_id(calendar.getUser() != null ? calendar.getUser().getUid() : null);
                     return calendarDTO;
                 })
                 .toList();
+
+        dtos.forEach(dto -> {
+            long result = viewCalendarRepository.countByCalendar_CalendarId(dto.getCalendarId());
+            log.info("rrrrrrrrrrrrrrrrr" + result);
+            if(result == 1){
+                dto.setShare(false);
+            } else if (result > 1){
+                dto.setShare(true);
+            }
+        });
+
+        return dtos;
     }
 
     public List<CalendarDTO> selectCalendarModal (String uid){
