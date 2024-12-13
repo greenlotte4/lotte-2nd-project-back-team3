@@ -35,5 +35,8 @@ public interface DriveFolderRepository extends MongoRepository<DriveFolderDocume
     Optional<DriveFolderDocument> findBydriveFolderPath(String folderPath);
 
 
+//    Optional<DriveFolderDocument> findBydriveFolderIsDeletedwith(String FolderId);
+
+
 
 }

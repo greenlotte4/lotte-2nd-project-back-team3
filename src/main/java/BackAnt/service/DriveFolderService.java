@@ -132,25 +132,19 @@ public class DriveFolderService {
     }
 
 
-// 휴지통에서 상위 폴더와 독립 파일만 조회
+    //휴지통폴더파일조회
     public Map<String, Object> MyTrashView() {
-        // isDeleted가 1인 상위 폴더만 조회
-        List<DriveFolderDocument> MyTrashFolders = driveFolderRepository.findFirstWithDeleteFolders()
-                .stream()
-                .filter(folder -> folder.getDriveParentFolderId() == null) // 상위 폴더만 필터링
-                .collect(Collectors.toList());
-
-        // isDeleted가 1인 독립 파일만 조회
+        List<DriveFolderDocument> MyTrashFolders = driveFolderRepository.findFirstWithDeleteFolders();
         List<DriveFileEntity> MyTrashFiles = driveFileRepository.findByDriveIsDeleted(1);
-
         log.info("휴지통 파일...나와..? 야옹.. : " + MyTrashFiles);
 
         Map<String, Object> response = new HashMap<>();
-        response.put("folders", MyTrashFolders);  // 상위 폴더만 추가
-        response.put("files", MyTrashFiles);     // 독립 파일만 추가
+        response.put("folders", MyTrashFolders);  // MyDriveFolders를 "folders"라는 키로 추가
+        response.put("files", MyTrashFiles);     // MyDriveFiles를 "files"라는 키로 추가
 
         return response;
     }
+
 
     // 휴지통에서 선택된 폴더와 독립 파일 조회
     public Map<String, Object> MyTrashSelectView(String driveFolderId) {
