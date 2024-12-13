@@ -92,7 +92,7 @@ public class CalendarService {
         viewCalendarRepository.save(view);
     }
 
-    public void updateCalendar (int no, String newName, String color) {
+    public CalendarDTO updateCalendar (int no, String newName, String color) {
         Calendar calendar = calendarRepository.findById(no).orElseThrow(() -> new EntityNotFoundException("이 id의 Calendar가 없습니다."));
 
         List<Schedule> schedules = scheduleRepository.findAllByCalendarCalendarId(no);
@@ -124,7 +124,8 @@ public class CalendarService {
         });
 
 
-        calendarRepository.save(calendar);
+        Calendar calendar1 = calendarRepository.save(calendar);
+       return modelMapper.map(calendar1, CalendarDTO.class);
 
     }
 

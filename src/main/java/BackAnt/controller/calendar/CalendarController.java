@@ -50,9 +50,9 @@ public class CalendarController {
     }
 
     @PutMapping("/update/{no}/{newName}/{color}")
-    public void update(@PathVariable int no, @PathVariable String newName, @PathVariable String color) {
+    public CalendarDTO update(@PathVariable int no, @PathVariable String newName, @PathVariable String color) {
 
-        calendarService.updateCalendar(no, newName, color);
+        return calendarService.updateCalendar(no, newName, color);
     }
 
     @DeleteMapping("/delete/{no}")

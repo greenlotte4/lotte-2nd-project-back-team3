@@ -7,11 +7,15 @@ import BackAnt.entity.Company;
 import BackAnt.entity.Department;
 import BackAnt.entity.Invite;
 import BackAnt.entity.User;
+import BackAnt.entity.calendar.Calendar;
+import BackAnt.entity.calendar.ViewCalendar;
 import BackAnt.entity.enums.Role;
 import BackAnt.entity.enums.Status;
 import BackAnt.repository.CompanyRepository;
 import BackAnt.repository.InviteRepository;
 import BackAnt.repository.UserRepository;
+import BackAnt.repository.calendar.CalendarRepository;
+import BackAnt.repository.calendar.ViewCalendarRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
@@ -53,7 +57,8 @@ public class UserService {
     private final InviteService inviteService;
 
     private final ImageService imageService;
-
+    private final CalendarRepository calendarRepository;
+    private final ViewCalendarRepository viewCalendarRepository;
     // 매퍼 사용 엔티티 - DTO 상호전환
     public UserDTO toDTO(User user) {
         return modelMapper.map(user, UserDTO.class);
@@ -123,7 +128,24 @@ public class UserService {
                 .status(Status.ACTIVE)
                 .build();
 
-        return userRepository.save(user);
+
+        User result = userRepository.save(user);
+
+        Calendar calendar = Calendar.builder()
+                .name("기본 캘린더")
+                .user(result)
+                .color("#b2dqff")
+                .build();
+        Calendar basicCalendar = calendarRepository.save(calendar);
+
+        ViewCalendar viewCalendar = ViewCalendar.builder()
+                .user(result)
+                .calendar(basicCalendar)
+                .build();
+
+        viewCalendarRepository.save(viewCalendar);
+
+        return result;
     }
 
 
