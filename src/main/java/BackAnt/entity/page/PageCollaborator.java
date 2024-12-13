@@ -37,7 +37,8 @@ public class PageCollaborator {
         return PageCollaboratorDTO.builder()
                 .id(this.id)
                 .pageId(this.pageId)
-                .user_id(this.user.getId())  // User의 uid를 가져옴
+                .user_id(this.user.getId())
+                .uid(this.user.getUid())// User의 uid를 가져옴
                 .uidImage(this.user.getProfileImageUrl())  // User의 이미지 필드가 있을 경우 가져옴
                 .invitedAt(this.invitedAt)
                 .isOwner(this.isOwner)
