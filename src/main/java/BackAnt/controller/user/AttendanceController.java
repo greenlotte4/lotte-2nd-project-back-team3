@@ -47,7 +47,6 @@ public class AttendanceController {
         }
     }
 
-
     // 출근처리
     @PostMapping("/check-in/{userId}")
     public ResponseEntity<?> checkIn(@PathVariable Long userId) {
