@@ -32,7 +32,7 @@ public class ChattingWebSocketController {
         return messageDTO;
     }
 
-    // 채널 메시지 전송
+    // 디엠 메시지 전송
     @MessageMapping("/chatting/dm/{id}/send")
     @SendTo("/topic/chatting/dm/{id}/messages")  // 경로 통일
     public DmMessageSocketDTO sendDmMessage(
