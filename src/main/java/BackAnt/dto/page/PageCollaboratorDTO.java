@@ -20,6 +20,7 @@ public class PageCollaboratorDTO {
     private String pageId;
 
     private long user_id;
+    private String uid;
     private String uidImage;
 
     private LocalDateTime invitedAt; // 프로젝트 초대 날짜
