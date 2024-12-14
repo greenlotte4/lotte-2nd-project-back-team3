@@ -15,6 +15,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,18 +62,21 @@ public class ChannelService {
         return ChannelResponseDTO.fromEntity(channel);
     }
 
-    public void addChannelMember(Long channelId, ChannelMemberAddDTO channelMemberAddDTO) {
+    public List<ChannelMemberResponseDTO> addChannelMember(Long channelId, ChannelMemberAddDTO channelMemberAddDTO) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("채널을 찾을 수 없습니다"));
         List<User> users = userRepository.findAllById(channelMemberAddDTO.getMemberIds());
-
+        List<ChannelMemberResponseDTO> addMembers = new ArrayList<>();
         for (User user : users) {
             if(channelMemberRepository.findByChannelIdAndUserId(channel.getId(), user.getId()).isPresent()) {
                 continue;
             }
 
             ChannelMember channelMember = new ChannelMember(channel, user);
+            addMembers.add(ChannelMemberResponseDTO.fromEntity(channelMember));
             channelMemberRepository.save(channelMember);
         }
+
+        return addMembers;
     }
 
     public void removeChannelMember(Long channelId, ChannelMemberAddDTO channelMemberAddDTO) {

@@ -55,9 +55,9 @@ public class ChattingController {
 
     // 채널 멤버 추가
     @PostMapping("/channel/{id}/member")
-    public ResponseEntity<Void> addChannelMember(@PathVariable Long id, @RequestBody ChannelMemberAddDTO channelMemberAddDTO) {
-        channelService.addChannelMember(id, channelMemberAddDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<List<ChannelMemberResponseDTO>> addChannelMember(@PathVariable Long id, @RequestBody ChannelMemberAddDTO channelMemberAddDTO) {
+        List<ChannelMemberResponseDTO> channelMemberResponseDTOS = channelService.addChannelMember(id, channelMemberAddDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(channelMemberResponseDTOS);
     }
 
     // 채널 메시지 보내기
