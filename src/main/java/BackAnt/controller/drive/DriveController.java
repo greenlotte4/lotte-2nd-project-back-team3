@@ -59,15 +59,15 @@ public class DriveController {
                 .body(MyTrash);
 
     }
-    //휴지통선택보기
-    @GetMapping("/folder/myTrashSelectView/{driveFolderId}")
-    public ResponseEntity<?> MyTrashSelectView(@PathVariable String driveFolderId){
-        log.info("여기로 온건 맞아? : " + driveFolderId);
-        Map<String, Object> MySelectTrash = driveFolderService.MyTrashSelectView(driveFolderId);
-        log.info("와랄랄랄랄랄 : " + MySelectTrash);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(MySelectTrash);
-    }
+//    //휴지통선택보기
+//    @GetMapping("/folder/myTrashSelectView/{driveFolderId}")
+//    public ResponseEntity<?> MyTrashSelectView(@PathVariable String driveFolderId){
+//        log.info("여기로 온건 맞아? : " + driveFolderId);
+//        Map<String, Object> MySelectTrash = driveFolderService.MyTrashSelectView(driveFolderId);
+//        log.info("와랄랄랄랄랄 : " + MySelectTrash);
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//                .body(MySelectTrash);
+//    }
 
     @PostMapping("/files/insert")
     public ResponseEntity<?> filesInsert(DriveNewFileInsertDTO DriveNewFileInsertDTO){
@@ -86,14 +86,14 @@ public class DriveController {
 
 
     }
-@PostMapping("/folder/name")
-    public ResponseEntity<?> DriveFolderFind(@RequestBody DriveFolderNameDTO driveFolderNameDTO){
-        log.info("머라머라머라 : " + driveFolderNameDTO);
-    DriveNewFolderInsertDTO FolderNameDto = driveFolderService.DriveFolderFind(driveFolderNameDTO);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(FolderNameDto);
-}
+//@PostMapping("/folder/name")
+//    public ResponseEntity<?> DriveFolderFind(@RequestBody DriveFolderNameDTO driveFolderNameDTO){
+//        log.info("머라머라머라 : " + driveFolderNameDTO);
+//    DriveNewFolderInsertDTO FolderNameDto = driveFolderService.DriveFolderFind(driveFolderNameDTO);
+//
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//            .body(FolderNameDto);
+//}
 //단일 휴지통
 @GetMapping("/folder/toOneTrash/{driveFolderNameId}/{selectedDriveFileId}")
 public ResponseEntity<?> DriveFolderTrash(    @PathVariable(required = false) String driveFolderNameId,

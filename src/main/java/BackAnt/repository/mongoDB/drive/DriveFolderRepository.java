@@ -15,8 +15,21 @@ public interface DriveFolderRepository extends MongoRepository<DriveFolderDocume
     @Query(value = "{ 'driveParentFolderId': null, 'driveFolderIsDeleted':0 }", fields = "{ 'driveFolderId': 1, 'driveFolderName': 1, 'driveParentFolderId': 1, 'driveFolderMaker': 1, 'driveFolderSize': 1, 'driveFolderCreatedAt': 1}")
     List<DriveFolderDocument> findFirstWithFolders();
 
-    @Query(value = "{ 'driveFolderIsDeleted':1 }", fields = "{ 'driveFolderId': 1, 'driveFolderName': 1, 'driveParentFolderId': 1, 'driveFolderMaker': 1, 'driveFolderSize': 1, 'driveFolderCreatedAt': 1}")
-    List<DriveFolderDocument> findFirstWithDeleteFolders();
+//    @Query(value = "{ 'driveFolderIsDeleted':1 }", fields = "{ 'driveFolderId': 1, 'driveFolderName': 1, 'driveParentFolderId': 1, 'driveFolderMaker': 1, 'driveFolderSize': 1, 'driveFolderCreatedAt': 1, 'driveFolderPath': 1 , 'driveFolderIsDeleted': 1}")
+//    List<DriveFolderDocument> findFirstWithDeleteFolders();
+
+
+//    // 삭제된 최상위 폴더 조회 (parentFolderId가 null인 경우)
+//    @Query("{ 'driveFolderIsDeleted': 1, 'driveParentFolderId': null }")
+//    List<DriveFolderDocument> findDeletedTopLevelFolders();
+//
+//    // 삭제된 하위 폴더 조회 (parentFolderId가 있는 경우)
+//    @Query("{ 'driveFolderIsDeleted': 1, 'driveParentFolderId': { $ne: null } }")
+//    List<DriveFolderDocument> findDeletedSubFolders();
+
+    // 삭제된 모든 폴더 조회
+    @Query("{ 'driveFolderIsDeleted': 1 }")
+    List<DriveFolderDocument> findAllDeletedFolders();
 
     @Query(value = "{ 'driveParentFolderId': ?0 ,'driveFolderIsDeleted':0 }",
             fields = "{ 'driveFolderId': 1, 'driveFolderName': 1, 'driveParentFolderId': 1, 'driveFolderMaker': 1, 'driveFolderSize': 1, 'driveFolderCreatedAt': 1 }")
@@ -35,7 +48,8 @@ public interface DriveFolderRepository extends MongoRepository<DriveFolderDocume
     Optional<DriveFolderDocument> findBydriveFolderPath(String folderPath);
 
 
-//    Optional<DriveFolderDocument> findBydriveFolderIsDeletedwith(String FolderId);
+    boolean existsByDriveFolderPathStartingWithAndDriveFolderIsDeleted(String Path, boolean isDeleted); // 하위 폴더 존재 여부 확인
+
 
 
 

@@ -26,6 +26,15 @@ public interface DriveFileRepository extends JpaRepository<DriveFileEntity, Inte
     // 파람의 folderId와 동일한 파일 찾기
     List<DriveFileEntity> findByDriveFolderIdAndDriveIsDeleted(String driveFolderId , int driveIsDeleted);
 
+    //하위파일조회
     @Query("SELECT f FROM DriveFileEntity f WHERE f.driveFilePath LIKE CONCAT(:path, '%')")
     List<DriveFileEntity> findBydriveFilePathStartingWith(@Param("path") String path);
+
+
+
+    // 삭제된 파일 조회
+    @Query("SELECT f FROM DriveFileEntity f WHERE f.driveIsDeleted = 1")
+    List<DriveFileEntity> findAllDeletedFiles();
+
+
 }
