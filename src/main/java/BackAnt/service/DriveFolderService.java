@@ -117,10 +117,40 @@ public class DriveFolderService {
         List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findWithSelectFolders(driveFolderId);
         List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderIdAndDriveIsDeleted(driveFolderId,0);
 
+
+        Optional<DriveFolderDocument> currentFolderOpt = driveFolderRepository.findById(driveFolderId);
+        if (currentFolderOpt.isEmpty()) {
+            throw new RuntimeException("폴더를 찾을 수 없습니다: " + driveFolderId);
+        }
+        DriveFolderDocument currentFolder = currentFolderOpt.get();
+
+        // Breadcrumbs 생성
+        List<Map<String, String>> breadcrumbs = new ArrayList<>();
+        while (currentFolder != null) {
+            Map<String, String> breadcrumb = new HashMap<>();
+            breadcrumb.put("id", currentFolder.getDriveFolderId());
+            breadcrumb.put("name", currentFolder.getDriveFolderName());
+            breadcrumbs.add(0, breadcrumb); // 부모부터 추가 (역순)
+            if (currentFolder.getDriveParentFolderId() != null) {
+                currentFolder = driveFolderRepository.findById(currentFolder.getDriveParentFolderId()).orElse(null);
+            } else {
+                currentFolder = null;
+            }
+        }
+
+        // 최상위 경로 MY DRIVE 추가
+        Map<String, String> rootBreadcrumb = new HashMap<>();
+        rootBreadcrumb.put("id", null);
+        rootBreadcrumb.put("name", "MY DRIVE");
+        breadcrumbs.add(0, rootBreadcrumb);
+
         log.info("파일...나와..? 마요야?.. : " + MyDriveFiles);
         Map<String, Object> response = new HashMap<>();
         response.put("folders", MyDriveFolders);  // MyDriveFolders를 "folders"라는 키로 추가
         response.put("files", MyDriveFiles);     // MyDriveFiles를 "files"라는 키로 추가
+        response.put("breadcrumbs", breadcrumbs);
+        log.info("부스러기 : "  +breadcrumbs);
+
 
 
 //        List<MyDriveViewDTO> myDriveViewDTOList = MyDriveFolders.stream()
@@ -131,95 +161,197 @@ public class DriveFolderService {
         return response;
     }
 
-
-    //휴지통폴더파일조회
+    //휴지통보기
     public Map<String, Object> MyTrashView() {
-        List<DriveFolderDocument> MyTrashFolders = driveFolderRepository.findFirstWithDeleteFolders();
-        List<DriveFileEntity> MyTrashFiles = driveFileRepository.findByDriveIsDeleted(1);
-        log.info("휴지통 파일...나와..? 야옹.. : " + MyTrashFiles);
+        // 1. 삭제된 폴더 가져오기 (MongoDB)
+        List<DriveFolderDocument> allDeletedFolders = driveFolderRepository.findAllDeletedFolders();
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("folders", MyTrashFolders);  // MyDriveFolders를 "folders"라는 키로 추가
-        response.put("files", MyTrashFiles);     // MyDriveFiles를 "files"라는 키로 추가
+        // 2. 삭제된 파일 가져오기 (MySQL)
+        List<DriveFileEntity> allDeletedFiles = driveFileRepository.findAllDeletedFiles();
 
-        return response;
-    }
+        // 폴더 ID -> 폴더 객체 매핑
+        Map<String, DriveFolderDocument> folderMap = allDeletedFolders.stream()
+                .collect(Collectors.toMap(DriveFolderDocument::getDriveFolderId, folder -> folder));
 
+        // 3. 휴지통에 표시할 폴더 필터링 + 상위 폴더 이름 추가
+        List<DriveFolderDocument> trashFolders = allDeletedFolders.stream()
+                .peek(folder -> {
+                    // 상위 폴더 이름 설정
+                    String parentId = folder.getDriveParentFolderId();
+                    String parentFolderName;
 
-    // 휴지통에서 선택된 폴더와 독립 파일 조회
-    public Map<String, Object> MyTrashSelectView(String driveFolderId) {
-        // 선택된 폴더만 조회
-        List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findWithSelectDeleteFolders(driveFolderId)
-                .stream()
-                .filter(folder -> folder.getDriveParentFolderId() == null) // 상위 폴더만 필터링
+                    if (parentId != null) {
+                        if (folderMap.containsKey(parentId)) {
+                            // 상위 폴더가 삭제된 경우
+                            parentFolderName = folderMap.get(parentId).getDriveFolderName();
+                        } else {
+                            // 상위 폴더가 삭제되지 않은 경우 DB에서 직접 조회
+                            Optional<DriveFolderDocument> parentFolderOpt = driveFolderRepository.findById(parentId);
+                            parentFolderName = parentFolderOpt.map(DriveFolderDocument::getDriveFolderName).orElse("No Parent Folder");
+                        }
+                    } else {
+                        parentFolderName = "No Parent Folder";
+                    }
+
+                    folder.setParentFolderName(parentFolderName); // 추가된 필드에 설정
+                })
+                .filter(folder -> {
+                    String parentId = folder.getDriveParentFolderId();
+
+                    // 최상위 폴더는 항상 표시
+                    if (parentId == null) return true;
+
+                    // 부모 폴더 찾기
+                    DriveFolderDocument parentFolder = folderMap.get(parentId);
+                    if (parentFolder == null) return true;
+
+                    // 부모 폴더가 삭제되지 않은 경우 표시
+                    if (parentFolder.getDriveFolderIsDeleted() == 0) return true;
+
+                    // 자식 폴더가 독립적으로 삭제된 경우 포함
+                    return folder.getDriveFolderDeletedAt() != null
+                            && folder.getDriveFolderDeletedAt().isBefore(parentFolder.getDriveFolderDeletedAt());
+                })
                 .collect(Collectors.toList());
 
-        // 선택된 폴더 내 파일 조회
-        List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderIdAndDriveIsDeleted(driveFolderId, 1);
+        // 4. 휴지통에 표시할 파일 필터링 + 상위 폴더 이름 추가
+        List<DriveFileEntity> trashFiles = allDeletedFiles.stream()
+                .peek(file -> {
+                    // 상위 폴더 이름 설정
+                    String folderId = file.getDriveFolderId();
+                    String parentFolderName;
 
-        log.info("오잉 : " + MyDriveFolders);
-        log.info("오이잉 :" + MyDriveFiles);
+                    if (folderId != null) {
+                        if (folderMap.containsKey(folderId)) {
+                            // 상위 폴더가 삭제된 경우
+                            parentFolderName = folderMap.get(folderId).getDriveFolderName();
+                        } else {
+                            // 상위 폴더가 삭제되지 않은 경우 DB에서 직접 조회
+                            Optional<DriveFolderDocument> parentFolderOpt = driveFolderRepository.findById(folderId);
+                            parentFolderName = parentFolderOpt.map(DriveFolderDocument::getDriveFolderName).orElse("No Parent Folder");
+                        }
+                    } else {
+                        parentFolderName = "No Parent Folder";
+                    }
 
+                    file.setParentFolderName(parentFolderName); // 추가된 필드에 설정
+                })
+                .filter(file -> {
+                    String folderId = file.getDriveFolderId();
+
+                    // 폴더에 속하지 않은 파일은 항상 표시
+                    if (folderId == null) return true;
+
+                    // 폴더에 속한 파일은 폴더 삭제 여부와 삭제 시점 비교
+                    DriveFolderDocument parentFolder = folderMap.get(folderId);
+                    if (parentFolder == null) return true;
+
+                    // 폴더가 삭제되지 않은 경우 파일 표시
+                    if (parentFolder.getDriveFolderIsDeleted() == 0) return true;
+
+                    // 파일 삭제 시점이 폴더 삭제 시점보다 이전인 경우 표시
+                    return file.getDriveFileDeletedAt() != null
+                            && file.getDriveFileDeletedAt().isBefore(parentFolder.getDriveFolderDeletedAt());
+                })
+                .collect(Collectors.toList());
+
+        // 5. 결과 반환
         Map<String, Object> response = new HashMap<>();
-        response.put("folders", MyDriveFolders);  // 상위 폴더만 추가
-        response.put("files", MyDriveFiles);     // 독립 파일만 추가
-
+        response.put("folders", trashFolders);
+        response.put("files", trashFiles);
         return response;
     }
 
 
 
 
-    public DriveNewFolderInsertDTO DriveFolderFind(DriveFolderNameDTO driveFolderNameDTO) {
-        Optional<DriveFolderDocument> driveFolder = driveFolderRepository.findById(driveFolderNameDTO.getDriveFolderId());
-        log.info("호오유유유유 : " + driveFolder);
-        if (driveFolder.isPresent()) {
-            DriveFolderDocument folder = driveFolder.get();
-            folder.setDriveFolderName(driveFolderNameDTO.getDriveFolderName());
-            log.info("이게이름이나와야돼 : " + folder);
-            return modelMapper.map(driveFolderRepository.save(folder), DriveNewFolderInsertDTO.class);
-        }
-        return null;
-    }
+//    // 휴지통에서 선택된 폴더와 독립 파일 조회
+//    public Map<String, Object> MyTrashSelectView(String driveFolderId) {
+//        // 선택된 폴더만 조회
+//        List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findWithSelectDeleteFolders(driveFolderId)
+//                .stream()
+//                .filter(folder -> folder.getDriveParentFolderId() == null) // 상위 폴더만 필터링
+//                .collect(Collectors.toList());
+//
+//        // 선택된 폴더 내 파일 조회
+//        List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderIdAndDriveIsDeleted(driveFolderId, 1);
+//
+//        log.info("오잉 : " + MyDriveFolders);
+//        log.info("오이잉 :" + MyDriveFiles);
+//
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("folders", MyDriveFolders);  // 상위 폴더만 추가
+//        response.put("files", MyDriveFiles);     // 독립 파일만 추가
+//
+//        return response;
+//    }
+
+
+
+    //
+//    public DriveNewFolderInsertDTO DriveFolderFind(DriveFolderNameDTO driveFolderNameDTO) {
+//        Optional<DriveFolderDocument> driveFolder = driveFolderRepository.findById(driveFolderNameDTO.getDriveFolderId());
+//        log.info("호오유유유유 : " + driveFolder);
+//        if (driveFolder.isPresent()) {
+//            DriveFolderDocument folder = driveFolder.get();
+//            folder.setDriveFolderName(driveFolderNameDTO.getDriveFolderName());
+//            log.info("이게이름이나와야돼 : " + folder);
+//            return modelMapper.map(driveFolderRepository.save(folder), DriveNewFolderInsertDTO.class);
+//        }
+//        return null;
+//    }
 //휴지통으로
-    public ResponseEntity<?> ToOneMyTrash(String driveFolderNameId , Integer selectedDriveFileId) throws IOException {
+    public ResponseEntity<?> ToOneMyTrash(String driveFolderNameId, Integer selectedDriveFileId) throws IOException {
         boolean isFileUpdated = false; // 파일 처리 여부
         boolean isFolderUpdated = false; // 폴더 처리 여부
 
         // 1. 파일 ID 처리
-        if (selectedDriveFileId != 0) {
-
-                Optional<DriveFileEntity> OneFile = driveFileRepository.findById(selectedDriveFileId);
-                if (OneFile.isPresent() && OneFile.get().getDriveIsDeleted() == 0) {
-                    OneFile.get().setDriveIsDeleted(1);
-                    OneFile.get().setDriveFileDeletedAt(LocalDateTime.now());
-                    driveFileRepository.save(OneFile.get());
-                    isFileUpdated = true;
-
+        if (selectedDriveFileId != null && selectedDriveFileId != 0) { // selectedDriveFileId가 0이 아닌지 확인
+            Optional<DriveFileEntity> OneFile = driveFileRepository.findById(selectedDriveFileId);
+            if (OneFile.isPresent() && OneFile.get().getDriveIsDeleted() == 0) {
+                DriveFileEntity file = OneFile.get();
+                file.setDriveIsDeleted(1);
+                file.setDriveFileDeletedAt(LocalDateTime.now()); // 삭제 시점 설정
+                driveFileRepository.save(file);
+                isFileUpdated = true;
+                log.info("파일 ID {} 휴지통으로 이동 완료. DeletedAt: {}", selectedDriveFileId, file.getDriveFileDeletedAt());
             }
         }
+
         // 2. 폴더 ID 처리
         if (driveFolderNameId != null) {
-            Optional<DriveFolderDocument> driveFolderPath = driveFolderRepository.finddriveFolderNameById(driveFolderNameId);
-            if (driveFolderPath.isPresent()) {
-                String path = driveFolderPath.get().getDriveFolderPath();
+            Optional<DriveFolderDocument> driveFolderOpt = driveFolderRepository.finddriveFolderNameById(driveFolderNameId);
+            if (driveFolderOpt.isPresent()) {
+                DriveFolderDocument rootFolder = driveFolderOpt.get();
+                String path = rootFolder.getDriveFolderPath();
+
+                // 2-1. 경로에 포함된 모든 폴더 및 파일 가져오기
                 List<DriveFolderDocument> folders = driveFolderRepository.findBydriveFolderPathStartingWith(path);
                 List<DriveFileEntity> files = driveFileRepository.findBydriveFilePathStartingWith(path);
 
+                // 2-2. 폴더 상태 변경
+                LocalDateTime deleteTimestamp = LocalDateTime.now();
                 for (DriveFolderDocument folder : folders) {
-                    folder.setDriveFolderIsDeleted(1);
-                    folder.setDriveFolderDeletedAt(LocalDateTime.now());
+                    if (folder.getDriveFolderIsDeleted() == 0) {
+                        folder.setDriveFolderIsDeleted(1);
+                        folder.setDriveFolderDeletedAt(deleteTimestamp); // 동일한 삭제 시점 설정
+                        log.info("폴더 ID {} - '{}' 삭제 완료. DeletedAt: {}", folder.getDriveFolderId(), folder.getDriveFolderName(), folder.getDriveFolderDeletedAt());
+                    }
                 }
                 driveFolderRepository.saveAll(folders);
 
+                // 2-3. 파일 상태 변경
                 for (DriveFileEntity file : files) {
-                    file.setDriveIsDeleted(1);
-                    file.setDriveFileDeletedAt(LocalDateTime.now());
+                    if (file.getDriveIsDeleted() == 0) {
+                        file.setDriveIsDeleted(1);
+                        file.setDriveFileDeletedAt(deleteTimestamp); // 동일한 삭제 시점 설정
+                        log.info("파일 ID {} - '{}' 삭제 완료. DeletedAt: {}", file.getDriveFileId(), file.getDriveFileSName(), file.getDriveFileDeletedAt());
+                    }
                 }
                 driveFileRepository.saveAll(files);
 
                 isFolderUpdated = true;
-                log.info("폴더 ID {} 및 하위 항목 처리 완료", driveFolderNameId);
+                log.info("폴더 ID {} 및 하위 항목 처리 완료. DeletedAt: {}", driveFolderNameId, deleteTimestamp);
             } else {
                 log.warn("폴더 ID {}는 존재하지 않음", driveFolderNameId);
             }
@@ -274,18 +406,19 @@ public class DriveFolderService {
         if (fileOpt.isPresent()) {
             DriveFileEntity file = fileOpt.get();
 
-            // 현재 파일 복원
+            // 파일 복원 전 상위 폴더 복원 확인
+            String folderId = file.getDriveFolderId();
+            if (folderId != null) {
+                isUpdated |= restoreFolderWithParents(folderId);
+            }
+
+            // 파일 복원
             if (file.getDriveIsDeleted() == 1) {
                 file.setDriveIsDeleted(0);
                 file.setDriveFileDeletedAt(LocalDateTime.now());
                 driveFileRepository.save(file);
                 isUpdated = true;
             }
-
-            // 상위 폴더 복원
-            String filePath = file.getDriveFilePath();
-            String parentPath = filePath.substring(0, filePath.lastIndexOf('/'));
-            isUpdated |= restoreParentFoldersRecursively(parentPath);
         }
 
         return isUpdated;
@@ -305,6 +438,9 @@ public class DriveFolderService {
                 folder.setDriveFolderDeletedAt(LocalDateTime.now());
                 driveFolderRepository.save(folder);
                 isUpdated = true;
+
+                // 하위 폴더와 파일 복원 추가
+                restoreChildren(folder.getDriveFolderPath());
             }
 
             // 상위 폴더 복원
@@ -323,11 +459,6 @@ public class DriveFolderService {
                 } else {
                     break;
                 }
-            }
-
-            // 최상위 폴더인 경우 하위 내용 복원
-            if (folder.getDriveParentFolderId() == null) {
-                restoreChildren(folder.getDriveFolderPath());
             }
         }
 
@@ -357,30 +488,30 @@ public class DriveFolderService {
         driveFileRepository.saveAll(files);
     }
 
-    // 부모 폴더 경로를 재귀적으로 복원
-    private boolean restoreParentFoldersRecursively(String parentPath) {
-        Optional<DriveFolderDocument> parentOpt = driveFolderRepository.findBydriveFolderPath(parentPath);
-        boolean isUpdated = false;
-
-        while (parentOpt.isPresent()) {
-            DriveFolderDocument parentFolder = parentOpt.get();
-
-            if (parentFolder.getDriveFolderIsDeleted() == 1) {
-                parentFolder.setDriveFolderIsDeleted(0);
-                parentFolder.setDriveFolderDeletedAt(LocalDateTime.now());
-                driveFolderRepository.save(parentFolder);
-                isUpdated = true;
-            }
-
-            if (parentFolder.getDriveParentFolderId() != null) {
-                parentOpt = driveFolderRepository.findById(parentFolder.getDriveParentFolderId());
-            } else {
-                break;
-            }
-        }
-
-        return isUpdated;
-    }
+//    // 부모 폴더 경로를 재귀적으로 복원
+//    private boolean restoreParentFoldersRecursively(String parentPath) {
+//        Optional<DriveFolderDocument> parentOpt = driveFolderRepository.findBydriveFolderPath(parentPath);
+//        boolean isUpdated = false;
+//
+//        while (parentOpt.isPresent()) {
+//            DriveFolderDocument parentFolder = parentOpt.get();
+//
+//            if (parentFolder.getDriveFolderIsDeleted() == 1) {
+//                parentFolder.setDriveFolderIsDeleted(0);
+//                parentFolder.setDriveFolderDeletedAt(LocalDateTime.now());
+//                driveFolderRepository.save(parentFolder);
+//                isUpdated = true;
+//            }
+//
+//            if (parentFolder.getDriveParentFolderId() != null) {
+//                parentOpt = driveFolderRepository.findById(parentFolder.getDriveParentFolderId());
+//            } else {
+//                break;
+//            }
+//        }
+//
+//        return isUpdated;
+//    }
 
 
     public ResponseEntity<?> ToMyTrash(List<String> driveFolderIdList ,List<Integer> selectedDriveFileIds) throws IOException {
