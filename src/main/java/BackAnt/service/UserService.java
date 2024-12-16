@@ -295,7 +295,53 @@ public class UserService {
         return Collections.emptyList();
     }
 
+    // 유저 아이디 조회하기
+    public String getUserId(String name, String email){
+        User user = userRepository.findByNameAndEmail(name, email);
+        if(user == null){
+            return "해당 정보가 없습니다.";
+        }else {
+            return user.getUid();
+        }
+    }
 
+    public String getUserInfo(String uid) {
+        log.info("hhhhhhhhhhhhhh"+uid);
+        User user = userRepository.findByUid(uid).orElse(null);  // 유저가 없으면 null 반환
 
+        if (user == null) {
+            log.info("123");
+            return "해당 정보가 없습니다.";  // 유저가 없으면 해당 메시지 반환
+        } else {
+            log.info("히히히" + user);  // 유저 정보 로그 출력
+            return "유저 있음!";  // 유저가 있으면 "유저 있음!" 반환
+        }
+    }
+
+    public void searchUser(String type, String keyword, String companyId) {
+            List<User> users = userRepository.findAllByCompany(companyRepository.findById(Long.parseLong(companyId)).orElse(null));
+            log.info("히히히히히"+users);
+        if(Objects.equals(type, "이름")){
+            List<User> filteredUsers = users.stream()
+                    .filter(user ->  user.getName().contains(keyword)) // 조건
+                    .toList(); // 필터링 결과를 리스트로 변환
+            log.info("하하하"+filteredUsers);
+        }else if(Objects.equals(type, "부서")){
+            List<User> filteredUsers = users.stream()
+                    .filter(user ->  user.getDepartment().getName().contains(keyword)) // 조건
+                    .toList(); // 필터링 결과를 리스트로 변환
+            log.info("하하하"+filteredUsers);
+        }else if(Objects.equals(type, "직급")){
+            List<User> filteredUsers = users.stream()
+                    .filter(user ->  user.getPosition().contains(keyword)) // 조건
+                    .toList(); // 필터링 결과를 리스트로 변환
+            log.info("하하하"+filteredUsers);
+        }else if(Objects.equals(type, "이메일")){
+            List<User> filteredUsers = users.stream()
+                    .filter(user ->  user.getEmail().contains(keyword)) // 조건
+                    .toList(); // 필터링 결과를 리스트로 변환
+            log.info("하하하"+filteredUsers);
+        }
+    }
 
 }

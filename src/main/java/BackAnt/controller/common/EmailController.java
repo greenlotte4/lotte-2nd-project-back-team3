@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -22,6 +23,19 @@ public class EmailController {
     // 이메일 전송 요청
     @PostMapping("/send")
     public ResponseEntity<Map<String, String>> sendEmail(@RequestBody EmailRequestDTO request) {
+        if(Objects.equals(request.getSubject(), "아이디 찾기")|| Objects.equals(request.getSubject(), "비밀번호 찾기")){
+            try {
+                log.info("asdfasdfasdfasdfsdf");
+                int number = emailService.idCheck(request.getTo(), request.getSubject(), request.getBody());
+
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "이메일이 성공적으로 전송되었습니다.");
+                response.put("number", String.valueOf(number));
+                return ResponseEntity.ok(response);
+            } catch (Exception e) {
+                return ResponseEntity.status(500).body(Map.of("error", "이메일 전송 실패: " + e.getMessage()));
+            }
+        }
         try {
             String token = emailService.sendEmail(request.getTo(), request.getSubject(), request.getBody());
 
