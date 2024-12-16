@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+    zookeeper:
+        image: confluentinc/cp-zookeeper:7.0.1
+        container_name: zookeeper
+        ports:
+            - "2181:2181"
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+        volumes:
+            - zookeeper-data:/var/lib/zookeeper
+        networks:
+            - kafka-network
+        restart: always
+
+    kafka:
+        image: confluentinc/cp-kafka:7.0.1
+        container_name: kafka
+        ports:
+            - "9092:9092"
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://3.38.150.176:9092
+            KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_LOG_RETENTION_HOURS: 168
+            KAFKA_LOG_SEGMENT_BYTES: 1073741824
+            KAFKA_LOG_RETENTION_BYTES: -1
+            KAFKA_DELETE_TOPIC_ENABLE: 'true'
+        volumes:
+            - kafka-data:/var/lib/kafka
+        networks:
+            - kafka-network
+        restart: always
+        deploy:
+            resources:
+                limits:
+                    memory: 2g
+                    cpus: "1.0"
+                reservations:
+                    memory: 1g
+
+volumes:
+    zookeeper-data:
+    kafka-data:
+
+networks:
+    kafka-network:

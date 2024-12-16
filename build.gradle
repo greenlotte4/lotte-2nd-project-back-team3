@@ -60,6 +60,14 @@ dependencies {
     //Jackson
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 
+    //Kafka 추가
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    // AOP 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
 }
 
 tasks.named('test') {
