@@ -41,7 +41,6 @@ public class ProjectCollaboratorService {
     // 프로젝트별 협업자 추가
     public void addCollaborator(Project project, User user, int type, long id) {
 
-        log.info("11111111");
         // 협업자 저장
        ProjectCollaborator projectCollaborator = ProjectCollaborator.builder()
                .project(project)
@@ -50,13 +49,10 @@ public class ProjectCollaboratorService {
                .type(type)
                .build();
 
-
         projectCollaboratorRepository.save(projectCollaborator);
 
-        log.info("2222222");
         Optional<ProjectCollaborator> ownerUser = projectCollaboratorRepository.findByProjectIdAndUserId(project.getId(), id);
         if(ownerUser.isPresent()) {
-
             // WebSocket을 통한 실시간 알림 전송
             NotificationDTO notification = NotificationDTO.builder()
                     .targetType("USER")
@@ -73,7 +69,9 @@ public class ProjectCollaboratorService {
             notificationService.createAndSendNotification(notification);
         }
 
-        log.info("333333");
+
+
+
     }
 
     // 프로젝트별 협업자 조회

@@ -99,6 +99,7 @@ public class ProjectStateService {
 
         ProjectStateDTO dto = modelMapper.map(updatedState, ProjectStateDTO.class);
         dto.setAction("stateUpdate");
+        dto.setProjectId(projectStateDTO.getProjectId());
         log.info("dto : " + dto);
 
         // 웹소켓을 쏴주기 위한 프로젝트 id에 따른 협업자 조회
@@ -145,6 +146,7 @@ public class ProjectStateService {
 
         ProjectStateDTO dto = modelMapper.map(projectState, ProjectStateDTO.class);
         dto.setAction("stateDelete");
+        dto.setProjectId(project.getId());
         log.info("dto : " + dto);
 
         // 웹소켓을 쏴주기 위한 프로젝트 id에 따른 협업자 조회
