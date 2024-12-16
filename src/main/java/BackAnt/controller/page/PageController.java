@@ -13,6 +13,7 @@ import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +36,7 @@ public class PageController {
     private final PageCollaboratorService pageCollaboratorService;
     private final PageService pageService;
     private final PageImageService pageImageService;// MongoDB와 연결된 리포지토리
+    private final SimpMessagingTemplate template;
 
 
     @PostMapping("/create")
@@ -46,8 +48,6 @@ public class PageController {
             log.info("여기야 여기 Received page data: " + page);
 
             PageDocument savedPage = pageService.savePage(page);
-
-
             pageCollaboratorService.addOwner(savedPage);
 
             return ResponseEntity.status(HttpStatus.CREATED)

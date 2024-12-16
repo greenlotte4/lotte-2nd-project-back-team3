@@ -19,7 +19,7 @@ public class PageDTO {
     private String ownerImage;
 
     private String uid;
-    private boolean isTemplate;
+    private Boolean isTemplate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
