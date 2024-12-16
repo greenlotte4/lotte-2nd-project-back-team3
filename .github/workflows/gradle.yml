@@ -41,10 +41,12 @@ jobs:
         with:
           name: app
           path: build/libs/
+
       - name: Setup SSH Key
         run: |
           echo "${{ secrets.AWS_EC2_KEY }}" > private_key.pem
           chmod 600 private_key.pem
+
       - name: Copy files to EC2
         run: |
           scp -i private_key.pem \
@@ -52,33 +54,27 @@ jobs:
             build/libs/*.jar \
             docker-compose.yml \
             ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USER }}/
+
       - name: Ensure Docker Compose is installed on EC2
         run: |
           ssh -i private_key.pem \
             -o StrictHostKeyChecking=no \
             ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
-            if ! [ -x "$(command -v docker-compose)" ]; then
+            if ! [ -x "\$(command -v docker-compose)" ]; then
               sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
               sudo chmod +x /usr/local/bin/docker-compose
             fi
           EOF
+
       - name: Restart Docker Compose on EC2
         run: |
           ssh -i private_key.pem \
             -o StrictHostKeyChecking=no \
             ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
             cd /home/${{ secrets.AWS_EC2_USER }}/
-            docker-compose down
-            docker-compose up -d
+            docker-compose down || true
+            docker-compose up -d --build
           EOF
-      - name: Restart Spring Application on EC2
-        run: |
-          JAR_FILE=$(basename $(ls build/libs/*.jar | head -n 1))
-          ssh -i private_key.pem \
-            -o StrictHostKeyChecking=no \
-            ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
-            pgrep java | xargs kill -9 || true;
-            nohup java -jar /home/${{ secrets.AWS_EC2_USER }}/$JAR_FILE > app.log 2>&1 &
-          EOF
+
       - name: Cleanup
         run: rm -f private_key.pem
