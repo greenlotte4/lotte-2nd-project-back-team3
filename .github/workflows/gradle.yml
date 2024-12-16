@@ -49,6 +49,12 @@ jobs:
             -o StrictHostKeyChecking=no \
             $JAR_FILE \
             ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USER }}/
+      - name: Copy docker-compose.yml to EC2
+        run: |
+          scp -i private_key.pem \
+            -o StrictHostKeyChecking=no \
+            docker-compose.yml \
+            ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USER }}/
       - name: Restart Spring Application on EC2
         run: |
           JAR_FILE=$(basename $(ls build/libs/*.jar | head -n 1))
@@ -57,6 +63,15 @@ jobs:
             ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
             pgrep java | xargs kill -9;
             nohup java -jar /home/${{ secrets.AWS_EC2_USER }}/$JAR_FILE > app.log 2>&1 &
+          EOF
+      - name: Restart Docker Compose on EC2
+        run: |
+          ssh -i private_key.pem \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
+            cd /home/${{ secrets.AWS_EC2_USER }}/
+            docker-compose down
+            docker-compose up -d
           EOF
       - name: Cleanup
         run: rm -f private_key.pem
