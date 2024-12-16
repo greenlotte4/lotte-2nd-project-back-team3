@@ -16,7 +16,7 @@ public class PageWebSocketController {
 
 
     @MessageMapping("/page/{id}")  // /app/page/{id}로 메시지가 전송됨
-    @SendTo("/topic/page/{id}")    // 구독자들에게 브로드캐스트
+    @SendTo({"/topic/page/{id}"})    // 구독자들에게 브로드캐스트
     public PageDTO handlePageUpdate(
             @DestinationVariable String id,
             @Payload PageDTO pageDTO  // @Payload 어노테이션 추가

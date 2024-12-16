@@ -1,6 +1,7 @@
 package BackAnt.document.page;
 
 import BackAnt.dto.page.PageDTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.cglib.core.Local;
 import org.springframework.data.annotation.CreatedBy;
@@ -37,7 +38,8 @@ public class PageDocument {
     private String ownerImage;
 
     private String uid; // 작성자
-    private boolean isTemplate;
+    @JsonProperty("isTemplate")
+    private Boolean isTemplate;
     private LocalDateTime deletedAt = null;
 
     @CreatedDate

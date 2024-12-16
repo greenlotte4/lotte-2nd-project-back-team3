@@ -11,10 +11,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /*
@@ -33,6 +35,7 @@ public class PageService {
     private final PageCollaboratorRepository pageCollaboratorRepository;
     private final MongoTemplate mongoTemplate;
     private final PageCollaboratorService pageCollaboratorService;
+    private final SimpMessagingTemplate template;
     // 사용자의 공유된 페이지 목록 조회
     public List<PageDTO> getSharedPages(String userId) {
         // 1. 사용자가 협업자로 등록된 페이지 ID 목록 조회
@@ -81,6 +84,10 @@ public class PageService {
             if(type.equals("soft")){
                 page.setDeletedAt(LocalDateTime.now());
                 pageRepository.save(page);
+                template.convertAndSend("/topic/page/aside", Map.of(
+                        "_id", id,
+                        "deleted", true
+                ));
                 return "softDelete Successfully";}
             if(type.equals("hard")){
                 pageRepository.deleteById(id);
@@ -111,8 +118,10 @@ public class PageService {
             if (pageDTO.getContent() != null) {
                 page.setContent(pageDTO.getContent());
             }
+            // 제목 업데이트
             if (pageDTO.getTitle() != null) {
                 page.setTitle(pageDTO.getTitle());
+                template.convertAndSend("/topic/page/aside", pageDTO);
             }
 
             page.setUpdatedAt(LocalDateTime.now());
