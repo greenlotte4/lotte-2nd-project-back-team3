@@ -4,10 +4,11 @@ import BackAnt.dto.project.ProjectDTO;
 import BackAnt.entity.project.Project;
 import BackAnt.entity.project.ProjectCollaborator;
 import BackAnt.entity.User;
-import BackAnt.repository.project.ProjectCollaboratorRepository;
-import BackAnt.repository.project.ProjectRepository;
-import BackAnt.repository.project.ProjectStateRepository;
+import BackAnt.entity.project.ProjectState;
+import BackAnt.entity.project.ProjectTask;
+import BackAnt.repository.project.*;
 import BackAnt.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
@@ -31,6 +32,8 @@ public class ProjectService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final ProjectStateRepository projectStateRepository;
+    private final ProjectTaskRepository projectTaskRepository;
+    private final ProjectTaskAssignmentRepository projectTaskAssignmentRepository;
 
     // 프로젝트 생성
     public ProjectDTO createProject(ProjectDTO projectDTO, String uid) {
@@ -103,6 +106,46 @@ public class ProjectService {
         return modelMapper.map(updatedProject, ProjectDTO.class);
 
     }
+
+    // 프로젝트 삭제
+    @Transactional
+    public void deleteProject(Long projectId) {
+
+        // 프로젝트 조회
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+
+        log.info("project: " + project);
+
+        // 프로젝트에 속한 상태들 조회
+        List<ProjectState> projectStates = projectStateRepository.findAllByProjectId(projectId);
+
+        for(ProjectState projectState : projectStates) {
+
+            // 상태에 속한 모든 작업 조회
+            List<ProjectTask> tasks = projectTaskRepository.findAllByStateId(projectState.getId());
+
+            for(ProjectTask projectTask : tasks) {
+                // 작업에 할당된 담당자 삭제
+                projectTaskAssignmentRepository.deleteByTaskId(projectTask.getId());
+            }
+
+            // 작업 삭제
+            projectTaskRepository.deleteAll(tasks);
+
+            // 작업상태 삭제
+            projectStateRepository.deleteById(projectState.getId());
+
+        }
+
+        // 프로젝트 협업자 삭제
+        projectCollaboratorRepository.deleteByProjectId(projectId);
+
+        // 프로젝트 삭제
+        projectRepository.deleteById(projectId);
+
+    }
+
 
 
 

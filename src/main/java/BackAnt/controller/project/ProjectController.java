@@ -9,7 +9,9 @@ import BackAnt.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -78,7 +80,21 @@ public class ProjectController {
         return ResponseEntity.ok(updatedProject);
     }
 
+    // 프로젝트 삭제
+    @DeleteMapping("/delete/{projectId}")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long projectId) {
 
+        log.info("삭제할 projectId: " + projectId);
+
+        try {
+            projectService.deleteProject(projectId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Error deleting project: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+    }
 
 
 }
