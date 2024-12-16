@@ -11,17 +11,22 @@ import BackAnt.repository.board.BoardLikeRepository;
 import BackAnt.repository.board.BoardRepository;
 import BackAnt.repository.UserRepository;
 import io.jsonwebtoken.Claims;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.transaction.Transactional;
+
+import java.time.LocalDateTime;
 
 
 /*
@@ -55,6 +60,9 @@ public class BoardService {
                 .orElseThrow(() -> new IllegalArgumentException
                 ("해당 게시글을 찾을 수 없습니다. (게시글 번호: " + id + ")"));
 
+
+        log.info("board : "+board);
+
         // 조회수 증가
         board.setHit(board.getHit() + 1);
         boardRepository.save(board);
@@ -62,6 +70,8 @@ public class BoardService {
         // 기본 매핑
         BoardResponseViewDTO dto = modelMapper.map(board, BoardResponseViewDTO.class);
         dto.setWriter(""+board.getWriter().getId());
+        dto.setWriterName(board.getWriter().getName());
+
         return dto;
     }
 
@@ -153,35 +163,44 @@ public class BoardService {
     // 글 수정
     @Transactional
     public BoardDTO updateBoard(Long id, BoardDTO boardDTO) {
-        log.info("글 수정 서비스");
+        log.info("글 수정 서비스 시작: id={}", id);
+        log.info("폼데이터 + boardDTO: {}", boardDTO.toString());
+        log.info("게시글아이디 ㅇㅇid={}", boardDTO.getId());
 
+        // 1. 게시글 조회
+        Board board = boardRepository.findById(boardDTO.getId())
+                .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
 
-        // 현재 사용자 정보 가져오기
-        String uid = getCurrentUserUid();
-        log.info("사용자 정보"+id);
+        // 2. 수정 권한 확인
+        if (!board.getWriter().getId().equals(id)) {
+            throw new AccessDeniedException("게시글 수정 권한이 없습니다.");
+        }
 
-        // 게시글 조회 및 권한 확인
-        Board board = validateAndGetBoard(id, uid);
-        log.info("게시글 조회 및 권한 확인"+board);
+        // 4. 게시글 수정
+        if (boardDTO.getTitle() != null) {
+            board.setTitle(boardDTO.getTitle());
+        }
+        if (boardDTO.getContent() != null) {
+            board.setContent(boardDTO.getContent());
+        }
+        if (boardDTO.getCate1() != null) {
+            board.setCate1(boardDTO.getCate1());
+        }
+        if (boardDTO.getCate2() != null) {
+            board.setCate2(boardDTO.getCate2());
+        }
 
-        // DTO -> Entity 매핑 (변경된 필드만)
-        modelMapper.map(boardDTO, board);
-        log.info("변경된 필드만"+boardDTO);
+        // 5. 수정일시 업데이트
+        board.setUpdateDate(LocalDateTime.now());
 
-
-        // 저장 및 DTO 변환하여 반환
+        // 6. 저장
         Board savedBoard = boardRepository.save(board);
-        log.info("변경된 필드만"+savedBoard);
-        return modelMapper.map(savedBoard, BoardDTO.class);
+        log.info("게시글 수정 완료: id={}", id);
 
+        // 7. DTO 변환 및 반환
+        return BoardDTO.of(savedBoard);
     }
 
-    // 현재 사용자 UID 조회
-    private String getCurrentUserUid() {
-        String jwt = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        Claims claims = jwtProvider.getClaims(jwt);
-        return claims.get("uid", String.class);
-    }
 
     // 게시글 조회 및 권한 검증
     private Board validateAndGetBoard(Long id, String uid) {
@@ -200,7 +219,6 @@ public class BoardService {
 
         return board;
     }
-
 
     // 글 삭제
     public void deleteBoard(Long id) {
