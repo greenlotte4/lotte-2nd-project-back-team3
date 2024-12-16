@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
@@ -117,5 +118,21 @@ public class EmailService {
             System.err.println("토큰 검증 실패: " + e.getMessage());
             return false;
         }
+    }
+
+    // 이메일로 아이디 찾기
+    public int idCheck(String to, String subject, String body){
+
+        Random random = new Random();
+        int verificationCode = 100000 + random.nextInt(900000);
+
+        // 이메일 본문
+        String fullBody = body + "\n\n인증 번호:\n" + verificationCode;
+
+        // 이메일 전송
+        sendEmailMessage(to, subject, fullBody);
+
+        return verificationCode;
+
     }
 }

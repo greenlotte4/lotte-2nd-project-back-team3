@@ -55,4 +55,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 회사 대표이사 조회
     List<User> findByCompanyAndPosition(Company company, String position);
+
+    // 유저 아이디 조회
+    User findByNameAndEmail(String name, String email);
 }

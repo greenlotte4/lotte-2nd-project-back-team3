@@ -26,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Console;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
@@ -298,5 +299,22 @@ public class UserController {
             @RequestParam String position) {
 
         return userService.getUsersByCompanyAndPosition(companyId, position);
+    }
+
+    @GetMapping("/findId")
+    public String  getUserIdByEmail(@RequestParam String info, @RequestParam String email, @RequestParam String type) {
+        log.info(info + "::::::" + email + "::::::" + type);
+        if(Objects.equals(type, "Id")){
+            return userService.getUserId(info, email);
+        }else if(Objects.equals(type, "pass")){
+            return userService.getUserInfo(info);
+        }
+        return null;
+    }
+
+    @GetMapping("/search")
+    public void getSearchUser(@RequestParam String type, @RequestParam String keyword, @RequestParam String company){
+        log.info(":::::"+type+":::::"+keyword+":::::"+company);
+        userService.searchUser(type, keyword, company);
     }
 }
