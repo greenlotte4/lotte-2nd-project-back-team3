@@ -1,6 +1,7 @@
 package BackAnt.controller.project;
 
 import BackAnt.dto.UserDTO;
+import BackAnt.dto.project.UserForProjectDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.project.Project;
 import BackAnt.repository.project.ProjectCollaboratorRepository;
@@ -64,11 +65,11 @@ public class ProjectCollaboratorController {
 
         // 프로젝트별 등록된 협업자 조회
         @GetMapping("/select/{projectId}")
-        public ResponseEntity<List<UserDTO>> getProjectCollaborators(@PathVariable Long projectId) {
+        public ResponseEntity<List<UserForProjectDTO>> getProjectCollaborators(@PathVariable Long projectId) {
             log.info("projectId: " + projectId);
 
-            List<UserDTO> collaborators = projectCollaboratorService.getUsersByProjectId(projectId);
-            log.info("collaborators: " + collaborators);
+            List<UserForProjectDTO> collaborators = projectCollaboratorService.getUsersByProjectId(projectId);
+            log.info("userForProjectDTO 반환되는 collaborators: " + collaborators);
 
             return ResponseEntity.ok(collaborators);
 
