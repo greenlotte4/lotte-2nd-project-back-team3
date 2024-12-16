@@ -252,27 +252,27 @@ public class BoardFileService {
     private void configureModelMapper() {
         // 업로드 요청 매핑
         modelMapper.createTypeMap(BoardFile.class, BoardFileDTO.UploadRequest.class)
-            .addMappings(mapper -> {
-                mapper.map(src -> src.getBoardFileMaker().getId(), BoardFileDTO.UploadRequest::setWriterId);
-                mapper.map(src -> src.getBoard().getId(), BoardFileDTO.UploadRequest::setBoardId);
-            });
+                .addMappings(mapper -> {
+                    mapper.map(src -> src.getBoardFileMaker().getId(), BoardFileDTO.UploadRequest::setWriterId);
+                    mapper.map(src -> src.getBoard().getId(), BoardFileDTO.UploadRequest::setBoardId);
+                });
 
         // 업로드 응답 매핑
         modelMapper.createTypeMap(BoardFile.class, BoardFileDTO.UploadResponse.class)
-            .addMappings(mapper -> {
-                mapper.map(BoardFile::getBoardFileId, BoardFileDTO.UploadResponse::setBoardFileId);
-                mapper.map(BoardFile::getBoardFileOName, BoardFileDTO.UploadResponse::setBoardFileOName);
-                mapper.map(BoardFile::getBoardFileSize, BoardFileDTO.UploadResponse::setBoardFileSize);
-                mapper.map(BoardFile::getBoardFileExt, BoardFileDTO.UploadResponse::setBoardFileExt);
-                mapper.map(BoardFile::getBoardFileUploadedAt, BoardFileDTO.UploadResponse::setBoardFileUploadedAt);
-            });
+                .addMappings(mapper -> {
+                    mapper.map(BoardFile::getBoardFileId, BoardFileDTO.UploadResponse::setBoardFileId);
+                    mapper.map(BoardFile::getBoardFileOName, BoardFileDTO.UploadResponse::setBoardFileOName);
+                    mapper.map(BoardFile::getBoardFileSize, BoardFileDTO.UploadResponse::setBoardFileSize);
+                    mapper.map(BoardFile::getBoardFileExt, BoardFileDTO.UploadResponse::setBoardFileExt);
+                    mapper.map(BoardFile::getBoardFileUploadedAt, BoardFileDTO.UploadResponse::setBoardFileUploadedAt);
+                });
 
         // 다운로드 정보 매핑
         modelMapper.createTypeMap(BoardFile.class, BoardFileDTO.DownloadInfoDTO.class)
-            .addMappings(mapper -> {
-                mapper.map(BoardFile::getBoardFileSName, BoardFileDTO.DownloadInfoDTO::setBoardFileSName);
-                mapper.map(BoardFile::getBoardFileOName, BoardFileDTO.DownloadInfoDTO::setBoardFileOName);
-            });
+                .addMappings(mapper -> {
+                    mapper.map(BoardFile::getBoardFileSName, BoardFileDTO.DownloadInfoDTO::setBoardFileSName);
+                    mapper.map(BoardFile::getBoardFileOName, BoardFileDTO.DownloadInfoDTO::setBoardFileOName);
+                });
     }
 
     // 글 상세 조회 (파일 다운로드 화면 조회)
@@ -316,6 +316,7 @@ public class BoardFileService {
 
         User user = User.builder()
                 .id(uploadRequest.getWriterId())
+                .name(String.valueOf(uploadRequest.getWriterName()))
                 .build();
 
         log.info("파일 업로드 사용자 정보: {}", user);

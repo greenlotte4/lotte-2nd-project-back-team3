@@ -32,8 +32,8 @@ public class BoardFileDTO {
 
         private Long boardId;
         private Long writerId;  // Board 객체를 직접 받음
+        private Long writerName;  // Board 객체를 직접 받음
         private MultipartFile boardFile;    // User 객체를 직접 받음
-
         // MultipartFile은 여기서 제외 - @RequestPart로 별도 처리
     }
 

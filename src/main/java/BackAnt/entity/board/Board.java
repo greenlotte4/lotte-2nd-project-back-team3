@@ -48,7 +48,7 @@ public class Board {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id", nullable = false)
-    @ToString.Exclude  // ToString 순환 참조 방지
+    //@ToString.Exclude  // ToString 순환 참조 방지
     private User writer; // 게시글 작성자 (User Entity )속
 
     @Builder.Default

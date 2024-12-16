@@ -17,8 +17,6 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class BoardResponseViewDTO {
 
     private Long id; // 게시글 번호
@@ -27,28 +25,61 @@ public class BoardResponseViewDTO {
     private String title;    // 게시글 제목
     private int comment = 0; // 게시글 댓글 0
     private String content;  // 게시글 내용
-    private String writer;   // 작성자
+    private String writer;   // 작성자 이름 (String 타입으로 작성자 이름을 받음)
+    private String writerName;   // 작성자 이름 (String 타입으로 작성자 이름을 받음)
+
     private int file = 0; // 파일 0
     private int hit = 0; // 조회수 처음에 0
     private int likes = 0; // 좋아요 처음에 0
+
     private String regIp; // 작성일시
     private LocalDateTime regDate; // 작성일
 
 
+    public BoardResponseViewDTO(Long id, String cate1, String cate2, String title, int comment, String content, String writer,
+                                int file, int hit, int likes, String regIp, LocalDateTime regDate) {
+        this.id = id;
+        this.cate1 = cate1;
+        this.cate2 = cate2;
+        this.title = title;
+        this.content = content;
+        this.writer = writer;
+        this.comment = comment;
+        this.file = file;
+        this.hit = hit;
+        this.likes = likes;
+        this.regIp = regIp;
+        this.regDate = regDate;
+    }
 
+
+//    // ModelMapper 설정을 위한 정적 메서드
+//    public static ModelMapper createModelMapper() {
+//        ModelMapper modelMapper = new ModelMapper();
+//
+//        // writer 필드에 대한 매핑만 필요한 경우
+//        modelMapper.createTypeMap(Board.class, BoardResponseViewDTO.class)
+//                .addMappings(mapper -> {
+//                    mapper.map(src -> src.getWriter(), BoardResponseViewDTO::setWriter);
+//                });
+//
+//        return modelMapper;
+//    }
+    
     // ModelMapper 설정을 위한 정적 메서드
     public static ModelMapper createModelMapper() {
         ModelMapper modelMapper = new ModelMapper();
 
-        // writer 필드에 대한 매핑만 필요한 경우
+        // Board의 writer는 User 객체일 경우, User의 name을 writer로 매핑
         modelMapper.createTypeMap(Board.class, BoardResponseViewDTO.class)
                 .addMappings(mapper -> {
-                    mapper.map(src -> src.getWriter(), BoardResponseViewDTO::setWriter);
+                    // writer 필드는 Board의 writer(User)의 name을 사용하도록 매핑
+                    mapper.map(src -> src.getWriter() != null ? src.getWriter().getName() : "익명",
+                            BoardResponseViewDTO::setWriter);
                 });
 
         return modelMapper;
-    }
-
+}
 
 
 }
