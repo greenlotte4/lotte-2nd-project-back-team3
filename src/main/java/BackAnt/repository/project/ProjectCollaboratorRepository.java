@@ -34,7 +34,8 @@ public interface ProjectCollaboratorRepository extends JpaRepository<ProjectColl
     // 프로젝트 id 기준으로 조회
     List<ProjectCollaborator> findByProject_Id(Long projectId);
 
-
+    // 프로젝트 id 기준으로 프로젝트 협업자 삭제
+    void deleteByProjectId(Long projectId);
 
 
 }

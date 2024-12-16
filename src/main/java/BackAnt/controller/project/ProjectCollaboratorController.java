@@ -33,15 +33,16 @@ public class ProjectCollaboratorController {
     private final ModelMapper modelMapper;
     private final UserService userService;
     private final ProjectRepository projectRepository;
-    private final ProjectCollaboratorService projectCollaboratorService;
     private final UserRepository userRepository;
     private final ProjectCollaboratorRepository projectCollaboratorRepository;
+    private final ProjectCollaboratorService projectCollaboratorService;
 
     // 프로젝트별 협업자 추가
-    @PostMapping("/insert/{projectId}")
-    public ResponseEntity<?> addCollaboratorToProject(@PathVariable Long projectId, @RequestBody List<Long> userIds) {
+    @PostMapping("/insert/{projectId}/{id}")
+    public ResponseEntity<?> addCollaboratorToProject(@PathVariable Long projectId, @RequestBody List<Long> userIds, @PathVariable Long id) {
         log.info("projectId: " + projectId);
         log.info("userIds: " + userIds);
+        log.info("id: " + id);
 
         // 프로젝트 id별 project 조회
         Project project = projectRepository.findById(projectId)
@@ -54,7 +55,7 @@ public class ProjectCollaboratorController {
             User user = userRepository.findById(userId)
                             .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-            projectCollaboratorService.addCollaborator(project, user, 1);
+            projectCollaboratorService.addCollaborator(project, user, 1, id);
         }
 
             return ResponseEntity.ok("협업자가 성공적으로 추가되었습니다.");
