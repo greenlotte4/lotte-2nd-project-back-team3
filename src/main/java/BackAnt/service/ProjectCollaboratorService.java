@@ -3,6 +3,7 @@ package BackAnt.service;
 import BackAnt.dto.NotificationDTO;
 import BackAnt.dto.UserDTO;
 import BackAnt.dto.project.ProjectCollaboratorDTO;
+import BackAnt.dto.project.UserForProjectDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.project.Project;
 import BackAnt.entity.project.ProjectCollaborator;
@@ -76,16 +77,28 @@ public class ProjectCollaboratorService {
     }
 
     // 프로젝트별 협업자 조회
-    public List<UserDTO> getUsersByProjectId(Long projectId) {
-
+    public List<UserForProjectDTO> getUsersByProjectId(Long projectId) {
         log.info("projectId : " + projectId);
-        List<User> users = projectCollaboratorRepository.findUsersByProjectId(projectId);
-        log.info("users : " + users);
 
-        return users.stream()
-                .map(user -> modelMapper.map(user, UserDTO.class))
+        // 프로젝트에 속한 협업자 목록 조회
+        List<ProjectCollaborator> collaborators = projectCollaboratorRepository.findByProject_Id(projectId);
+        log.info("collaborators : " + collaborators);
+
+        // UserForProjectDTO 생성
+        return collaborators.stream()
+                .map(collaborator -> {
+                    // 기존 UserDTO로 변환
+                    UserDTO userDTO = modelMapper.map(collaborator.getUser(), UserDTO.class);
+
+                    // UserForProjectDTO로 확장하고 isOwner 필드 설정
+                    UserForProjectDTO userForProjectDTO = modelMapper.map(userDTO, UserForProjectDTO.class);
+                    userForProjectDTO.setOwner(collaborator.isOwner());
+
+                    return userForProjectDTO;
+                })
                 .collect(Collectors.toList());
     }
+
 
 
     // 프로젝트 id와 사용자 id를 기준으로 협업자 삭제
