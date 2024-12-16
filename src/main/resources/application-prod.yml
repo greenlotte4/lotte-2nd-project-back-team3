@@ -1,7 +1,7 @@
-spring:
-    data:
-        mongodb:
-            uri: mongodb://antwork:1234@107.20.58.55:27017/antwork?authSource=antwork
+#spring:
+#    data:
+#        mongodb:
+#            uri: mongodb://antwork:1234@107.20.58.55:27017/antwork?authSource=antwork
 
 # 프론트엔드 배포 URL
 frontend:

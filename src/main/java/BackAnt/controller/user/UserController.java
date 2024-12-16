@@ -1,5 +1,6 @@
 package BackAnt.controller.user;
 
+import BackAnt.JWT.JwtProvider;
 import BackAnt.dto.RequestDTO.AdminRequestDTO;
 import BackAnt.dto.RequestDTO.InviteRequestDTO;
 import BackAnt.dto.RequestDTO.LoginRequestDTO;
@@ -7,12 +8,17 @@ import BackAnt.dto.RequestDTO.UserRegisterRequestDTO;
 import BackAnt.dto.ResponseDTO.ApiResponseDTO;
 import BackAnt.dto.UserDTO;
 import BackAnt.dto.common.ResponseDTO;
+import BackAnt.entity.AccessLog;
 import BackAnt.entity.Company;
 import BackAnt.entity.Invite;
 import BackAnt.entity.User;
 import BackAnt.security.MyUserDetails;
 import BackAnt.service.*;
+import BackAnt.service.kafka.KafkaProducerService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -29,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.Console;
 import java.io.IOException;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,6 +53,10 @@ public class UserController {
     private final ImageService imageService;
 
     private final ModelMapper modelMapper;
+    private final JwtProvider jwtProvider;
+    private final ObjectMapper objectMapper;
+    private final KafkaProducerService kafkaProducerService;
+
     // 초기 관리자 멤버 추가
     @PostMapping("/create")
     public ResponseEntity<?> addUser(@RequestBody AdminRequestDTO adminDTO) {
@@ -150,7 +161,7 @@ public class UserController {
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest, HttpServletRequest request,HttpServletResponse response) {
         try {
             log.info("로그인들어오나");
             System.out.println("로그인??");
@@ -169,10 +180,12 @@ public class UserController {
             refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 유효
             response.addCookie(refreshCookie);
 
+            // 로그 생성
+            createAccessLog(accessToken, request);
+
+
             log.info("Access Token: {}", accessToken);
             log.info("Refresh Token: {}", refreshToken);
-
-
             // 응답 반환
             return ResponseEntity.ok(new ApiResponseDTO<>(true, "로그인 성공", accessToken));
         } catch (Exception e) {
@@ -180,7 +193,26 @@ public class UserController {
                     .body(new ApiResponseDTO<>(false, "로그인 실패: " + e.getMessage(), null));
         }
     }
+    // 로그 생성 메서드 (로그인은 axiosInstance 사용하지 않아서 uid 뽑아내기 어렵기 때문에 메서드 안에 생성)
+    private void createAccessLog(String accessToken, HttpServletRequest request) {
+        try {
+            Claims claims = jwtProvider.getClaims(accessToken);
+            String userId = claims.get("uid", String.class);
 
+            AccessLog log = new AccessLog();
+            log.setUserId(userId);
+            log.setIpAddress(request.getRemoteAddr());
+            log.setUrlPath(request.getRequestURI());
+            log.setHttpMethod(request.getMethod());
+            log.setAccessTime(LocalDateTime.now());
+            log.setMethodDescription("로그인");
+
+            String message = objectMapper.writeValueAsString(log);
+            kafkaProducerService.sendMessage("access-log-topic", message);
+        } catch (Exception e) {
+            log.error("로그 생성 실패: {}", e.getMessage());
+        }
+    }
     // 리프레시 토큰 검증
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken) {
