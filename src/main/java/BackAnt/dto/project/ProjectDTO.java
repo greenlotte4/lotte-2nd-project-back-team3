@@ -20,6 +20,8 @@ public class ProjectDTO {
 
     // 추가 필드
     private String uid;
+    private String action;  // 웹소켓을 쏴주기 위한 액션
+    private Long projectId;
 
     // 특정 필드만 받는 생성자
     public ProjectDTO(Long id, String projectName, int status) {

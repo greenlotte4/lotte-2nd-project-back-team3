@@ -3,10 +3,7 @@ package BackAnt.service;
 import BackAnt.dto.project.ProjectAssignedUserDTO;
 import BackAnt.dto.project.ProjectTaskDTO;
 import BackAnt.entity.User;
-import BackAnt.entity.project.ProjectCollaborator;
-import BackAnt.entity.project.ProjectState;
-import BackAnt.entity.project.ProjectTask;
-import BackAnt.entity.project.ProjectTaskAssignment;
+import BackAnt.entity.project.*;
 import BackAnt.repository.project.ProjectCollaboratorRepository;
 import BackAnt.repository.project.ProjectStateRepository;
 import BackAnt.repository.project.ProjectTaskAssignmentRepository;
@@ -101,10 +98,12 @@ public class ProjectTaskService {
         responseDTO.setAssignedUserDetails(assignedUsers); // 상세 사용자 정보 설정
 
         responseDTO.setAction("taskInsert");
-        log.info("responseDTO : " + responseDTO);
+        responseDTO.setProjectId(projectState.getProject().getId());
+        responseDTO.setStateId(projectState.getId());
+        log.info("작업 추가 responseDTO : " + responseDTO);
+        log.info("해당 작업상태에 해당하는 projectId : " + projectState.getProject().getId());
 
         // 웹소켓을 쏴주기 위한 프로젝트 id에 다른 협업자 조회
-        log.info("해당 작업상태에 해당하는 projectId : " + projectState.getProject().getId());
         List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(projectState.getProject().getId());
         log.info("projectCollaborators : " + projectCollaborators);
 
@@ -157,8 +156,6 @@ public class ProjectTaskService {
                 })
                 .collect(Collectors.toList());
     }
-
-
 
     // 프로젝트 작업 수정
     @Transactional
@@ -252,6 +249,21 @@ public class ProjectTaskService {
 
         responseDTO.setAssignedUserDetails(assignedUsers); // 상세 사용자 정보 설정
 
+        responseDTO.setProjectId(projectState.getProject().getId());
+        responseDTO.setStateId(projectTaskDTO.getStateId());
+        responseDTO.setAction("taskUpdate");
+        log.info("작업수정할때 responseDTO : " + responseDTO);
+
+        // 웹소켓을 쏴주기 위한 프로젝트 id에 다른 협업자 조회
+        List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(projectState.getProject().getId());
+        log.info("projectCollaborators : " + projectCollaborators);
+
+        // 2. WebSocket을 통한 실시간 알림 전송
+        projectCollaborators.forEach(projectCollaborator -> {
+            String destination = "/topic/project/" + projectCollaborator.getUser().getId();
+            log.info("경로" + destination);
+            messagingTemplate.convertAndSend(destination, responseDTO);
+        });
 
         return responseDTO;
     }
@@ -281,12 +293,60 @@ public class ProjectTaskService {
         ProjectTask updatedTask = projectTaskRepository.save(projectTask);
         log.info("updatedTask : " + updatedTask);
 
-        return modelMapper.map(updatedTask, ProjectTaskDTO.class);
+        ProjectTaskDTO dto = modelMapper.map(updatedTask, ProjectTaskDTO.class);
+        dto.setProjectId(projectTask.getState().getProject().getId());
+        dto.setStateId(newStateId);
+        dto.setAction("taskDrag");
+        dto.getAssignedUserDetails();
+        log.info("작업 드래그앤드랍 dto : " + dto);
 
+        // 웹소켓을 쏴주기 위한 프로젝트 id에 다른 협업자 조회
+        List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(projectTask.getState().getProject().getId());
+        log.info("projectCollaborators : " + projectCollaborators);
 
+        // 2. WebSocket을 통한 실시간 알림 전송
+        projectCollaborators.forEach(projectCollaborator -> {
+            String destination = "/topic/project/" + projectCollaborator.getUser().getId();
+            log.info("경로" + destination);
+            messagingTemplate.convertAndSend(destination, dto);
+        });
+
+        return dto;
     }
 
+    // 프로젝트 작업 삭제
+    @Transactional
+    public void deleteTaskById(Long taskId) {
 
+        // 로그 추가
+        System.out.println("Deleting task with ID: " + taskId);
+
+        // 해당 작업 조회
+        ProjectTask projectTask = projectTaskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+
+        // 작업에 할당된 담당자 삭제
+        projectTaskAssignmentRepository.deleteByTaskId(taskId);
+
+        // 작업 삭제
+        projectTaskRepository.deleteById(taskId);
+
+        ProjectTaskDTO dto = modelMapper.map(projectTask, ProjectTaskDTO.class);
+        dto.setAction("taskDelete");
+        dto.setProjectId(projectTask.getState().getProject().getId());
+        log.info("작업 삭제 dto : " + dto);
+
+        // 웹소켓을 쏴주기 위한 프로젝트 id에 다른 협업자 조회
+        List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(projectTask.getState().getProject().getId());
+        log.info("projectCollaborators : " + projectCollaborators);
+
+        // 2. WebSocket을 통한 실시간 알림 전송
+        projectCollaborators.forEach(projectCollaborator -> {
+            String destination = "/topic/project/" + projectCollaborator.getUser().getId();
+            log.info("경로" + destination);
+            messagingTemplate.convertAndSend(destination, dto);
+        });
+    }
 
 
 }
