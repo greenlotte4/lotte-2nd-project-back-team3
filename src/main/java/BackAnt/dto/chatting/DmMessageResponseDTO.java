@@ -14,7 +14,7 @@ public class DmMessageResponseDTO {
     private Long id;
     private String content;
     private Long senderId;
-    private String senderName;
+    private String userName;
     private String userProfile;
     private Long dmId;  // DM ID
     private Boolean isRead;
@@ -26,7 +26,7 @@ public class DmMessageResponseDTO {
                 .id(dmMessage.getId())
                 .content(dmMessage.getContent())
                 .senderId(dmMessage.getSender().getId())
-                .senderName(dmMessage.getSender().getName())
+                .userName(dmMessage.getSender().getName())
                 .userProfile(dmMessage.getSender().getProfileImageUrl())
                 .dmId(dmMessage.getDm().getId())
                 .isRead(dmMessage.getIsRead())

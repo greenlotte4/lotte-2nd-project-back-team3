@@ -1,18 +1,15 @@
 package BackAnt.dto.chatting;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class DmMessageSocketDTO {
-    Long id;
-    Long senderId;
-    String userName;
-    String content;
-    String createdAt;
+public class ChannelChangeNameDTO {
+    private String name;
 }
