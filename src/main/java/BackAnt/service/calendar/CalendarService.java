@@ -1,7 +1,6 @@
 package BackAnt.service.calendar;
 
-import BackAnt.controller.calendar.ScheduleController;
-import BackAnt.dto.UserDTO;
+import BackAnt.dto.user.UserDTO;
 import BackAnt.dto.calendar.CalendarDTO;
 import BackAnt.dto.calendar.ScheduleDTO;
 import BackAnt.entity.User;

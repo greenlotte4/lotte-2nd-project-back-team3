@@ -50,6 +50,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findAllByCompany(Company company);
 
+    // 회사 ID로 사용자 조회
+    List<User> findByCompanyId(Long companyId);
+
     // 회사 ID로 사용자 조회 (+ 페이징)
     Page<User> findByCompanyId(Long companyId, Pageable pageable);
 

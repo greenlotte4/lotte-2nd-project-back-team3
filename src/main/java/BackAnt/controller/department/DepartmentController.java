@@ -70,4 +70,39 @@ public class DepartmentController {
                     .body("사용자 부서 이동 중 오류가 발생했습니다.");
         }
     }
+
+    // 부서 삭제
+    @DeleteMapping("/{departmentId}")
+    public ResponseEntity<Map<String, String>> deleteDepartment(
+            @PathVariable Long departmentId,
+            @RequestBody(required = false) Map<String, Long> request
+    ) {
+        Long targetDepartmentId = request != null ? request.get("targetDepartmentId") : null;
+
+        try {
+            log.info("Deleting department with ID: " + departmentId);
+            log.info("Moving users to department ID: " + targetDepartmentId);
+
+            departmentService.deleteDepartment(departmentId, targetDepartmentId);
+
+            // 성공 메시지 반환
+            Map<String, String> response = Map.of("message", "부서가 성공적으로 삭제되었습니다.");
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            log.error("부서 삭제 실패: 잘못된 입력 - {}", e.getMessage());
+            return ResponseEntity.badRequest().body(
+                    Map.of("error", "부서 삭제 실패", "details", e.getMessage())
+            );
+
+        } catch (Exception e) {
+            log.error("부서 삭제 실패: 시스템 오류 - ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of("error", "부서 삭제 중 오류가 발생했습니다.", "details", e.getMessage())
+            );
+        }
+    }
+
+
+
 }

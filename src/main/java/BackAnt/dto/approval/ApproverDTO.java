@@ -1,4 +1,4 @@
-package BackAnt.dto;
+package BackAnt.dto.approval;
 
 import lombok.*;
 

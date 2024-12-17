@@ -6,10 +6,8 @@ package BackAnt.service;
 */
 
 import BackAnt.dto.RequestDTO.InviteRequestDTO;
-import BackAnt.dto.UserDTO;
 import BackAnt.entity.Department;
 import BackAnt.entity.Invite;
-import BackAnt.entity.User;
 import BackAnt.entity.enums.Role;
 import BackAnt.entity.enums.Status;
 import BackAnt.repository.DepartmentRepository;

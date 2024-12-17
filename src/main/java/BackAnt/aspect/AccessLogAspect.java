@@ -30,14 +30,14 @@ public class AccessLogAspect {
 
     // 캘린더 관련 API
     @Pointcut("execution(* BackAnt.controller.calendar.CalendarController.calendar(..)) || " +
-            "execution(* BackAnt.controller.calendar.CalendarController.delete(..)) || " +
+            "execution(* BackAnt.controller.calendar.CalendarController.deleteCalendar(..)) || " +
             "execution(* BackAnt.controller.calendar.CalendarController.updateShare(..)) || " +
             "execution(* BackAnt.controller.calendar.CalendarController.deleteShare(..))")
     public void calendarMethods() {}
 
     // 일정 관련 API
-    @Pointcut("execution(* BackAnt.controller.calendar.ScheduleController.insert(..)) || " +
-            "execution(* BackAnt.controller.calendar.ScheduleController.delete(..))")
+    @Pointcut("execution(* BackAnt.controller.calendar.ScheduleController.insertSchedule(..)) || " +
+            "execution(* BackAnt.controller.calendar.ScheduleController.deleteSchedule(..))")
     public void scheduleMethods() {}
 
     // 프로젝트 관련 API
@@ -61,7 +61,7 @@ public class AccessLogAspect {
 
     // 페이지 관련 API
     @Pointcut("execution(* BackAnt.controller.page.PageController.createPage(..)) || " +
-            "execution(* BackAnt.controller.page.PageController.softDeletePageById(..)) || " +
+            "execution(* BackAnt.service.page.PageService.DeleteById(..)) || " +
             "execution(* BackAnt.controller.page.PageController.addCollaborators(..)) || " +
             "execution(* BackAnt.controller.page.PageController.removeCollaborator(..))")
     public void pageMethods() {}
@@ -73,34 +73,19 @@ public class AccessLogAspect {
 
     public void driveMethods() {}
 
-    // 채팅 관련 API
-    @Pointcut("execution(* BackAnt.controller.ChattingController.createChannel(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.transferOwnershipAndLeave(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.getAllChannels(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.getChannelById(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.getChannelMembers(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.sendMessage(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.getMessages(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.markMessagesAsRead(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.searchMessages(..))")
-    public void chattingMethods() {}
-
-    // DM 관련 API
-    @Pointcut("execution(* BackAnt.controller.ChattingController.createDm(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.getDm(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.getDmMessages(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.sendDmMessage(..)) || " +
-            "execution(* BackAnt.controller.ChattingController.markDmMessagesAsRead(..))")
-    public void dmMethods() {}
+    // 채팅은 로그 남길 필요 없음,,
 
     // 실행할 메서드 결합
     @Pointcut("calendarMethods() || scheduleMethods() || projectMethods() || collaboratorMethods() || " +
-            "stateMethods() || taskMethods() || pageMethods() || driveMethods() || chattingMethods() || dmMethods()")
+            "stateMethods() || taskMethods() || pageMethods() || driveMethods()")
     public void specificApiMethods() {}
 
     // 특정 메서드 실행 후 로그 기록
     @After("specificApiMethods()")
     public void logAccess(JoinPoint joinPoint) {
+        if (request.getMethod().equals("GET")) {
+            return; // GET 요청은 로그를 남기지 않음
+        }
         try {
             String authHeader = request.getHeader("Authorization");
             String userId = "unknown";

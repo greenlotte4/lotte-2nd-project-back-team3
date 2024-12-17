@@ -2,7 +2,7 @@ package BackAnt.service;
 
 import BackAnt.dto.RequestDTO.AdminRequestDTO;
 import BackAnt.dto.RequestDTO.UserRegisterRequestDTO;
-import BackAnt.dto.UserDTO;
+import BackAnt.dto.user.UserDTO;
 import BackAnt.entity.Company;
 import BackAnt.entity.Department;
 import BackAnt.entity.Invite;
@@ -33,7 +33,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /*

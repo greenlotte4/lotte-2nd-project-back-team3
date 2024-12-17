@@ -1,7 +1,7 @@
 package BackAnt.service;
 
 import BackAnt.dto.DepartmentDTO;
-import BackAnt.dto.UserDTO;
+import BackAnt.dto.user.UserDTO;
 import BackAnt.entity.Company;
 import BackAnt.entity.Department;
 import BackAnt.entity.User;
@@ -15,7 +15,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.Console;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -52,11 +51,13 @@ public class DepartmentService {
     }
 
     // 회사별 부서 목록 조회
-    // 회사별 부서 목록 조회
     public List<DepartmentDTO> getDepartmentsByCompanyId(Long companyId) {
 
         // 회사 ID로 부서 목록 조회
         List<Department> departments = departmentRepository.findByCompanyId(companyId);
+
+        // 모든 유저 조회: 부서가 null인 유저도 가져오기
+        List<User> allUsers = userRepository.findByCompanyId(companyId);
 
         // 부서별 DTO 생성 및 유저 목록 추가
         List<DepartmentDTO> departmentDTOS = departments.stream()
@@ -67,14 +68,7 @@ public class DepartmentService {
 
                     // 부서에 속한 유저 목록 가져오기
                     List<UserDTO> userDTOS = department.getUsers().stream()
-                            .map(user -> {
-                                UserDTO userDTO = new UserDTO();
-                                userDTO.setId(user.getId());
-                                userDTO.setName(user.getName());
-                                userDTO.setEmail(user.getEmail());
-                                userDTO.setPosition(user.getPosition());
-                                return userDTO;
-                            })
+                            .map(user -> mapUserToDTO(user))
                             .collect(Collectors.toList());
 
                     dto.setUsers(userDTOS); // DTO에 유저 목록 설정
@@ -82,7 +76,31 @@ public class DepartmentService {
                 })
                 .collect(Collectors.toList());
 
+        // 부서가 지정되지 않은 사용자 목록 (department == null)
+        List<UserDTO> unassignedUsers = allUsers.stream()
+                .filter(user -> user.getDepartment() == null)
+                .map(user -> mapUserToDTO(user))
+                .collect(Collectors.toList());
+
+        if (!unassignedUsers.isEmpty()) {
+            // "미지정 사용자"라는 가상의 부서 추가
+            DepartmentDTO unassignedDept = new DepartmentDTO();
+            unassignedDept.setId(0L); // ID를 0으로 설정
+            unassignedDept.setName("부서 미지정");
+            unassignedDept.setUsers(unassignedUsers);
+
+            departmentDTOS.add(unassignedDept);
+        }
+
         return departmentDTOS; // 최종 DTO 리스트 반환
+    }
+    private UserDTO mapUserToDTO(User user) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setName(user.getName());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setPosition(user.getPosition());
+        return userDTO;
     }
 
     public List<String> selectDepart (String depart) {
@@ -122,6 +140,33 @@ public class DepartmentService {
         // 사용자 부서 업데이트
         user.setDepartment(newDepartment);
         userRepository.save(user);
+    }
+
+    // 부서 삭제
+    @Transactional
+    public void deleteDepartment(Long departmentId, Long targetDepartmentId) {
+        // 삭제할 부서 찾기
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 부서를 찾을 수 없습니다."));
+
+        // 부서에 속한 유저 확인
+        List<User> users = userRepository.findByDepartmentId(departmentId);
+
+        if (!users.isEmpty()) {
+            if (targetDepartmentId != null) {
+                // 유저를 다른 부서로 이동
+                Department targetDepartment = departmentRepository.findById(targetDepartmentId)
+                        .orElseThrow(() -> new IllegalArgumentException("이동할 부서를 찾을 수 없습니다."));
+                users.forEach(user -> user.setDepartment(targetDepartment));
+            } else {
+                // 유저를 '부서 미지정' 상태로 설정
+                users.forEach(user -> user.setDepartment(null));
+            }
+            userRepository.saveAll(users);
+        }
+
+        // 부서 삭제
+        departmentRepository.delete(department);
     }
 
 }

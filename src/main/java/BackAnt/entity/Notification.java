@@ -43,4 +43,7 @@ public class Notification {
 
     @Column(nullable = false)
     private boolean isRead = false; // 기본값을 false로 설정
+
+    @Column(name = "sender_id", nullable = false)
+    private Long senderId; // 보낸 사람의 ID
 }

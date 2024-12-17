@@ -10,6 +10,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,7 @@ public class NotificationService {
         // 1. 알림 데이터 저장
         Notification notification = modelMapper.map(dto, Notification.class);
         notification.setCreatedAt(LocalDateTime.now());
+        notification.setSenderId(dto.getSenderId());
         notificationRepository.save(notification);
 
         // 2. WebSocket을 통한 실시간 알림 전송
@@ -71,4 +73,19 @@ public class NotificationService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    // senderId 기준 알림 조회 및 DTO 변환
+    public List<NotificationDTO> getNotificationsBySenderId(Long senderId) {
+        List<Notification> notifications = notificationRepository.findBySenderId(senderId);
+        return notifications.stream()
+                .map(notification -> convertToDTO(notification))
+                .collect(Collectors.toList());
+    }
+    private NotificationDTO convertToDTO(Notification notification) {
+        NotificationDTO dto = modelMapper.map(notification, NotificationDTO.class);
+        // createdAt을 문자열로 포맷
+        dto.setCreatedAt(LocalDateTime.parse(notification.getCreatedAt().format(DateTimeFormatter.ISO_DATE_TIME)));
+        return dto;
+    }
+
 }
