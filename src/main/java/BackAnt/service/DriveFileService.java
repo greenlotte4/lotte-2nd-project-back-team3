@@ -40,10 +40,11 @@ public class DriveFileService {
 // 파일 등록
     public List<DriveNewFileInsertDTO> fileInsert(DriveNewFileInsertDTO driveNewFileInsertDTO) {
         String driveFolderId = driveNewFileInsertDTO.getDriveFolderId(); // 상위 폴더 ID
+        String name = driveNewFileInsertDTO.getDriveFileMaker();
         log.info("driveFolderId: " + driveFolderId);
 
         // 기본 경로 설정
-        String parentFolderPath = "/uploads/drive/my";
+        String parentFolderPath = "/uploads/drive/"+name;
         String drivePath = "";
 
         // 상위 폴더 ID가 있는 경우 경로 확인

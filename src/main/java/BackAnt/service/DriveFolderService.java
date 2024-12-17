@@ -1,11 +1,13 @@
 package BackAnt.service;
 
 import BackAnt.document.page.drive.DriveFolderDocument;
-import BackAnt.dto.drive.DriveFolderNameDTO;
 import BackAnt.dto.drive.DriveNewFolderInsertDTO;
-import BackAnt.dto.drive.MyDriveViewDTO;
+import BackAnt.entity.DriveCollaborator;
 import BackAnt.entity.DriveFileEntity;
+import BackAnt.entity.User;
 import BackAnt.repository.DriveFileRepository;
+import BackAnt.repository.UserRepository;
+import BackAnt.repository.drive.DriveCollaboratorRepository;
 import BackAnt.repository.mongoDB.drive.DriveFolderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -13,11 +15,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
-import org.bson.types.ObjectId;
 
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +31,8 @@ import java.util.stream.Collectors;
 public class DriveFolderService {
 
     private final DriveFolderRepository driveFolderRepository;
+    private final DriveCollaboratorRepository driveCollaboratorRepository;
+    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final String USER_DIR = System.getProperty("user.dir"); // 현재 위치에서 /uploads를 붙혀주기때문에 배포 시 문제 없음
     private final DriveFileRepository driveFileRepository;
@@ -39,11 +40,18 @@ public class DriveFolderService {
 
     // 새 폴더 생성
     public DriveNewFolderInsertDTO FolderNewInsert(DriveNewFolderInsertDTO driveNewFolderInsertDTO) {
+
+        // 1. 로그인한 사용자 조회
+        User user = userRepository.findByUid(driveNewFolderInsertDTO.getDriveFolderMaker())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        log.info("유저누군데  :" +user);
+
         String driveFolderId = driveNewFolderInsertDTO.getDriveFolderId(); // 상위 폴더 ID
+        String name = driveNewFolderInsertDTO.getDriveFolderMaker();
         String newFolderId = UUID.randomUUID().toString(); // 새로운 폴더의 UUID
         log.info("새 폴더 ID: " + newFolderId);
 
-        String parentFolderPath = "/uploads/drive/my"; // 기본 경로
+        String parentFolderPath = "/uploads/drive/"+name; // 기본 경로
         String USER_DIR = System.getProperty("user.dir"); // 현재 작업 디렉터리
 
         String driveFolderPath;
@@ -91,12 +99,25 @@ public class DriveFolderService {
         log.info("생성된 폴더 정보: " + newFolder);
 
         // 폴더 저장 후 DTO로 반환
-        return modelMapper.map(driveFolderRepository.save(newFolder), DriveNewFolderInsertDTO.class);
+        DriveNewFolderInsertDTO driveNewFolderInsertDTO1 = modelMapper.map(driveFolderRepository.save(newFolder), DriveNewFolderInsertDTO.class);
+
+        DriveCollaborator driveCollaborator = DriveCollaborator.builder()
+                .driveFolderId(driveNewFolderInsertDTO1.getDriveFolderId())
+                .driveShareType(1)
+                .driveFolderShareAt(LocalDateTime.now())
+                .user(user)
+                .isOwner(true)
+                .build();
+
+        driveCollaboratorRepository.save(driveCollaborator);
+
+        return driveNewFolderInsertDTO1;
     }
 
 
     //마이드라이브폴더파일조회
     public Map<String, Object> MyDriveView() {
+
         List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findFirstWithFolders();
         List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderIdIsNullAndDriveIsDeleted(0);
         log.info("파일...나와..? 야옹.. : " + MyDriveFiles);
@@ -117,7 +138,7 @@ public class DriveFolderService {
         List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findWithSelectFolders(driveFolderId);
         List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderIdAndDriveIsDeleted(driveFolderId,0);
 
-
+        //네비게이션용 조회
         Optional<DriveFolderDocument> currentFolderOpt = driveFolderRepository.findById(driveFolderId);
         if (currentFolderOpt.isEmpty()) {
             throw new RuntimeException("폴더를 찾을 수 없습니다: " + driveFolderId);
