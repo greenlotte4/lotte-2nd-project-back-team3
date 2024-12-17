@@ -145,5 +145,20 @@ public class ChannelService {
                 .map(ChannelMemberResponseDTO::fromEntity)
                 .toList();
     }
+
+    public void changeChannelTitle(Long channelId, String channelName) {
+        // TODO: 검증
+        
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다."));
+
+        channel.changeName(channelName);
+    }
+
+
+    public List<ChannelResponseDTO> getVisibleChannel(Long memberId) {
+        List<Channel> visibleChannels = channelRepository.findVisibleChannelByMemberId(memberId);
+        return visibleChannels.stream().map(ChannelResponseDTO::fromEntity).toList();
+    }
 }
 

@@ -126,7 +126,7 @@ public class DmService {
                         .id(dmMessage.getId())
                         .content(dmMessage.getContent())
                         .senderId(dmMessage.getSender().getId())
-                        .senderName(dmMessage.getSender().getName())
+                        .userName(dmMessage.getSender().getName())
                         .userProfile(dmMessage.getSender().getProfileImageUrl())
                         .dmId(dmMessage.getDm().getId())
                         .isRead(dmMessage.getIsRead())

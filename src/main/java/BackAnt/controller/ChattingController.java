@@ -40,8 +40,8 @@ public class ChattingController {
 
     // 모든 채널 조회
     @GetMapping("/channel")
-    public ResponseEntity<List<ChannelResponseDTO>> getAllChannels() {
-        List<ChannelResponseDTO> channels = channelService.getAllChannels();
+    public ResponseEntity<List<ChannelResponseDTO>> getAllChannels(Long memberId) {
+        List<ChannelResponseDTO> channels = channelService.getVisibleChannel(memberId);
         return ResponseEntity.status(HttpStatus.OK).body(channels);
 //        return new ResponseEntity<>(channels, HttpStatus.OK);
     }
@@ -112,6 +112,14 @@ public class ChattingController {
     public ResponseEntity<List<ChannelMemberResponseDTO>> getChannelMembers(@PathVariable Long channelId) {
         List<ChannelMemberResponseDTO> members = channelService.getChannelMembers(channelId);
         return ResponseEntity.ok(members);
+    }
+
+    // 채널 이름 수정
+    @PatchMapping("/channel/{channelId}/title")
+    public ResponseEntity<Void> changeChannelTitle(@PathVariable Long channelId, @RequestBody ChannelChangeNameDTO channelChangeNameDTO)
+    {
+        channelService.changeChannelTitle(channelId, channelChangeNameDTO.getName());
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     // 디엠방 생성 (1:1 비공개 채팅)
