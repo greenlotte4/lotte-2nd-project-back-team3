@@ -13,6 +13,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,13 +41,41 @@ public class BoardFileController {
 
 
     // 글쓰기 (파일 업로드)
-    @PostMapping("/upload")
-    public ResponseEntity<?> uploadFile(BoardFileDTO.UploadRequest uploadRequest) {
+//    @PostMapping("/upload")
+//    public ResponseEntity<?> uploadFile(BoardFileDTO.UploadRequest uploadRequest) {
+//
+//        log.info("여기는 컨트롤러(BoardFile write) ---------------------------------");
+//        //log.info("게시글 정보: {}", request);
+//
+//        try {
+//            BoardFileDTO.UploadResponse response = boardFileService.uploadFile(uploadRequest);
+//            return ResponseEntity.ok(response);
+//
+//        } catch (IllegalArgumentException e) {
+//            log.warn("파일 유효성 검사 실패: {}", e.getMessage());
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        } catch (Exception e) {
+//            log.error("파일 업로드 중 오류 발생", e);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body("파일 업로드 중 오류가 발생했습니다: " + e.getMessage());
+//        }
+//    }
+
+    // 글쓰기 (파일 업로드)
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadFile(
+            @RequestPart("uploadRequest") BoardFileDTO.UploadRequest uploadRequest,
+            @RequestPart("file") MultipartFile file) {
 
         log.info("여기는 컨트롤러(BoardFile write) ---------------------------------");
-        //log.info("게시글 정보: {}", request);
+        log.info("업로드 요청 데이터: {}", uploadRequest);
+        log.info("업로드 파일: {}", file.getOriginalFilename());
 
         try {
+            // 파일을 DTO에 직접 설정
+            uploadRequest.setBoardFile(file);
+
+            // 서비스 호출
             BoardFileDTO.UploadResponse response = boardFileService.uploadFile(uploadRequest);
             return ResponseEntity.ok(response);
 

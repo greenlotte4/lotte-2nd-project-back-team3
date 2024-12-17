@@ -2,9 +2,12 @@ package BackAnt.dto.board;
 
 import BackAnt.entity.User;
 import BackAnt.entity.board.Board;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 
 /*
     날 짜 : 2024/12/02(월)
@@ -49,12 +52,15 @@ public class BoardDTO {
     @Builder.Default
     private int comment = 0; // 게시글 댓글 0
 
-    private String regIp; // 작성일시
+    private String regIp; // 작성 일시
+
+    // 날짜 필드에 포맷 지정
+    // @JsonFormat을 사용하여 LocalDateTime을 지정된 형식으로 포맷
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDateTime regDate; // 작성일
 
-
     // Entity -> DTO 변환
-    public static BoardDTO of(Board board) {
+    public static BoardDTO of(Board board, int likeCount) {
         User writer = board.getWriter();  // User 객체 조회
         return BoardDTO.builder()
                 .id(board.getId())
@@ -65,11 +71,13 @@ public class BoardDTO {
                 .file(board.getFile())
                 .hit(board.getHit())
                 .likes(board.getLikes())
+                .likes(likeCount) // 좋아요 수를 전달
                 .comment(board.getComment())
                 .regIp(board.getRegIp())
                 .regDate(board.getRegDate())
                 .build();
     }
+
 
 
 

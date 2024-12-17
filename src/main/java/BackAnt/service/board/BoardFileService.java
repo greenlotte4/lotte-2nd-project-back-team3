@@ -27,8 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /*
     날 짜 : 2024/12/10(화)
@@ -51,201 +50,9 @@ public class BoardFileService {
     private final ModelMapper modelMapper;
     private final JwtProvider jwtProvider;
 
-//    private final String USER_DIR = System.getProperty("user.dir"); // 현재 위치에서 /uploads를 붙혀주기때문에 배포 시 문제 없음
-//    private final String UPLOAD_DIR = "/uploads/boardFiles/"; // 파일 저장 경로 상수 추가
-//
-//
-//    // 파일 업로드 처리
-//    // (- 파일을 서버에 저장하고 DB에 파일 정보를 기록)
-//    public BoardFileDTO.UploadResponse uploadFile(BoardFileDTO.UploadRequest uploadRequest) {
-//        MultipartFile file = uploadRequest.getBoardFile();
-//
-//        if (file == null || file.isEmpty()) {
-//            throw new IllegalArgumentException("첨부 파일이 없습니다.");
-//        }
-//
-//        // 파일 이름 생성 및 저장 경로 설정
-//        String originalFileName = file.getOriginalFilename();
-//        String generatedFileName = generateFileName(originalFileName);
-//        String fullPath = USER_DIR + UPLOAD_DIR + generatedFileName;
-//
-//        // 파일 저장 로직 실행
-//        saveFile(file, fullPath);
-//
-//        Board board = Board.builder()
-//                .id(uploadRequest.getBoardId())
-//                .build();
-//
-//        User user = User.builder()
-//                .id(uploadRequest.getWriter())
-//                .build();
-//
-//        log.info(user);
-//
-//        // BoardFile 엔티티 저장
-//        BoardFile boardFile = BoardFile.builder()
-//                .board(board)
-//                .boardFileMaker(user)
-//                .boardFileOName(originalFileName)
-//                .boardFileSName(generatedFileName)
-//                .boardFilePath(fullPath)
-//                .boardFileSize(file.getSize())
-//                .boardFileExt(getFileExtension(originalFileName))
-//                .build();
-//
-//        BoardFile savedBoardFile = boardFileRepository.save(boardFile);
-//
-//        // 저장된 파일 정보를 DTO로 변환하여 반환
-//        return modelMapper.map(savedBoardFile, BoardFileDTO.UploadResponse.class);
-//    }
-//
-//
-//    // 파일 이름 생성 (중복 방지)
-//    private String generateFileName(String originalFileName) {
-//        String fileExtension = getFileExtension(originalFileName);
-//        return UUID.randomUUID().toString() + "." + fileExtension;
-//    }
-//
-//    // 파일 확장자 추출
-//    private String getFileExtension(String fileName) {
-//        int dotIndex = fileName.lastIndexOf('.');
-//        return (dotIndex != -1) ? fileName.substring(dotIndex + 1) : "";
-//    }
-//
-//    // 파일 저장 로직
-//    private void saveFile(MultipartFile file, String filePath) {
-//        try {
-//            // 저장 디렉토리 생성
-//            Path directory = Paths.get(USER_DIR + UPLOAD_DIR);
-//            if (!Files.exists(directory)) {
-//                Files.createDirectories(directory);
-//            }
-//
-//            // 파일 저장
-//            file.transferTo(new File(filePath));
-//            log.info("파일이 성공적으로 저장되었습니다: {}", filePath);
-//        } catch (IOException e) {
-//            log.error("파일 저장 중 오류 발생: {}", filePath, e);
-//            throw new RuntimeException("파일 저장 실패", e);
-//        }
-//    }
-//
-////    // 파일 확장자 추출
-////    private String getFileExtension(String fileName) {
-////        String cleanFileName = Paths.get(fileName).getFileName().toString(); // 경로 제거
-////        int dotIndex = cleanFileName.lastIndexOf('.');
-////        return (dotIndex != -1) ? cleanFileName.substring(dotIndex + 1) : "";
-////    }
-//
-//
-//    // 글 상세 조회 (파일 다운로드 화면 조회)
-//    public List<BoardFile> getBoardFiles(int boardFileId){
-//
-//        log.info("(서비스) 파일 다운로드 화면 조회 boardFileId: {}", boardFileId);
-//        List<BoardFile> listBoardFile = boardFileRepository.findByBoardId(boardFileId);
-//
-//        log.info(listBoardFile);
-//        //BoardFileDTO.UploadResponse boardFileDTO = modelMapper.map(boardFile, BoardFileDTO.UploadResponse.class);
-//        return listBoardFile;
-//    }
-//
-//    // 파일 다운로드 처리
-//    public ResponseEntity<Resource> boardFileDownload(int boardFileId) {
-//        try {
-//            // 데이터베이스에서 파일 정보 조회
-//            log.info("(Board) 파일 다운로드 요청 boardFileId: {}", boardFileId);
-//            Optional<BoardFile> boardFile = boardFileRepository.findById(boardFileId);
-//            if (boardFile.isEmpty()) {
-//                log.error("파일 정보가 존재하지 않습니다. boardFileId: {}", boardFileId);
-//                throw new RuntimeException("파일 정보가 존재하지 않습니다: " + boardFileId);
-//            }
-//
-//            // 파일 경로 생성 - 이미 전체 경로가 저장되어 있으므로 그대로 사용
-//            String boardFilePath = boardFile.get().getBoardFilePath();
-//            String boardFileOName = boardFile.get().getBoardFileOName();
-//            Path filePath = Paths.get(boardFilePath).normalize();
-//            log.info("파일 경로 생성 완료: {}", filePath);
-//
-//            // 파일 존재 여부 확인
-//            if (!Files.exists(filePath)) {
-//                log.error("파일이 존재하지 않습니다. 파일 경로: {}", filePath);
-//                throw new RuntimeException("파일이 존재하지 않습니다: " + filePath);
-//            }
-//
-//            // Resource 객체로 파일 로드
-//            Resource resource = new UrlResource(filePath.toUri());
-//            log.info("파일 다운로드 요청: {}", resource);
-//            if (!resource.exists() || !resource.isReadable()) {
-//                log.error("파일을 읽을 수 없거나 존재하지 않습니다. 파일 경로: {}", filePath);
-//                throw new RuntimeException("파일을 읽을 수 없거나 존재하지 않습니다: " + filePath);
-//            }
-//
-//            // 파일 MIME 타입 확인
-//            String contentType = Files.probeContentType(filePath);
-//            if (contentType == null) {
-//                contentType = URLConnection.guessContentTypeFromName(boardFileOName);
-//            }
-//            if (contentType == null) {
-//                contentType = "application/octet-stream";
-//            }
-//            log.info("파일의 MIME 타입 확인 완료: {}", contentType);
-//
-//
-//            // HTTP 응답 헤더 설정
-//            String fileName = filePath.getFileName().toString();
-//            log.info("파일 다운로드 응답 준비 완료. 파일 이름: {}", fileName);
-//
-//            return ResponseEntity.ok()
-//                    .contentType(MediaType.parseMediaType(contentType))
-//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + boardFileOName + "\"")
-//                    .body(resource);
-//        } catch (Exception e) {
-//            log.error("파일 다운로드 처리 중 오류 발생: {}", e.getMessage());
-//            throw new RuntimeException("파일 다운로드 처리 중 오류 발생", e);
-//        }
-//    }
-//    public ResponseEntity<Resource> BoardFileDownload(int boardFileId){
-//        try {
-//            // 데이터베이스에서 파일 정보 조회
-//            Optional<BoardFile> boardFile = boardFileRepository.findById(boardFileId);
-//            if (boardFile.isEmpty()) {
-//                throw new RuntimeException("파일 정보가 존재하지 않습니다: " + boardFile);
-//            }
-//
-//            // 파일 경로 생성
-//            String oName = boardFile.get().getBoardFileOName();
-//            Path filePath = Paths.get(USER_DIR + UPLOAD_DIR).normalize();
-//
-//            // 파일 존재 여부 확인
-//            if (!Files.exists(filePath)) {
-//                throw new RuntimeException("파일이 존재하지 않습니다: " + filePath);
-//            }
-//
-//            // Resource 객체로 파일 로드
-//            Resource resource = new UrlResource(filePath.toUri());
-//            log.info("머라머라: {}", resource);
-//            if (!resource.exists() || !resource.isReadable()) {
-//                throw new RuntimeException("파일을 읽을 수 없거나 존재하지 않습니다: " + filePath);
-//            }
-//
-//            String contentType = Files.probeContentType(filePath); // 경로에서 MIME 타입 조회 실패 가능
-//            if (contentType == null) {
-//                contentType = URLConnection.guessContentTypeFromName(oName); // 이름에서 추론
-//            }
-//            if (contentType == null) {
-//                contentType = "application/octet-stream"; // 기본 MIME 타입
-//            }
-//
-//            // HTTP 응답 헤더 설정
-//            String fileName = filePath.getFileName().toString();
-//            return ResponseEntity.ok()
-//                    .contentType(MediaType.parseMediaType(contentType)) // MIME 타입 지정
-//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + oName + "\"")
-//                    .body(resource);
-//        } catch (Exception e) {
-//            throw new RuntimeException("파일 다운로드 처리 중 오류 발생", e);
-//        }
-//    }
+    // 파일 업로드 기본 경로 설정
+    private final Path UPLOAD_BASE_PATH = Paths.get(System.getProperty("user.dir"), "uploads", "boardFiles");
+
 
     // ModelMapper 커스텀 설정
     @PostConstruct
@@ -283,22 +90,108 @@ public class BoardFileService {
         return listBoardFile;
     }
 
-    // 파일 업로드 기본 경로 설정
-    private final Path UPLOAD_BASE_PATH = Paths.get(System.getProperty("user.dir"), "uploads", "boardFiles");
+    // 파일 유효성 검사 (사이즈, 확장자, 이름)
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    private static final Set<String> ALLOWED_EXTENSIONS = new HashSet<>(
+            Arrays.asList(
+                    // 문서 파일
+                    "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "rtf", "csv", "xml", "html", "htm",
+                    "hwp", "hwpx", "cell", "show", // 한글과컴퓨터 관련
+                    "odt", "ods", "odp", // OpenDocument 형식
 
-    /**
-     * 파일 업로드 처리
-     * - 파일을 서버에 저장하고 DB에 파일 정보를 기록
-     */
-    @Transactional
-    public BoardFileDTO.UploadResponse uploadFile(BoardFileDTO.UploadRequest uploadRequest) {
-        MultipartFile file = uploadRequest.getBoardFile();
+                    // 이미지 파일
+                    "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "raw", "webp", "svg", "ico", "heic",
 
-        // 파일 유효성 검사
+                    // 압축 파일
+                    "zip", "rar", "7z", "tar", "gz", "alz",
+
+                    // 오디오 파일
+                    "mp3", "wav", "wma", "ogg", "flac", "m4a", "mid", "midi",
+
+                    // 비디오 파일
+                    "mp4", "avi", "wmv", "mov", "mkv", "flv", "webm", "m4v", "3gp",
+
+                    // CAD 및 설계 파일
+                    "dwg", "dxf", "dwf", "step", "stp",
+
+                    // 프로그래밍 및 개발 관련
+                    "java", "class", "jar", "js", "jsx", "ts", "tsx", "json", "sql", "php", "py", "cpp", "c", "h", "cs", "rb",
+
+                    // 폰트 파일
+                    "ttf", "otf", "woff", "woff2",
+
+                    // 기타 일반 파일
+                    "log", "bak", "tmp", "conf", "ini", "properties",
+
+                    // 이메일 관련
+                    "eml", "msg",
+
+                    // 데이터베이스 파일
+                    "mdb", "accdb", "db", "sqlite"
+            )
+    );
+    private static final int MAX_FILENAME_LENGTH = 100;
+
+    // 파일 유효성 검사
+    private void validateFile(MultipartFile file) {
+        // 1. 기본 유효성 검사
         if (file == null || file.isEmpty()) {
             log.error("파일 업로드 실패: 파일이 비어있거나 null입니다.");
             throw new IllegalArgumentException("첨부 파일이 없습니다.");
         }
+
+        // 2. 파일 크기 검사
+        if (file.getSize() > MAX_FILE_SIZE) {
+            log.error("파일 업로드 실패: 파일 크기 초과 - 크기: {}", file.getSize());
+            throw new IllegalArgumentException("파일 크기는 10MB를 초과할 수 없습니다.");
+        }
+
+        // 3. 파일명 길이 검사
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.length() > MAX_FILENAME_LENGTH) {
+            log.error("파일 업로드 실패: 파일명 길이 초과 - 파일명: {}", originalFilename);
+            throw new IllegalArgumentException("파일명은 100자를 초과할 수 없습니다.");
+        }
+
+        // 4. 파일 확장자 검사
+        String extension = getFileExtension(originalFilename).toLowerCase();
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            log.error("파일 업로드 실패: 허용되지 않은 파일 확장자 - 확장자: {}", extension);
+            throw new IllegalArgumentException("허용되지 않은 파일 형식입니다.");
+        }
+
+        // 5. MIME 타입 검사
+        String contentType = file.getContentType();
+        if (contentType == null || !isSafeMimeType(contentType)) {
+            log.error("파일 업로드 실패: 안전하지 않은 MIME 타입 - type: {}", contentType);
+            throw new IllegalArgumentException("안전하지 않은 파일 형식입니다.");
+        }
+    }
+
+    // MIME 타입 안전성 검사
+    private boolean isSafeMimeType(String mimeType) {
+        return mimeType.startsWith("image/") ||
+                mimeType.startsWith("application/pdf") ||
+                mimeType.startsWith("application/msword") ||
+                mimeType.startsWith("application/vnd.openxmlformats-officedocument.wordprocessingml.") ||
+                mimeType.startsWith("application/vnd.ms-excel") ||
+                mimeType.startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml.");
+    }
+
+
+    // 파일 업로드 처리 (파일을 서버에 저장하고 DB에 파일 정보를 기록)
+    @Transactional
+    public BoardFileDTO.UploadResponse uploadFile(BoardFileDTO.UploadRequest uploadRequest) {
+        MultipartFile file = uploadRequest.getBoardFile();
+
+        // 파일 유효성 검사 실행
+        validateFile(file);
+
+        // 파일 유효성 검사
+//        if (file == null || file.isEmpty()) {
+//            log.error("파일 업로드 실패: 파일이 비어있거나 null입니다.");
+//            throw new IllegalArgumentException("첨부 파일이 없습니다.");
+//        }
 
         String originalFileName = file.getOriginalFilename();
         String savedFileName = generateFileName(originalFileName);
