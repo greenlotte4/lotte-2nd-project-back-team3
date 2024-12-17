@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class ProjectService {
     private final ProjectStateRepository projectStateRepository;
     private final ProjectTaskRepository projectTaskRepository;
     private final ProjectTaskAssignmentRepository projectTaskAssignmentRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     // 프로젝트 생성
     public ProjectDTO createProject(ProjectDTO projectDTO, String uid) {
@@ -103,7 +105,24 @@ public class ProjectService {
         project.setStatus(projectDTO.getStatus());
 
         Project updatedProject = projectRepository.save(project);
-        return modelMapper.map(updatedProject, ProjectDTO.class);
+
+        ProjectDTO dto = modelMapper.map(updatedProject, ProjectDTO.class);
+        dto.setAction("projectUpdate");
+        dto.setProjectId(updatedProject.getId());
+        log.info("프로젝트 수정 dto: " + dto);
+
+        // 웹소켓을 쏴주기 위한 프로젝트 id에 다른 협업자 조회
+        List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(projectId);
+        log.info("projectCollaborators : " + projectCollaborators);
+
+        // 2. WebSocket을 통한 실시간 알림 전송
+        projectCollaborators.forEach(projectCollaborator -> {
+            String destination = "/topic/project/" + projectCollaborator.getUser().getId();
+            log.info("경로" + destination);
+            messagingTemplate.convertAndSend(destination, dto);
+        });
+
+        return dto;
 
     }
 

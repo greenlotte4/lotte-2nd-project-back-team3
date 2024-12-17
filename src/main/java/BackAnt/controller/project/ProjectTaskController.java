@@ -68,11 +68,7 @@ public class ProjectTaskController {
     public ResponseEntity<Void> deleteTaskById(@PathVariable Long taskId) {
         log.info("taskId : " + taskId);
 
-        // 작업에 할당된 담당자 삭제
-        projectTaskAssignmentRepository.deleteByTaskId(taskId);
-
-        // 작업 삭제
-        projectTaskRepository.deleteById(taskId);
+        projectTaskService.deleteTaskById(taskId);
 
         return ResponseEntity.noContent().build();
     }

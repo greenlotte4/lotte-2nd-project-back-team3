@@ -9,6 +9,7 @@ import BackAnt.entity.project.Project;
 import BackAnt.entity.project.ProjectCollaborator;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.project.ProjectCollaboratorRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
@@ -69,8 +70,24 @@ public class ProjectCollaboratorService {
             notificationService.createAndSendNotification(notification);
         }
 
+        // 웹소켓 쏴주기 위한 프로젝트 id에 따른 협업자 조회
+        List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(project.getId());
+        log.info("프로젝트협업자 초대 projectCollaborators : " + projectCollaborators);
 
+        ProjectCollaboratorDTO dto = new ProjectCollaboratorDTO();
+        dto.setProjectId(project.getId());
+        dto.setUserId(user.getId());
+        dto.setUsername(user.getName());
+        dto.setAction("collaboratorAdd");
 
+        log.info("프로젝트 협업자 초대 dto : " + dto);
+
+        // 2. WebSocket을 통한 실시간 알림 전송
+        projectCollaborators.forEach(collaborator -> {
+            String destination = "/topic/project/" + collaborator.getUser().getId();
+            log.info("경로" + destination);
+            messagingTemplate.convertAndSend(destination, dto);
+        });
 
     }
 
@@ -114,7 +131,7 @@ public class ProjectCollaboratorService {
         List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(projectId);
         log.info("1111111111projectCollaborators : " + projectCollaborators);
 
-        ProjectCollaboratorDTO dto = modelMapper.map(collaborator, ProjectCollaboratorDTO.class);
+        ProjectCollaboratorDTO dto = new ProjectCollaboratorDTO();
         dto.setProjectId((collaborator.getProject().getId()));
         dto.setUserId(collaborator.getUser().getId());
         dto.setUsername(collaborator.getUser().getName());
