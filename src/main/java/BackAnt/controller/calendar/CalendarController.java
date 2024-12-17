@@ -1,6 +1,6 @@
 package BackAnt.controller.calendar;
 
-import BackAnt.dto.UserDTO;
+import BackAnt.dto.user.UserDTO;
 import BackAnt.dto.calendar.CalendarDTO;
 import BackAnt.service.calendar.CalendarService;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,6 @@ public class CalendarController {
     @PostMapping("/insert")
     public void calendar(@RequestBody CalendarDTO calendar) {
 
-
         calendarService.insertCalendar(calendar);
     }
 
@@ -56,7 +55,7 @@ public class CalendarController {
     }
 
     @DeleteMapping("/delete/{no}")
-    public void delete(@PathVariable int no) {
+    public void deleteCalendar(@PathVariable int no) {
 
         calendarService.deleteCalendar(no);
     }

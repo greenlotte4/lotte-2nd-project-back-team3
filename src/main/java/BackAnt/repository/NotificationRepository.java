@@ -18,4 +18,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     // targetId로 알림 조회
     List<Notification> findByTargetId(Long targetId);
+
+    // 보낸 사람 기준으로 알림 조회
+    List<Notification> findBySenderId(Long senderId);
 }

@@ -1,6 +1,7 @@
 package BackAnt.controller;
 
 import BackAnt.dto.NotificationDTO;
+import BackAnt.entity.Notification;
 import BackAnt.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -52,5 +53,13 @@ public class NotificationController {
 
         List<NotificationDTO> notifications = notificationService.getNotificationsByTargetId(targetId);
         return ResponseEntity.ok(notifications); // 조회된 알림 반환
+    }
+
+
+    // 특정 senderId로 보낸 알림 목록 조회
+    @GetMapping("/sent/{senderId}")
+    public ResponseEntity<List<NotificationDTO>> getNotificationsBySenderId(@PathVariable Long senderId) {
+        List<NotificationDTO> notifications = notificationService.getNotificationsBySenderId(senderId);
+        return ResponseEntity.ok(notifications);
     }
 }

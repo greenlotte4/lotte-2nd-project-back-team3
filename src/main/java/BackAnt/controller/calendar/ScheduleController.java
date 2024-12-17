@@ -32,7 +32,7 @@ public class ScheduleController {
     private final DepartmentService departmentService;
 
     @PostMapping("/insert")
-    public ScheduleDTO insert(@RequestBody ScheduleDTO scheduleDTO) {
+    public ScheduleDTO insertSchedule(@RequestBody ScheduleDTO scheduleDTO) {
        return calendarService.insertSchedule(scheduleDTO);
     }
 
@@ -96,7 +96,7 @@ public class ScheduleController {
     }
 
     @DeleteMapping("/delete/{no}")
-    public void delete(@PathVariable int no) {
+    public void deleteSchedule(@PathVariable int no) {
         log.info("11111111111"+no);
         calendarService.deleteSchedule(no);
     }

@@ -36,11 +36,11 @@ public class AccessLogService {
     public Page<AccessLog> getAccessLogs(String searchTerm, Pageable pageable) {
         if (searchTerm != null && !searchTerm.isEmpty()) {
             log.info("Search term: " + searchTerm);
-            Page<AccessLog> result = accessLogRepository.findByUserIdContainingOrUrlPathContaining(searchTerm, searchTerm, pageable);
+            Page<AccessLog> result = accessLogRepository.findByUserIdContainingOrUrlPathContainingOrderByAccessTimeDesc(searchTerm, searchTerm, pageable);
             log.info("Logs found with search term: " + result.getContent());
             return result;
         }
-        Page<AccessLog> result = accessLogRepository.findAll(pageable);
+        Page<AccessLog> result = accessLogRepository.findAllByOrderByAccessTimeDesc(pageable);
         log.info("All logs: " + result.getContent());
         return result;
     }

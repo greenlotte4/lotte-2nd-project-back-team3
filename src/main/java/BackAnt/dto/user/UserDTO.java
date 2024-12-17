@@ -1,10 +1,7 @@
-package BackAnt.dto;
+package BackAnt.dto.user;
 
-import BackAnt.entity.Company;
 import BackAnt.entity.enums.Role;
 import BackAnt.entity.enums.Status;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.*;
 
 import java.time.LocalDateTime;

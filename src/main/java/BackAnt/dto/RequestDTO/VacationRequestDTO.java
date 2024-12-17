@@ -1,6 +1,6 @@
 package BackAnt.dto.RequestDTO;
 
-import BackAnt.dto.ApproverDTO;
+import BackAnt.dto.approval.ApproverDTO;
 import lombok.*;
 
 import java.time.LocalDate;

@@ -1,6 +1,5 @@
 package BackAnt.controller.project;
 
-import BackAnt.dto.UserDTO;
 import BackAnt.dto.project.UserForProjectDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.project.Project;

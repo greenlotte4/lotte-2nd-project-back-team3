@@ -1,12 +1,8 @@
 package BackAnt.dto;
 
-import BackAnt.entity.Company;
-import BackAnt.entity.User;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import BackAnt.dto.user.UserDTO;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

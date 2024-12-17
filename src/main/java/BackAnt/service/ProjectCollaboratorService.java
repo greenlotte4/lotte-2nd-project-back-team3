@@ -1,7 +1,7 @@
 package BackAnt.service;
 
 import BackAnt.dto.NotificationDTO;
-import BackAnt.dto.UserDTO;
+import BackAnt.dto.user.UserDTO;
 import BackAnt.dto.project.ProjectCollaboratorDTO;
 import BackAnt.dto.project.UserForProjectDTO;
 import BackAnt.entity.User;
