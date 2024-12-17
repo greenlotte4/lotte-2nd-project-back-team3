@@ -7,10 +7,13 @@ import BackAnt.repository.UserRepository;
 import BackAnt.service.DriveCollaboratorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -59,6 +62,24 @@ public class DriveCollaboratorController {
         log.info("여기러 정보 왜 안와? 이상하네 : " + userId);
 
         return ResponseEntity.ok("협업자가 성공적으로 삭제되었습니다.");
+    }
+    @GetMapping("/ShareDriveView/{userId}")
+    public ResponseEntity<?> ShareDriveView(@PathVariable Long userId){
+
+       Map<String, Object> ShareDrive = driveCollaboratorService.shareDriveView(userId);
+       log.info("공유드라이브여야해,,,: "+ShareDrive);
+       return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ShareDrive);
+    }
+    @GetMapping("/ShareDriveSelectView/{driveFolderId}/{userId}")
+    public ResponseEntity<?> ShareDriveSelectView(@PathVariable String driveFolderId, @PathVariable Long userId){
+
+        Map<String, Object> ShareDrive = driveCollaboratorService.ShareDriveSelectView(driveFolderId);
+        log.info("선택된 공유 드라이브여야해,,,: "+ ShareDrive);
+        log.info("냐냐냐뇽뇽냐냐뇨욘요 : " + driveFolderId);
+        log.info("냐냐냐뇽뇽냐냐뇨욘요?? : " + userId);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ShareDrive);
     }
 }
 

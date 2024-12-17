@@ -3,12 +3,12 @@ package BackAnt.service;
 
 import BackAnt.document.page.drive.DriveFolderDocument;
 import BackAnt.dto.drive.DriveCollaboratorDTO;
-import BackAnt.dto.page.PageCollaboratorDTO;
+import BackAnt.dto.drive.DriveShareAllViewDTO;
+import BackAnt.dto.drive.DriveShareSelectFilesViewDTO;
+import BackAnt.dto.drive.DriveShareSelectViewDTO;
 import BackAnt.entity.DriveCollaborator;
 import BackAnt.entity.DriveFileEntity;
 import BackAnt.entity.User;
-import BackAnt.entity.page.PageCollaborator;
-import BackAnt.entity.project.ProjectCollaborator;
 import BackAnt.repository.DriveFileRepository;
 import BackAnt.repository.drive.DriveCollaboratorRepository;
 import BackAnt.repository.mongoDB.drive.DriveFolderRepository;
@@ -19,8 +19,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -70,8 +69,10 @@ public class DriveCollaboratorService {
                 .isOwner(false)
                 .driveShareType(type)
                 .driveFolderShareAt(LocalDateTime.now())
+                .isSharePoint(true)
                 .build();
         driveCollaboratorRepository.save(driveCollaborator);
+        log.info("메ㅑㅁ모먀모 : " + driveCollaborator);
 
         Optional<DriveFolderDocument> driveFolderOpt = driveFolderRepository.finddriveFolderNameById(driveFolderNameId);
         if (driveFolderOpt.isPresent()) {
@@ -85,6 +86,7 @@ public class DriveCollaboratorService {
             for(DriveFolderDocument folder : folders) {
                 if(folder.getDriveFolderIsDeleted() == 0){
                     folder.setDriveFolderShareType(1);
+                    folder.setDriveFolderSharedAt(LocalDateTime.now());
                 }
 
             }
@@ -92,6 +94,7 @@ public class DriveCollaboratorService {
             for(DriveFileEntity file : files) {
                 if(file.getDriveIsDeleted() == 0){
                     file.setDriveShareType(1);
+                    file.setDriveFileSharedAt(LocalDateTime.now());
                 }
             }
             driveFileRepository.saveAll(files);
@@ -110,4 +113,88 @@ public class DriveCollaboratorService {
         log.info("협업자삭제하고싶다 : " + collaborator);
         driveCollaboratorRepository.delete(collaborator);
     }
+
+
+    //공유 드라이브 전체 조회 (파일 차후 추가)
+    public Map<String, Object> shareDriveView(Long userId){
+
+        List<DriveShareAllViewDTO> driveShareAllviewsDTO = new ArrayList<>();
+
+        List<String> driveFolderIds = driveCollaboratorRepository.findDriveFolderIdsByConditions(userId);
+        log.info("공유드라이브 조회하기... : " + driveFolderIds);
+        for(String DriveFolderId : driveFolderIds){
+           Optional<DriveFolderDocument> driveShareFolders = driveFolderRepository.findShareWithFolderId(DriveFolderId);
+           if(driveShareFolders.isPresent()){
+               DriveFolderDocument driveShareFolder = driveShareFolders.get();
+               DriveShareAllViewDTO allviewDTO = DriveShareAllViewDTO.builder()
+                       .driveFolderId(DriveFolderId)
+                       .driveFolderName(driveShareFolder.getDriveFolderName())
+                       .driveParentFolderId(driveShareFolder.getDriveParentFolderId())
+                       .driveFolderSize(driveShareFolder.getDriveFolderSize())
+                       .driveFolderCreatedAt(driveShareFolder.getDriveFolderCreatedAt())
+                       .driveFolderSharedAt(driveShareFolder.getDriveFolderSharedAt())
+                       .driveFolderShareType(driveShareFolder.getDriveFolderShareType())
+                       .driveFolderMaker(driveShareFolder.getDriveFolderMaker())
+                       .build();
+
+               driveShareAllviewsDTO.add(allviewDTO);
+           }
+        }
+        log.info("ㅠㅠㅠ메메메,, : " + driveShareAllviewsDTO);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("folders", driveShareAllviewsDTO);  // MyDriveFolders를 "folders"라는 키로 추가
+        log.info("힝 ,,, : " + response);
+        return response;
+
+    }
+
+    //공유 드라이브 선택조회 (파일 차후 추가)
+    public Map<String, Object> ShareDriveSelectView(String driveFolderId){
+        List<DriveShareSelectViewDTO> selectViewsDTO = new ArrayList<>();
+        List<DriveShareSelectFilesViewDTO> selectFilesDTO = new ArrayList<>();
+        log.info("gbgbgbgbgb : " + driveFolderId);
+
+        List<DriveFolderDocument> shareDriveFolders = driveFolderRepository.findWithSelectShareFolders(driveFolderId);
+        log.info("먀먀먀 : " + shareDriveFolders);
+        List<DriveFileEntity> fileEntites = driveFileRepository.findByDriveFolderIdAndDriveIsDeletedAndDriveShareType(driveFolderId,0,1);
+        log.info("묘묘묘묘 : " + fileEntites);
+
+
+        for(DriveFolderDocument ShareFolder : shareDriveFolders){
+            DriveShareSelectViewDTO selectViewDTO = DriveShareSelectViewDTO.builder()
+                    .driveFolderId(driveFolderId)
+                    .driveFolderName(ShareFolder.getDriveFolderName())
+                    .driveParentFolderId(ShareFolder.getDriveParentFolderId())
+                    .driveFolderSize(ShareFolder.getDriveFolderSize())
+                    .driveFolderSharedAt(ShareFolder.getDriveFolderSharedAt())
+                    .driveFolderUpdatedAt(ShareFolder.getDriveFolderUpdatedAt())
+                    .driveFolderMaker(ShareFolder.getDriveFolderMaker())
+                    .build();
+
+            selectViewsDTO.add(selectViewDTO);
+        }
+
+        for(DriveFileEntity ShareFile : fileEntites){
+            DriveShareSelectFilesViewDTO selectFileViewDTO = DriveShareSelectFilesViewDTO.builder()
+                    .driveFileId(ShareFile.getDriveFileId())
+                    .driveFileSName(ShareFile.getDriveFileSName())
+                    .driveFileSize(ShareFile.getDriveFileSize())
+                    .driveFolderId(ShareFile.getDriveFolderId())
+                    .driveFileMaker(ShareFile.getDriveFileMaker())
+                    .driveFileCreatedAt(ShareFile.getDriveFileCreatedAt())
+                    .driveFileUpdatedAt(ShareFile.getDriveFileUpdatedAt())
+                    .driveShareType(ShareFile.getDriveShareType())
+                    .build();
+
+            selectFilesDTO.add(selectFileViewDTO);
+        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("folders", selectViewsDTO);  // MyDriveFolders를 "folders"라는 키로 추가
+        response.put("files", selectFilesDTO);
+        log.info("힝 ,,, : " + response);
+        return response;
+    }
+
+
 }

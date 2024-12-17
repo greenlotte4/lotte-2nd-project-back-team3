@@ -53,6 +53,9 @@ public class DriveFileEntity {
     @CreationTimestamp
     private LocalDateTime driveFileDeletedAt;
 
+    @CreationTimestamp
+    private LocalDateTime driveFileSharedAt;
+
     private String parentFolderName;
 
 
