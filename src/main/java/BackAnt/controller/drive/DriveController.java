@@ -33,9 +33,9 @@ public class DriveController {
                 .body(folderDTO);
     }
 //마이드라이브 전체보기
-    @GetMapping("/folder/myDriveView")
-    public ResponseEntity<?> MydriveView(){
-        Map<String, Object> Mydrive = driveFolderService.MyDriveView();
+    @GetMapping("/folder/myDriveView/{uid}")
+    public ResponseEntity<?> MydriveView(@PathVariable String uid){
+        Map<String, Object> Mydrive = driveFolderService.MyDriveView(uid);
         log.info("마이드라이브여야해 : " + Mydrive);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Mydrive);
@@ -86,14 +86,14 @@ public class DriveController {
 
 
     }
-//@PostMapping("/folder/name")
-//    public ResponseEntity<?> DriveFolderFind(@RequestBody DriveFolderNameDTO driveFolderNameDTO){
-//        log.info("머라머라머라 : " + driveFolderNameDTO);
-//    DriveNewFolderInsertDTO FolderNameDto = driveFolderService.DriveFolderFind(driveFolderNameDTO);
-//
-//        return ResponseEntity.status(HttpStatus.CREATED)
-//            .body(FolderNameDto);
-//}
+@PostMapping("/folder/name")
+    public ResponseEntity<?> DriveFolderFind(@RequestBody DriveFolderNameDTO driveFolderNameDTO){
+        log.info("머라머라머라 : " + driveFolderNameDTO);
+    DriveNewFolderInsertDTO FolderNameDto = driveFolderService.DriveFolderFind(driveFolderNameDTO);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(FolderNameDto);
+}
 //단일 휴지통
 @GetMapping("/folder/toOneTrash/{driveFolderNameId}/{selectedDriveFileId}")
 public ResponseEntity<?> DriveFolderTrash(    @PathVariable(required = false) String driveFolderNameId,

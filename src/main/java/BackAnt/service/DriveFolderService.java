@@ -1,6 +1,7 @@
 package BackAnt.service;
 
 import BackAnt.document.page.drive.DriveFolderDocument;
+import BackAnt.dto.drive.DriveFolderNameDTO;
 import BackAnt.dto.drive.DriveNewFolderInsertDTO;
 import BackAnt.entity.DriveCollaborator;
 import BackAnt.entity.DriveFileEntity;
@@ -101,6 +102,7 @@ public class DriveFolderService {
         // 폴더 저장 후 DTO로 반환
         DriveNewFolderInsertDTO driveNewFolderInsertDTO1 = modelMapper.map(driveFolderRepository.save(newFolder), DriveNewFolderInsertDTO.class);
 
+
         DriveCollaborator driveCollaborator = DriveCollaborator.builder()
                 .driveFolderId(driveNewFolderInsertDTO1.getDriveFolderId())
                 .driveShareType(1)
@@ -110,16 +112,17 @@ public class DriveFolderService {
                 .build();
 
         driveCollaboratorRepository.save(driveCollaborator);
-
         return driveNewFolderInsertDTO1;
     }
 
 
     //마이드라이브폴더파일조회
-    public Map<String, Object> MyDriveView() {
+    public Map<String, Object> MyDriveView(String uid) {
 
-        List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findFirstWithFolders();
-        List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderIdIsNullAndDriveIsDeleted(0);
+        User user = userRepository.findByUid(uid)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findFirstWithFolders(uid);
+        List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderIdIsNullAndDriveFileMakerAndDriveIsDeleted(uid,0);
         log.info("파일...나와..? 야옹.. : " + MyDriveFiles);
 
         Map<String, Object> response = new HashMap<>();
@@ -309,18 +312,18 @@ public class DriveFolderService {
 
 
 
-    //
-//    public DriveNewFolderInsertDTO DriveFolderFind(DriveFolderNameDTO driveFolderNameDTO) {
-//        Optional<DriveFolderDocument> driveFolder = driveFolderRepository.findById(driveFolderNameDTO.getDriveFolderId());
-//        log.info("호오유유유유 : " + driveFolder);
-//        if (driveFolder.isPresent()) {
-//            DriveFolderDocument folder = driveFolder.get();
-//            folder.setDriveFolderName(driveFolderNameDTO.getDriveFolderName());
-//            log.info("이게이름이나와야돼 : " + folder);
-//            return modelMapper.map(driveFolderRepository.save(folder), DriveNewFolderInsertDTO.class);
-//        }
-//        return null;
-//    }
+    //이름바꾸기
+    public DriveNewFolderInsertDTO DriveFolderFind(DriveFolderNameDTO driveFolderNameDTO) {
+        Optional<DriveFolderDocument> driveFolder = driveFolderRepository.findById(driveFolderNameDTO.getDriveFolderId());
+        log.info("호오유유유유 : " + driveFolder);
+        if (driveFolder.isPresent()) {
+            DriveFolderDocument folder = driveFolder.get();
+            folder.setDriveFolderName(driveFolderNameDTO.getDriveFolderName());
+            log.info("이게이름이나와야돼 : " + folder);
+            return modelMapper.map(driveFolderRepository.save(folder), DriveNewFolderInsertDTO.class);
+        }
+        return null;
+    }
 //휴지통으로
     public ResponseEntity<?> ToOneMyTrash(String driveFolderNameId, Integer selectedDriveFileId) throws IOException {
         boolean isFileUpdated = false; // 파일 처리 여부

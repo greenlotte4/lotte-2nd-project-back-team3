@@ -1,8 +1,6 @@
 package BackAnt.repository.drive;
 
 import BackAnt.entity.DriveCollaborator;
-import BackAnt.entity.User;
-import BackAnt.entity.project.ProjectCollaborator;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,4 +17,7 @@ public interface DriveCollaboratorRepository extends JpaRepository<DriveCollabor
     List<DriveCollaborator> findByDriveFolderIdWithQuery(String driveFolderId);
 
     Optional<DriveCollaborator> findByDriveFolderIdAndUserId(String driveFolderId, Long userId);
+
+    @Query("SELECT d.driveFolderId FROM DriveCollaborator d " + "WHERE d.isSharePoint = true " + "AND d.isOwner = false " + "AND d.user.id = :userId")
+    List<String> findDriveFolderIdsByConditions(@Param("userId") Long userId);
 }

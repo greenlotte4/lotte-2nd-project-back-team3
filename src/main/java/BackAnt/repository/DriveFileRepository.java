@@ -19,12 +19,15 @@ public interface DriveFileRepository extends JpaRepository<DriveFileEntity, Inte
 
 
     // folderId가 null이면서 delete를 조회하는 메서드
-    List<DriveFileEntity> findByDriveFolderIdIsNullAndDriveIsDeleted(int driveIsDeleted);
+    List<DriveFileEntity> findByDriveFolderIdIsNullAndDriveFileMakerAndDriveIsDeleted(String uid, int driveIsDeleted);
     List<DriveFileEntity> findByDriveIsDeleted(int driveIsDeleted);
 
 
     // 파람의 folderId와 동일한 파일 찾기
     List<DriveFileEntity> findByDriveFolderIdAndDriveIsDeleted(String driveFolderId , int driveIsDeleted);
+
+    // 파람의 folderId와 동일한 파일 찾기 + 공유 드라이브 선택 폴더
+    List<DriveFileEntity> findByDriveFolderIdAndDriveIsDeletedAndDriveShareType(String driveFolderId , int driveIsDeleted, int driveShareType);
 
     //하위파일조회
     @Query("SELECT f FROM DriveFileEntity f WHERE f.driveFilePath LIKE CONCAT(:path, '%')")
