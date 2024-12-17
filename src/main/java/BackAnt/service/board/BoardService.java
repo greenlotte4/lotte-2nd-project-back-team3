@@ -50,8 +50,25 @@ public class BoardService {
 
 
     // 글 목록 조회
-    public Page<Board> getFindAllBoards(Pageable pageable) {
-        return boardRepository.findAllByOrderByRegDateDesc(pageable);
+//    public Page<Board> getFindAllBoards(Pageable pageable) {
+//        return boardRepository.findAllByOrderByRegDateDesc(pageable);
+//    }
+
+    // 글 목록 조회
+    public Page<BoardDTO> getFindAllBoards(Pageable pageable) {
+        Page<Board> boards = boardRepository.findAllByOrderByRegDateDesc(pageable);
+        return boards.map(board -> {
+            BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class);
+            boardDTO.setWriterId(board.getWriter() != null ? board.getWriter().getId() : null);
+            boardDTO.setWriterName(board.getWriter() != null ? board.getWriter().getName() : "익명");
+
+
+            // 좋아요 수를 추가
+            int likeCount = boardLikeRepository.countByBoardId(board.getId());
+            boardDTO.setLikes(likeCount);
+
+            return boardDTO;
+        });
     }
 
     // 글 상세 조회
@@ -145,7 +162,9 @@ public class BoardService {
 
 
             board.setWriter(user);
+
             log.info("글쓰기 서비스 board 작성자 ID: {}", user.getId());
+
 
             // 게시글 DB 저장
             Board savedBoard = boardRepository.save(board);
@@ -164,8 +183,8 @@ public class BoardService {
     @Transactional
     public BoardDTO updateBoard(Long id, BoardDTO boardDTO) {
         log.info("글 수정 서비스 시작: id={}", id);
-        log.info("폼데이터 + boardDTO: {}", boardDTO.toString());
-        log.info("게시글아이디 ㅇㅇid={}", boardDTO.getId());
+        log.info("폼 데이터 + boardDTO: {}", boardDTO.toString());
+        log.info("게시글 아이디 id={}", boardDTO.getId());
 
         // 1. 게시글 조회
         Board board = boardRepository.findById(boardDTO.getId())
@@ -176,7 +195,7 @@ public class BoardService {
             throw new AccessDeniedException("게시글 수정 권한이 없습니다.");
         }
 
-        // 4. 게시글 수정
+        // 3. 게시글 수정
         if (boardDTO.getTitle() != null) {
             board.setTitle(boardDTO.getTitle());
         }
@@ -190,15 +209,18 @@ public class BoardService {
             board.setCate2(boardDTO.getCate2());
         }
 
-        // 5. 수정일시 업데이트
+        // 4. 수정일시 업데이트
         board.setUpdateDate(LocalDateTime.now());
 
-        // 6. 저장
+        // 5. 저장
         Board savedBoard = boardRepository.save(board);
         log.info("게시글 수정 완료: id={}", id);
 
+        // 6. 좋아요 수 구하기
+        int likes = boardLikeRepository.countByBoardId(savedBoard.getId());
+
         // 7. DTO 변환 및 반환
-        return BoardDTO.of(savedBoard);
+        return BoardDTO.of(savedBoard, likes);  // likes 를 함께 전달
     }
 
 
@@ -221,9 +243,13 @@ public class BoardService {
     }
 
     // 글 삭제
+    @Transactional
     public void deleteBoard(Long id) {
-        log.info("🗑️ 게시글 삭제 id: {}", id);
-        boardRepository.deleteById(id);
+        Board board = boardRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
+
+        boardRepository.delete(board);
+        log.info("🗑️ 게시글 삭제 완료 - 게시글 ID: {}", id);
     }
 
 

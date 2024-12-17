@@ -21,7 +21,7 @@ import java.util.List;
 public class BoardPageDTO<T> {
     private List<T> content; // 실제 게시글 목록
     private int totalPages;  // 전체 페이지 수
-    private long totalElements; // 전체 게시글 수
+    private Long totalElements; // 전체 게시글 수
     private int number; // 현재 페이지 번호
 
     public BoardPageDTO(org.springframework.data.domain.Page<T> page) {
