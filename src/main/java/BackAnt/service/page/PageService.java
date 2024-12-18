@@ -1,6 +1,7 @@
 package BackAnt.service.page;
 
 import BackAnt.document.page.PageDocument;
+import BackAnt.dto.page.PageCreateDTO;
 import BackAnt.dto.page.PageDTO;
 import BackAnt.repository.mongoDB.page.PageRepository;
 import BackAnt.repository.page.PageCollaboratorRepository;
@@ -19,12 +20,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static BackAnt.document.page.PageDocument.convertToDTO;
+
 /*
     날 짜 : 2024/11/29(금)
     담당자 : 황수빈
     내 용 : Page 를 위한 Service 생성
 */
 // TODO : 현재 DTO 없이 Document 로 return 반환 수정해야함
+// 예외 처리를 추가한 PageService 클래스
 @RequiredArgsConstructor
 @Service
 @Log4j2
@@ -36,89 +40,136 @@ public class PageService {
     private final MongoTemplate mongoTemplate;
     private final PageCollaboratorService pageCollaboratorService;
     private final SimpMessagingTemplate template;
-    // 사용자의 공유된 페이지 목록 조회
+
+    // 페이지 저장 ( 매개변수를 여러 종류로 받고 싶다면 - 오버로딩 또는 제네릭 타입 이용 )
+    public <T> PageDocument savePage(T page) {
+        try {
+            PageDocument pageDocument = modelMapper.map(page, PageDocument.class);
+            return pageRepository.save(pageDocument);
+        } catch (Exception e) {
+            log.error("Error saving page: {}", page, e);
+            throw new RuntimeException("Failed to save page", e);
+        }
+    }
+    // pageId로 Page 조회
+    public PageDTO getPageById(String id) {
+        try {
+            PageDocument pageDocument = pageRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Page not found with ID: " + id));
+            return convertToDTO(pageDocument);
+        } catch (Exception e) {
+            log.error("Error fetching page by ID: {}", id, e);
+            throw new RuntimeException("Failed to fetch page", e);
+        }
+    }
+    // Uid 로 페이지 조회 - 삭제되지 않고 템플릿이 아닌 목록
+    public List<PageDTO> getPagesByUid(String uid) {
+        try {
+            List<PageDocument> pageDocuments =  pageRepository.findByOwnerAndDeletedAtIsNullAndIsTemplateFalse(uid);
+
+            return pageDocuments.stream()
+                    .map(PageDocument::convertToDTO)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Error fetching pages for user: {}", uid, e);
+            throw new RuntimeException("Failed to fetch pages for user", e);
+        }
+    }
+    // 공유된 페이지 목록
     public List<PageDTO> getSharedPages(String userId) {
-        // 1. 사용자가 협업자로 등록된 페이지 ID 목록 조회
-        List<String> sharedPageIds = pageCollaboratorService.getCollaboratedPageIds(userId);
+        try {
+            List<String> sharedPageIds = pageCollaboratorService.getCollaboratedPageIds(userId);
 
-        // 2. 페이지 ID 목록으로 실제 페이지 데이터 조회
-        Query query = new Query(Criteria.where("_id").in(sharedPageIds)
-                .and("deletedAt").is(null));  // 삭제되지 않은 페이지만 조회
-
-        List<PageDocument> pages = mongoTemplate.find(query, PageDocument.class);
-
-        // 3. PageDocument를 PageDTO로 변환
-        return pages.stream()
-                .map(page -> page.convertToDTO(page))
-                .collect(Collectors.toList());
-    }
-
-    public PageDocument savePage(PageDTO page){
-        PageDocument pageDocument = modelMapper.map(page, PageDocument.class);
-        return pageRepository.save(pageDocument);
-    }
-    public PageDocument getPageById(String id) {
-        return pageRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Page not found")); // ID로 페이지 조회
-    }
-    public List<PageDocument> getPageByUpdatedAt() {
-     return pageRepository.findTop3ByDeletedAtIsNullOrderByUpdatedAtDesc();
-
-    }
-    public List<PageDocument> getPageByTemplate() {
-        return pageRepository.findByIsTemplateTrue();
-
-    }
-    public List<PageDocument> getPagesByUid(String uid){
-        return pageRepository.findByOwnerAndDeletedAtIsNullAndIsTemplateFalse(uid); // 삭제되지 않은 게시물
-    }
-    public List<PageDocument> getDeletedPagesByUid(String uid){
-        return pageRepository.findByOwnerAndDeletedAtIsNotNullAndIsTemplateFalse(uid); // 삭제되지 않은 게시물
-    }
-
-    public String DeleteById(String id, String type){
-
-        PageDocument page = pageRepository.findById(id).orElse(null); // ID로 페이지 조회
-
-        if(page!=null){
-            if(type.equals("soft")){
-                page.setDeletedAt(LocalDateTime.now());
-                pageRepository.save(page);
-                template.convertAndSend("/topic/page/aside", Map.of(
-                        "_id", id,
-                        "deleted", true
-                ));
-                return "softDelete Successfully";}
-            if(type.equals("hard")){
-                pageRepository.deleteById(id);
-                return "hardDelete Successfully";
+            if (sharedPageIds == null || sharedPageIds.isEmpty()) {
+               log.info("공유된 페이지가 없습니다.");
             }
 
+            Query query = new Query(Criteria.where("_id").in(sharedPageIds)
+                    .and("deletedAt").is(null));
+
+            List<PageDocument> pages = mongoTemplate.find(query, PageDocument.class);
+
+            return pages.stream()
+                    .map(PageDocument::convertToDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching shared pages for user: {}", userId, e);
+            throw new RuntimeException("Failed to fetch shared pages", e);
         }
-
-        return "failed to find page";
-
     }
+    // Template 목록
+    public List<PageDTO> getPageByTemplate() {
+        try {
+             List<PageDocument> pageDocuments = pageRepository.findByIsTemplateTrue();
 
+            return pageDocuments.stream()
+                    .map(PageDocument::convertToDTO)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Error fetching template pages", e);
+            throw new RuntimeException("Failed to fetch template pages", e);
+        }
+    }
+    // 삭제된 페이지 조회
+    public List<PageDTO> getDeletedPagesByUid(String uid) {
+        try {
+            List<PageDocument> pageDocuments = pageRepository.findByOwnerAndDeletedAtIsNotNullAndIsTemplateFalse(uid);
+
+            return pageDocuments.stream()
+                    .map(PageDocument::convertToDTO)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Error fetching deleted pages for user: {}", uid, e);
+            throw new RuntimeException("Failed to fetch deleted pages for user", e);
+        }
+    }
+    // 페이지 삭제
+    public String DeleteById(String id, String type) {
+        try {
+            PageDocument page = pageRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Page not found with ID: " + id));
+
+            if ("soft".equals(type)) {
+                page.setDeletedAt(LocalDateTime.now());
+                pageRepository.save(page);
+                template.convertAndSend("/topic/page/aside", Map.of("_id", id, "deleted", true));
+                return "softDelete Successfully";
+            } else if ("hard".equals(type)) {
+                pageRepository.deleteById(id);
+                return "hardDelete Successfully";
+            } else {
+                throw new IllegalArgumentException("Invalid delete type: " + type);
+            }
+        } catch (Exception e) {
+            log.error("Error deleting page with ID: {}", id, e);
+            throw new RuntimeException("Failed to delete page", e);
+        }
+    }
+    // 페이지 복구
     public void restorePage(String id) {
-        PageDocument page = pageRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Page not found"));// deleted 필드를 false로 설정
-        page.setDeletedAt(null); // 삭제 시간 정보 제거
-        pageRepository.save(page);
+        try {
+            PageDocument page = pageRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Page not found with ID: " + id));
+            page.setDeletedAt(null);
+            pageRepository.save(page);
+        } catch (Exception e) {
+            log.error("Error restoring page with ID: {}", id, e);
+            throw new RuntimeException("Failed to restore page", e);
+        }
     }
-
-    // TODO : redis 임시 저장 후 DB 반영 되도록 수정할까 ?
+    // 페이지 수정 시 웹소켓 방송 및 데이터 저장
     @Transactional
     public void updatePageInRealTime(PageDTO pageDTO) {
         try {
             PageDocument page = pageRepository.findById(pageDTO.get_id())
-                    .orElseThrow(() -> new RuntimeException("Page not found"));
+                    .orElseThrow(() -> new RuntimeException("Page not found with ID: " + pageDTO.get_id()));
 
-            // 내용 업데이트
             if (pageDTO.getContent() != null) {
                 page.setContent(pageDTO.getContent());
             }
-            // 제목 업데이트
             if (pageDTO.getTitle() != null) {
                 page.setTitle(pageDTO.getTitle());
                 template.convertAndSend("/topic/page/aside", pageDTO);
@@ -128,8 +179,12 @@ public class PageService {
             pageRepository.save(page);
             log.info("Page updated successfully via WebSocket");
         } catch (Exception e) {
-            log.error("Error updating page via WebSocket: ", e);
-            throw e;
+            log.error("Error updating page via WebSocket for ID: {}", pageDTO.get_id(), e);
+            throw new RuntimeException("Failed to update page in real-time", e);
         }
     }
+    // 나의 페이지 갯수 세기
+    public int CountMyPages(String owner) {
+        return pageRepository.countAllByOwnerAndIsTemplateFalse(owner);
     }
+}

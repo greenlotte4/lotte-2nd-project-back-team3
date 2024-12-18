@@ -2,6 +2,7 @@ package BackAnt.controller.page;
 
 import BackAnt.document.page.PageDocument;
 import BackAnt.dto.page.PageCollaboratorDTO;
+import BackAnt.dto.page.PageCreateDTO;
 import BackAnt.dto.page.PageDTO;
 import BackAnt.repository.page.PageCollaboratorRepository;
 import BackAnt.service.page.PageCollaboratorService;
@@ -38,35 +39,51 @@ public class PageController {
     private final PageImageService pageImageService;// MongoDB와 연결된 리포지토리
     private final SimpMessagingTemplate template;
 
-
     @PostMapping("/create")
-    public ResponseEntity<String> createPage(@RequestBody PageDTO page) {
+    public ResponseEntity<?> createPage(@RequestBody PageCreateDTO page) {
         try {
-            if (page == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid page data");
+            // 1. 기본 유효성 검사
+            if (page == null || !isValidPageData(page)) {
+                return ResponseEntity.badRequest()
+                        .body("Invalid page data");
             }
-            log.info("여기야 여기 Received page data: " + page);
 
+            log.info("여기야 여기 pageCreateDTO : "+page);
+
+            // 2. 페이지 수 제한 확인
+            int pageCount = pageService.CountMyPages(page.getOwner());
+            log.info("여기야 여기 이 사용자의 페이지 총 갯수 :"+pageCount);
+            if (!page.getIsTemplate() && page.getCompanyRate() == 0 && pageCount >= 5) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Free member cannot create more than 5 pages");
+            }
+
+            // 3. 페이지 생성 및 소유자 설정
             PageDocument savedPage = pageService.savePage(page);
             pageCollaboratorService.addOwner(savedPage);
 
+            // 4. 성공 응답
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(savedPage.get_id());
+
         } catch (Exception e) {
-            log.error("Error saving page: ", e);
+            log.error("Error creating page: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error saving page: " + e.getMessage());
+                    .body("Failed to create page: " + e.getMessage());
         }
     }
+    // 페이지 데이터에 owner이 있는지 확인
+    private boolean isValidPageData(PageCreateDTO page) {
+        return page.getOwner() != null && !page.getOwner().trim().isEmpty();
+    }
 
-    // 페이지 생성 및 수정
+    // 페이지 저장 - Template 저장에 이용
     @PostMapping("/save")
     public ResponseEntity<String> savePage(@RequestBody PageDTO page) {
         try {
             if (page == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid page data");
             }
-            log.info("현재 템플릿 수정을 여기서 이용중 들어오나 ?");
             log.info("Received page data: " + page);
             PageDocument savedPage = pageService.savePage(page);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -95,25 +112,26 @@ public class PageController {
 
     // page 조회
     @GetMapping("/{id}") // ID로 페이지 조회
-    public ResponseEntity<PageDocument> getPageById(@PathVariable String id) {
-        PageDocument page = pageService.getPageById(id); // ID로 페이지 조회
+    public ResponseEntity<PageDTO> getPageById(@PathVariable String id) {
+        PageDTO page = pageService.getPageById(id); // ID로 페이지 조회
         if (page == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 페이지가 없을 경우 404 반환
         }
         return ResponseEntity.ok(page); // 페이지가 존재할 경우 200 반환
     }
+
     @GetMapping("/shared/{userId}")
     public ResponseEntity<List<PageDTO>> getSharedPages(@PathVariable String userId) {
         List<PageDTO> sharedPages = pageService.getSharedPages(userId);
         return ResponseEntity.ok(sharedPages);
     }
+
     // page List 조회 ( DELETED | UID )
     @GetMapping("/list/{type}/{uid}")
-    public ResponseEntity<List<PageDocument>> selectByUid(@PathVariable String type,
+    public ResponseEntity<List<PageDTO>> selectByUid(@PathVariable String type,
                                                           @PathVariable (required = false) String uid) {
         try {
-
-            List<PageDocument> pages;
+            List<PageDTO> pages;
 
             switch (type) {
                 case "deleted":
@@ -137,11 +155,12 @@ public class PageController {
                     .body(List.of()); // 빈 리스트 반환
         }
     }
+
     @GetMapping("/template/list")
-    public ResponseEntity<List<PageDocument>> selectTemplates() {
+    public ResponseEntity<List<PageDTO>> selectTemplates() {
 
             log.info("컨트롤러 입성");
-            List<PageDocument> pages = pageService.getPageByTemplate();
+            List<PageDTO> pages = pageService.getPageByTemplate();
             log.info("pages"+pages);
             return ResponseEntity.ok()
                             .body(pages); // 빈 리스트 반환
@@ -155,7 +174,6 @@ public class PageController {
         if (type.equals("soft")) {
             return pageService.DeleteById(id, "soft");
         }
-
         if (type.equals("hard")){
             log.info("pageId로 협업자 삭제 시도 id - "+id);
             pageCollaboratorService.removeCollaboratorsByPageId(id);
@@ -176,6 +194,8 @@ public class PageController {
                     .body("Failed to restore page");
         }
     }
+
+    ////////// 페이지 협업자 ///////////
 
     // 페이지 협업자 목록 조회
     @GetMapping("/{pageId}/collaborators")
