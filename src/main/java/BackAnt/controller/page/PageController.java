@@ -66,7 +66,7 @@ public class PageController {
             if (page == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid page data");
             }
-
+            log.info("현재 템플릿 수정을 여기서 이용중 들어오나 ?");
             log.info("Received page data: " + page);
             PageDocument savedPage = pageService.savePage(page);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -189,7 +189,7 @@ public class PageController {
     public ResponseEntity<List<PageCollaboratorDTO>> addCollaborators(
             @PathVariable String pageId,
             @RequestBody Map<String, List<PageCollaboratorDTO>> request) {
-        log.info("request : "+request);
+        log.info("페이지 협업자 추가 : "+request);
         List<PageCollaboratorDTO> collaborators = request.get("collaborators");
         List<PageCollaboratorDTO> addedCollaborators = pageCollaboratorService.addCollaborators(pageId, collaborators);
         return ResponseEntity.ok(addedCollaborators);

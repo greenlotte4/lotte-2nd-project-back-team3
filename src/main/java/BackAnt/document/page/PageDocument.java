@@ -40,6 +40,7 @@ public class PageDocument {
     private String uid; // 작성자
     @JsonProperty("isTemplate")
     private Boolean isTemplate;
+
     private LocalDateTime deletedAt = null;
 
     @CreatedDate

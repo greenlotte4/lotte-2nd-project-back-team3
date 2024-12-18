@@ -70,10 +70,10 @@ public class PageService {
 
     }
     public List<PageDocument> getPagesByUid(String uid){
-        return pageRepository.findByOwnerAndDeletedAtIsNull(uid); // 삭제되지 않은 게시물
+        return pageRepository.findByOwnerAndDeletedAtIsNullAndIsTemplateFalse(uid); // 삭제되지 않은 게시물
     }
     public List<PageDocument> getDeletedPagesByUid(String uid){
-        return pageRepository.findByOwnerAndDeletedAtIsNotNull(uid); // 삭제되지 않은 게시물
+        return pageRepository.findByOwnerAndDeletedAtIsNotNullAndIsTemplateFalse(uid); // 삭제되지 않은 게시물
     }
 
     public String DeleteById(String id, String type){

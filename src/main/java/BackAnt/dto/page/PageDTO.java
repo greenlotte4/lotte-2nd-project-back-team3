@@ -23,9 +23,8 @@ public class PageDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private int isDeleted;
+
 
     private String componentId;
-    //  private Map<String, Object> content; - JSON 저장 방식
 
 }

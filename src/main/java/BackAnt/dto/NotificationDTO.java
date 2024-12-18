@@ -19,6 +19,7 @@ import java.util.Map;
 public class NotificationDTO {
     private Long id;
     private String targetType; // USER, DEPARTMENT, COMPANY
+    private Long senderId;
     private Long targetId; // 대상 ID
     private String message; // 알림 메시지
     private Map<String, Object> metadata; // 추가 정보
