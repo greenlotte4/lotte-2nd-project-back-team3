@@ -1,9 +1,6 @@
 package BackAnt.service.chatting;
 
-import BackAnt.dto.chatting.DmCreateDTO;
-import BackAnt.dto.chatting.DmMessageCreateDTO;
-import BackAnt.dto.chatting.DmMessageResponseDTO;
-import BackAnt.dto.chatting.DmResponseDTO;
+import BackAnt.dto.chatting.*;
 import BackAnt.dto.common.ResultDTO;
 import BackAnt.entity.chatting.Dm;
 import BackAnt.entity.chatting.DmMember;
@@ -182,6 +179,29 @@ public class DmService {
                     return new DmResponseDTO(dm.getId(), dmName, null);
                 })
                 .collect(Collectors.toList()); // List<DmResponseDTO>로 변환
+    }
+    // 디엠 방 단일 조회
+    @Transactional(readOnly = true)
+    public DmResponseDTO getDmById(Long dmId) {
+        Dm dm = dmRepository.findById(dmId)
+                .orElseThrow(() -> new RuntimeException("디엠방을 찾을 수 없습니다."));
+
+        // 디엠방의 멤버 이름 조합
+        String dmName = dmMemberRepository.findAllByDm(dm).stream()
+                .map(dmMember -> dmMember.getUser().getName())
+                .collect(Collectors.joining(", "));
+
+        return new DmResponseDTO(dm.getId(), dmName, null);
+    }
+
+    // 디엠 멤버 조회
+    public List<DmMemberResponseDTO> getDmMembers(Long dmId) {
+        Dm dm = dmRepository.findById(dmId)
+                .orElseThrow(() -> new RuntimeException("디엠 방을 찾을 수 없습니다"));
+
+        return dmMemberRepository.findAllByDm(dm).stream()
+                .map(DmMemberResponseDTO::fromEntity)
+                .toList();
     }
 
 }

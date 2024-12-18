@@ -58,7 +58,6 @@ public class ChannelService {
 
     public ChannelResponseDTO getChannel(Long id) {
         Channel channel = channelRepository.findById(id).orElseThrow(() -> new RuntimeException("채널을 찾을 수 없습니다"));
-//        return new ChannelResponseDTO(channel);
         return ChannelResponseDTO.fromEntity(channel);
     }
 
