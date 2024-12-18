@@ -24,4 +24,5 @@ public class ProjectTaskAssignment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user; // 할당된 사용자
+
 }

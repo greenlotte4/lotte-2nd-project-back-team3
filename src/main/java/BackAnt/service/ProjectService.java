@@ -183,7 +183,23 @@ public class ProjectService {
         Project updatedProject = projectRepository.save(project);
         log.info("updatedProject: " + updatedProject);
 
-        return modelMapper.map(updatedProject, ProjectDTO.class);
+        ProjectDTO dto = modelMapper.map(updatedProject, ProjectDTO.class);
+        dto.setProjectId(updatedProject.getId());
+        dto.setAction("projectStatusUpdate");
+
+        // 웹소켓을 쏴주기 위한 프로젝트 id에 다른 협업자 조회
+        List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(projectId);
+        log.info("projectCollaborators : " + projectCollaborators);
+
+        // 2. WebSocket을 통한 실시간 알림 전송
+        projectCollaborators.forEach(projectCollaborator -> {
+            String destination = "/topic/project/" + projectCollaborator.getUser().getId();
+            log.info("경로" + destination);
+            messagingTemplate.convertAndSend(destination, dto);
+            messagingTemplate.convertAndSend("/topic/project/aside", dto.getProjectName()); // 프로젝트 상태 수정 정보 쏴줌
+        });
+
+        return dto;
     }
 
 

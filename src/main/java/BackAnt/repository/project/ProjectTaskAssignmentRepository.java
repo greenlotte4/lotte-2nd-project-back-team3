@@ -31,4 +31,10 @@ public interface ProjectTaskAssignmentRepository extends JpaRepository<ProjectTa
     // taskId에 할당된 모든 작업담당자 삭제
     void deleteByTaskId(Long taskId);
 
+    // 특정 프로젝트의 특정 사용자에 대한 작업을 삭제하는 메서드
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ProjectTaskAssignment pta WHERE pta.task.state.project.id = :projectId AND pta.user.id = :userId")
+    void deleteByProjectIdAndUserId(@Param("projectId") Long projectId, @Param("userId") Long userId);
 }
+

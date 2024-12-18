@@ -7,8 +7,10 @@ import BackAnt.dto.project.UserForProjectDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.project.Project;
 import BackAnt.entity.project.ProjectCollaborator;
+import BackAnt.entity.project.ProjectTaskAssignment;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.project.ProjectCollaboratorRepository;
+import BackAnt.repository.project.ProjectTaskAssignmentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -37,6 +39,7 @@ public class ProjectCollaboratorService {
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationService notificationService;
     private final UserRepository userRepository;
+    private final ProjectTaskAssignmentRepository projectTaskAssignmentRepository;
 
 
     // 프로젝트별 협업자 추가
@@ -58,6 +61,7 @@ public class ProjectCollaboratorService {
             NotificationDTO notification = NotificationDTO.builder()
                     .targetType("USER")
                     .targetId(user.getId()) // Approver ID
+                    .senderId(ownerUser.get().getId())
                     .message(ownerUser.get().getUser().getName()    + "님이 당신을 " + project.getProjectName() + "에 초대하였습니다.")
                     .metadata(Map.of(
                             "url", "/antwork/project/view?id="+ project.getId(),
@@ -126,6 +130,9 @@ public class ProjectCollaboratorService {
 
         // 협업자 삭제
         projectCollaboratorRepository.delete(collaborator);
+
+        // 해당 협업자가 할당된 모든 작업 삭제
+        projectTaskAssignmentRepository.deleteByProjectIdAndUserId(projectId, userId);
 
         // 웹소켓 쏴주기 위한 프로젝트 id에 따른 협업자 조회
         List<ProjectCollaborator> projectCollaborators = projectCollaboratorRepository.findByProject_Id(projectId);
