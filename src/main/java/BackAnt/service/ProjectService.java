@@ -11,11 +11,17 @@ import BackAnt.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.coyote.Response;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /*
@@ -120,6 +126,8 @@ public class ProjectService {
             String destination = "/topic/project/" + projectCollaborator.getUser().getId();
             log.info("경로" + destination);
             messagingTemplate.convertAndSend(destination, dto);
+            messagingTemplate.convertAndSend("/topic/project/aside", dto.getProjectName()); // 프로젝트 이름 수정 정보 쏴줌
+
         });
 
         return dto;
@@ -163,6 +171,19 @@ public class ProjectService {
         // 프로젝트 삭제
         projectRepository.deleteById(projectId);
 
+    }
+
+    // 프로젝트 상태 변경(진행중/완료)
+    public ProjectDTO updateProjectStatus(Long projectId, int status) {
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+
+        project.setStatus(status);
+        Project updatedProject = projectRepository.save(project);
+        log.info("updatedProject: " + updatedProject);
+
+        return modelMapper.map(updatedProject, ProjectDTO.class);
     }
 
 

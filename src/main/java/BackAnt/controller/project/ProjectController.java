@@ -8,6 +8,7 @@ import BackAnt.service.ProjectService;
 import BackAnt.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.coyote.Response;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /*
     날 짜 : 2024/12/2(월)
@@ -96,5 +98,15 @@ public class ProjectController {
 
     }
 
+    // 프로젝트 상태 변경(진행중/완료)
+    @PutMapping("update/status/{projectId}")
+    public ResponseEntity<ProjectDTO> updateProjectStatus(@PathVariable Long projectId, @RequestParam int status) {
+        log.info("projectId: " + projectId);
+        log.info("status: " + status);
+
+        ProjectDTO updatedProject = projectService.updateProjectStatus(projectId, status);
+        return ResponseEntity.ok(updatedProject);
+
+    }
 
 }
