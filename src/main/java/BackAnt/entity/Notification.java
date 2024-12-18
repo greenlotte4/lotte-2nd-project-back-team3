@@ -33,9 +33,6 @@ public class Notification {
     private Long targetId; // 대상 ID
 
     @Column(nullable = false)
-    private Long senderId; // 메시지 전송 ID
-
-    @Column(nullable = false)
     private String message; // 알림 메시지
 
     @Convert(converter = JpaJsonConverter.class)

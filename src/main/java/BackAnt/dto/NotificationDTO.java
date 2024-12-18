@@ -25,5 +25,4 @@ public class NotificationDTO {
     private Map<String, Object> metadata; // 추가 정보
     private LocalDateTime createdAt; // 생성 시각
     private Boolean isRead; // 읽음 여부
-    private Long senderId; // 보내는사람
 }
