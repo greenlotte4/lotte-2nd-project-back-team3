@@ -1,4 +1,4 @@
-package BackAnt.repository;
+package BackAnt.repository.drive;
 
 /*
     날 짜 : 2024/11/28(목)
@@ -6,7 +6,7 @@ package BackAnt.repository;
     내 용 : File 을 위한 Repository 생성
 */
 
-import BackAnt.entity.DriveFileEntity;
+import BackAnt.entity.drive.DriveFileEntity;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

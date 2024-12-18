@@ -1,4 +1,4 @@
-package BackAnt.entity;
+package BackAnt.entity.drive;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -50,10 +50,8 @@ public class DriveFileEntity {
     @CreationTimestamp
     private LocalDateTime driveFileUpdatedAt;
 
-    @CreationTimestamp
     private LocalDateTime driveFileDeletedAt;
 
-    @CreationTimestamp
     private LocalDateTime driveFileSharedAt;
 
     private String parentFolderName;

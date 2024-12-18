@@ -3,10 +3,10 @@ package BackAnt.service;
 import BackAnt.document.page.drive.DriveFolderDocument;
 import BackAnt.dto.drive.DriveFolderNameDTO;
 import BackAnt.dto.drive.DriveNewFolderInsertDTO;
-import BackAnt.entity.DriveCollaborator;
-import BackAnt.entity.DriveFileEntity;
+import BackAnt.entity.drive.DriveCollaborator;
+import BackAnt.entity.drive.DriveFileEntity;
 import BackAnt.entity.User;
-import BackAnt.repository.DriveFileRepository;
+import BackAnt.repository.drive.DriveFileRepository;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.drive.DriveCollaboratorRepository;
 import BackAnt.repository.mongoDB.drive.DriveFolderRepository;
@@ -86,18 +86,27 @@ public class DriveFolderService {
             throw new RuntimeException("디렉터리 생성 실패", e);
         }
 
-        // 새로운 폴더 객체 생성
-        DriveFolderDocument newFolder = DriveFolderDocument.builder()
+
+// 새로운 폴더 객체 생성
+        DriveFolderDocument.DriveFolderDocumentBuilder folderBuilder = DriveFolderDocument.builder()
                 .driveFolderName(driveNewFolderInsertDTO.getDriveFolderName()) // 사용자가 입력한 폴더 이름
                 .driveFolderPath(newFolderPath) // UUID로 경로 설정
                 .driveParentFolderId(driveFolderId) // 상위 폴더 ID (null일 수 있음)
                 .driveFolderSize(driveNewFolderInsertDTO.getDriveFolderSize())
                 .driveFolderCreatedAt(LocalDateTime.now())
                 .driveFolderUpdatedAt(LocalDateTime.now())
-                .driveFolderMaker(driveNewFolderInsertDTO.getDriveFolderMaker())
-                .build();
+                .driveFolderMaker(driveNewFolderInsertDTO.getDriveFolderMaker());
 
-        log.info("생성된 폴더 정보: " + newFolder);
+// 조건 확인: 상위 폴더가 있고 shareType이 1일 경우
+        if (driveFolderId != null && !driveFolderId.isEmpty()) {
+            Optional<DriveFolderDocument> folderOpt = driveFolderRepository.finddriveFolderNameById(driveFolderId);
+            if (folderOpt.isPresent() && folderOpt.get().getDriveFolderShareType() == 1) {
+                folderBuilder.driveFolderShareType(1);
+            }
+        }
+
+// 최종적으로 빌드
+        DriveFolderDocument newFolder = folderBuilder.build();
 
         // 폴더 저장 후 DTO로 반환
         DriveNewFolderInsertDTO driveNewFolderInsertDTO1 = modelMapper.map(driveFolderRepository.save(newFolder), DriveNewFolderInsertDTO.class);
