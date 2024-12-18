@@ -33,6 +33,8 @@ public class Company {
     private String phone;   // 회사 대표 전화번호
     private String logoUrl; // 회사 로고 URL
 
+    private int rate; // 회사 요금제 ( 0 - 무료 | 1 - 유료  | 2 - 프로 )
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성 시간
 

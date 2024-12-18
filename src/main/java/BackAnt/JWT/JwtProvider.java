@@ -58,6 +58,7 @@ public class JwtProvider {
                 .claim("position",user.getPosition())
                 .claim("company", user.getCompany().getId())
                 .claim("companyName", user.getCompany().getName())
+                .claim("companyRate",user.getCompany().getRate())
                 .claim("department", user.getDepartment().getId())
                 .claim("annualLeaveTotal", user.getAnnualLeaveTotal())
                 .signWith(secretKey, SignatureAlgorithm.HS256)

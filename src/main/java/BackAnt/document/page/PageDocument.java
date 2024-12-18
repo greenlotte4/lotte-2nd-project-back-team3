@@ -32,7 +32,6 @@ public class PageDocument {
 
     private String title;
     private String content; // JSON 형식의 데이터
-
     private String owner; // 주인
     private String ownerName;
     private String ownerImage;
@@ -49,7 +48,7 @@ public class PageDocument {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public PageDTO convertToDTO(PageDocument page) {
+    public static PageDTO convertToDTO(PageDocument page) {
         return PageDTO.builder()
                 ._id(page.get_id())
                 .title(page.getTitle())
