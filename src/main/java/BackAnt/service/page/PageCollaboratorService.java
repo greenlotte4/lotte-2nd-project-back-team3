@@ -70,7 +70,7 @@ public class PageCollaboratorService {
                             .pageId(pageId)
                             .user(user)
                             .type(dto.getType())
-                            .isOwner(dto.isOwner())
+                            .isOwner(dto.getIsOwner())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -96,7 +96,7 @@ public class PageCollaboratorService {
                 .pageId(collaboratorDTO.getPageId())
                 .user(userRepository.findById(collaboratorDTO.getUser_id()).orElseThrow())
                 .invitedAt(collaboratorDTO.getInvitedAt())
-                .isOwner(collaboratorDTO.isOwner())
+                .isOwner(collaboratorDTO.getIsOwner())
                 .type(collaboratorDTO.getType())
                 .build();
     }
@@ -108,7 +108,7 @@ public class PageCollaboratorService {
                 .user_id(collaborator.getUser().getId())
                 .uidImage(collaborator.getUser().getProfileImageUrl())
                 .invitedAt(collaborator.getInvitedAt())
-                .isOwner(collaborator.isOwner())
+                .isOwner(collaborator.getIsOwner())
                 .type(collaborator.getType())
                 .build();
     }
