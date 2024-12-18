@@ -138,6 +138,13 @@ public class ChattingController {
         return new ResponseEntity<>(dmResponseDTOs, HttpStatus.OK);
     }
 
+    // 디엠 id로 디엠방 조회
+    @GetMapping("/dm/{dmId}")
+    public ResponseEntity<DmResponseDTO> getDmById(@PathVariable Long dmId) {
+        DmResponseDTO dmResponse = dmService.getDmById(dmId);
+        return ResponseEntity.ok(dmResponse);
+    }
+
     // 디엠 메시지 보내기
     @PostMapping("/dm/{dmId}/messages")
     public ResponseEntity<ResultDTO<Long>> sendDmMessage(@PathVariable Long dmId, @RequestBody DmMessageCreateDTO dmMessageCreateDTO) {
@@ -158,6 +165,12 @@ public class ChattingController {
     public ResponseEntity<String> markDmMessagesAsRead(@PathVariable Long dmId, @RequestBody DmReadRequestDTO dto) {
         dmService.markMessagesAsRead(dmId, dto.getUserId());
         return ResponseEntity.ok("메시지가 성공적으로 읽음으로 표시되었습니다.");
+    }
+
+    @GetMapping("/dm/{dmId}/members")
+    public ResponseEntity<List<DmMemberResponseDTO>> getDmMembers(@PathVariable Long dmId) {
+        List<DmMemberResponseDTO> members = dmService.getDmMembers(dmId);
+        return ResponseEntity.ok(members);
     }
 
 }
