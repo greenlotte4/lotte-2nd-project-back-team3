@@ -41,7 +41,7 @@ public interface DriveFolderRepository extends MongoRepository<DriveFolderDocume
 
     //폴더 선택 조회
     @Query(value = "{ 'driveParentFolderId': ?0 ,'driveFolderIsDeleted':0, 'driveFolderShareType': 1 }",
-            fields = "{ 'driveFolderId': 1, 'driveFolderName': 1, 'driveParentFolderId': 1, 'driveFolderMaker': 1, 'driveFolderSize': 1, 'driveFolderCreatedAt': 1 }")
+            fields = "{ 'driveFolderId': 1, 'driveFolderName': 1, 'driveParentFolderId': 1, 'driveFolderMaker': 1, 'driveFolderSize': 1, 'driveFolderCreatedAt': 1, 'driveFolderShareType': 1 }")
     List<DriveFolderDocument> findWithSelectShareFolders(String driveFolderId);
 
     @Query(value = "{ 'driveParentFolderId': ?0 ,'driveFolderIsDeleted':1 }",
@@ -49,8 +49,10 @@ public interface DriveFolderRepository extends MongoRepository<DriveFolderDocume
     List<DriveFolderDocument> findWithSelectDeleteFolders(String driveFolderId);
 
 
-    @Query(value = "{ 'driveFolderId': ?0 }", fields = "{ 'driveFolderName': 1, 'driveFolderId': 1, 'driveParentFolderId': 1, 'driveFolderPath': 1 }")
+    @Query(value = "{ 'driveFolderId': ?0 }", fields = "{ 'driveFolderName': 1, 'driveFolderId': 1, 'driveParentFolderId': 1, 'driveFolderPath': 1, 'driveFolderShareType': 1 }")
     Optional<DriveFolderDocument> finddriveFolderNameById(String driveFolderId);
+
+
 
     List<DriveFolderDocument> findBydriveFolderPathStartingWith(String path);
 

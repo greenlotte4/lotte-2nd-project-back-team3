@@ -1,10 +1,8 @@
 package BackAnt.dto.drive;
 
-import BackAnt.entity.DriveFileEntity;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter

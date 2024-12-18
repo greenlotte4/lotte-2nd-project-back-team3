@@ -34,4 +34,6 @@ public class DriveShareSelectFilesViewDTO {
 
     private LocalDateTime driveFileUpdatedAt;
 
+    private LocalDateTime driveFileSharedAt;
+
 }

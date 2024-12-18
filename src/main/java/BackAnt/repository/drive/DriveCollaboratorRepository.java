@@ -1,6 +1,6 @@
 package BackAnt.repository.drive;
 
-import BackAnt.entity.DriveCollaborator;
+import BackAnt.entity.drive.DriveCollaborator;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

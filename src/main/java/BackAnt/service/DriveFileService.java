@@ -2,22 +2,23 @@ package BackAnt.service;
 
 import BackAnt.document.page.drive.DriveFolderDocument;
 import BackAnt.dto.drive.DriveNewFileInsertDTO;
+import BackAnt.entity.drive.DriveFileStorage;
+import BackAnt.repository.drive.DriveFileStoarageRepository;
 import org.springframework.http.MediaType;
-import BackAnt.entity.DriveFileEntity;
-import BackAnt.repository.DriveFileRepository;
+import BackAnt.entity.drive.DriveFileEntity;
+import BackAnt.repository.drive.DriveFileRepository;
 import BackAnt.repository.mongoDB.drive.DriveFolderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -33,91 +34,122 @@ public class DriveFileService {
 
     private final DriveFileRepository driveFileRepository;
     private final DriveFolderRepository driveFolderRepository;
+    private final DriveFileStoarageRepository driveFileStoarageRepository;
     private final ModelMapper modelMapper;
     private final String USER_DIR = System.getProperty("user.dir"); // 현재 위치에서 /uploads를 붙혀주기때문에 배포 시 문제 없음
 
 
 // 파일 등록
-    public List<DriveNewFileInsertDTO> fileInsert(DriveNewFileInsertDTO driveNewFileInsertDTO) {
-        String driveFolderId = driveNewFileInsertDTO.getDriveFolderId(); // 상위 폴더 ID
-        String name = driveNewFileInsertDTO.getDriveFileMaker();
-        log.info("driveFolderId: " + driveFolderId);
+@Transactional
+public List<DriveNewFileInsertDTO> fileInsert(DriveNewFileInsertDTO driveNewFileInsertDTO) {
+    String driveFolderId = driveNewFileInsertDTO.getDriveFolderId(); // 상위 폴더 ID
+    String name = driveNewFileInsertDTO.getDriveFileMaker();
+    log.info("driveFolderId: " + driveFolderId);
 
-        // 기본 경로 설정
-        String parentFolderPath = "/uploads/drive/"+name;
-        String drivePath = "";
+    // 기본 경로 설정
+    String parentFolderPath = "/uploads/drive/" + name;
+    String drivePath = "";
 
-        // 상위 폴더 ID가 있는 경우 경로 확인
+    // 상위 폴더의 공유 여부를 판단하는 변수
+    Integer sharedType = null;
+
+    try {
+        // 상위 폴더 ID가 있는 경우 경로와 공유 여부 확인
         if (driveFolderId != null && !driveFolderId.isEmpty()) {
             Optional<DriveFolderDocument> folderOpt = driveFolderRepository.finddriveFolderNameById(driveFolderId);
             if (folderOpt.isPresent()) {
                 DriveFolderDocument folder = folderOpt.get();
                 log.info("Found folder: " + folder);
                 drivePath = folder.getDriveFolderPath(); // 상위 경로
+                sharedType = folder.getDriveFolderShareType(); // 상위 폴더의 공유 여부 확인
             } else {
-                throw new IllegalArgumentException("Invalid folder ID: " + driveFolderId);
+                log.warn("Folder ID not found: {}", driveFolderId);
             }
         } else {
             log.info("No folder ID provided. Using default path.");
         }
+    } catch (Exception e) {
+        log.warn("Failed to find folder or process shared folder logic: {}", e.getMessage());
+    }
 
-        List<MultipartFile> driveFiles = driveNewFileInsertDTO.getDriveFiles();
-        if (driveFiles == null || driveFiles.isEmpty()) {
-            return Collections.emptyList();  // 파일이 없으면 빈 리스트 반환
+    List<MultipartFile> driveFiles = driveNewFileInsertDTO.getDriveFiles();
+    if (driveFiles == null || driveFiles.isEmpty()) {
+        return Collections.emptyList(); // 파일이 없으면 빈 리스트 반환
+    }
+
+    List<DriveNewFileInsertDTO> fileDTOs = new ArrayList<>();
+
+    for (MultipartFile driveFile : driveFiles) {
+        String driveFileName = driveFile.getOriginalFilename();
+        if (driveFileName == null) continue;
+
+        // 파일 이름 처리
+        driveFileName = Paths.get(driveFileName).getFileName().toString(); // 파일 이름만 추출
+        String newFileId = UUID.randomUUID().toString(); // 랜덤 ID
+        String driveFileSName = System.currentTimeMillis() + "_" + driveFileName; // 시간 + 파일 이름
+        String ext = driveFileName.substring(driveFileName.lastIndexOf(".")); // 확장자
+        String driveFileOName = UUID.randomUUID().toString() + ext; // 랜덤 + 확장자
+
+        // 최종 저장 경로 계산
+        String newFolderPath = drivePath.isEmpty() ? parentFolderPath : drivePath;
+        log.info("뉴경로 : " + newFolderPath);
+        Path folderPath = Paths.get(USER_DIR + newFolderPath);
+        Path filePath = folderPath.resolve(newFileId);
+
+        // 디렉토리 생성
+        try {
+            Files.createDirectories(folderPath);
+        } catch (IOException e) {
+            log.error("Failed to create directory: {}", folderPath, e);
+            throw new RuntimeException("Failed to create directory", e);
         }
 
-        List<DriveNewFileInsertDTO> fileDTOs = new ArrayList<>();
+        // 파일 저장
+        try {
+            Files.copy(driveFile.getInputStream(), filePath);
+        } catch (IOException e) {
+            log.error("Failed to save file: {}", filePath, e);
+            throw new RuntimeException("Failed to save file", e);
+        }
 
-        for (MultipartFile driveFile : driveFiles) {
-            String driveFileName = driveFile.getOriginalFilename();
-            if (driveFileName == null) continue;
+        // 엔티티 생성 및 저장
+        DriveFileEntity.DriveFileEntityBuilder builder = DriveFileEntity.builder()
+                .driveFileOName(driveFileOName)
+                .driveFileSName(driveFileSName)
+                .driveFileMaker(driveNewFileInsertDTO.getDriveFileMaker())
+                .driveFileCreatedAt(LocalDateTime.now())
+                .driveFilePath(newFolderPath + "/" + newFileId)
+                .driveFileSize(driveFile.getSize())
+                .driveFolderId(driveFolderId);
 
-            // 파일 이름 처리
-            driveFileName = Paths.get(driveFileName).getFileName().toString(); //파일이름만뗀거
-            String newFileId = UUID.randomUUID().toString(); //랜덤
-            String driveFileSName = System.currentTimeMillis() + "_" + driveFileName; //숫자 + 파일이름
-            String ext = driveFileName.substring(driveFileName.lastIndexOf(".")); //확장자
-            String driveFileOName = UUID.randomUUID().toString() + ext; //랜덤 + 확장자
+        // 상위 폴더가 공유 폴더일 경우 공유 속성 추가
+        if (sharedType != null && sharedType == 1) {
+            builder.driveShareType(1);
+            builder.driveFileSharedAt(LocalDateTime.now());
+        }
 
-            // 최종 저장 경로 계산
-            String newFolderPath = drivePath.isEmpty() ? parentFolderPath : drivePath;
-            log.info("뉴경로 : " + newFolderPath);
-            Path folderPath = Paths.get(USER_DIR + newFolderPath);
-            log.info("folderPath가 모지: " + folderPath);
-            Path filePath = folderPath.resolve(newFileId);
+        DriveFileEntity drivefile = builder.build();
+        fileDTOs.add(modelMapper.map(driveFileRepository.save(drivefile), DriveNewFileInsertDTO.class));
 
-            // 디렉토리 생성
-            try {
-                Files.createDirectories(folderPath);
-            } catch (IOException e) {
-                log.error("Failed to create directory: {}", folderPath, e);
-                throw new RuntimeException("Failed to create directory", e);
-            }
-
-            // 파일 저장
-            try {
-                Files.copy(driveFile.getInputStream(), filePath);
-            } catch (IOException e) {
-                log.error("Failed to save file: {}", filePath, e);
-                throw new RuntimeException("Failed to save file", e);
-            }
-
-            // 엔티티 생성 및 저장
-            DriveFileEntity drivefile = DriveFileEntity.builder()
-                    .driveFileOName(driveFileOName)
-                    .driveFileSName(driveFileSName)
-                    .driveFileMaker(driveNewFileInsertDTO.getDriveFileMaker())
-                    .driveFileCreatedAt(LocalDateTime.now())
-                    .driveFilePath(newFolderPath + "/" + newFileId)
-                    .driveFileSize(Math.round((driveFile.getSize() / 1024.0) * 100.0) / 100.0)
-                    .driveFolderId(driveFolderId)
+        DriveFileStorage driveStorage =  driveFileStoarageRepository.findByUserId(driveNewFileInsertDTO.getDriveFileMaker());
+        log.info("머냐냐?? : " + driveStorage);
+        if(driveStorage == null){
+            driveStorage = DriveFileStorage.builder()
+                    .userId(driveNewFileInsertDTO.getDriveFileMaker())
+                    .driveFileSize(driveFile.getSize())
+                    .driveFileLimitSize(107374182400L) //100GB
+                    .driveSize("100GB")
                     .build();
 
-            fileDTOs.add(modelMapper.map(driveFileRepository.save(drivefile), DriveNewFileInsertDTO.class));
-        }
+        }else {
+            driveStorage.setDriveFileSize(driveStorage.getDriveFileSize() + drivefile.getDriveFileSize());
 
-        return fileDTOs;
+        }
+        driveFileStoarageRepository.save(driveStorage);
     }
+
+    return fileDTOs;
+}
 
         //파일 다운로드
         public ResponseEntity<Resource> MyDriveFileDownload(int driveFileId){
