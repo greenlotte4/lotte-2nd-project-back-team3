@@ -146,8 +146,6 @@ public class ChannelService {
     }
 
     public void changeChannelTitle(Long channelId, String channelName) {
-        // TODO: 검증
-        
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다."));
 

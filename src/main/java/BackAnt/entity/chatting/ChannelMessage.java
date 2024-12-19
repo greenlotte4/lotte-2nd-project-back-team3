@@ -39,17 +39,4 @@ public class ChannelMessage extends BaseTimeEntity {
 
     @Column(nullable = true)
     private String fileType;
-
-    private boolean isRead = false; // 읽음 여부, 기본값 false
-
-    // 읽음 상태 변경 메서드
-    public void markAsRead() {
-        this.isRead = true;
-    }
-
-    // isRead 상태 조회 메서드
-    public Boolean getIsRead() {
-        return isRead;
-    }
-
 }

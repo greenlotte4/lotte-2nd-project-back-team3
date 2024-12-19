@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,10 +81,7 @@ public class ChattingController {
             ChannelMessage message = channelMessageRepository.findById(channelMessageId)
                     .orElseThrow(() -> new RuntimeException("Message not found"));
 
-            Long unreadCount = channelMessageRepository.countByIsReadFalseAndChannelAndMessage(
-                    message.getChannel(), message.getId());
-
-            ChannelMessageResponseDTO responseDTO = ChannelMessageResponseDTO.fromEntity(message, unreadCount);
+            ChannelMessageResponseDTO responseDTO = ChannelMessageResponseDTO.fromEntity(message);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
         } catch (Exception e) {
@@ -126,12 +124,6 @@ public class ChattingController {
         return ResponseEntity.ok().build();
     }
 
-    // 채널 메시지 읽음 처리
-    @PostMapping("/channel/{channelId}/messages/read")
-    public ResponseEntity<Void> markMessagesAsRead(@PathVariable Long channelId, @RequestParam Long userId) {
-        channelMessageService.markMessagesAsRead(channelId, userId);
-        return ResponseEntity.ok().build();
-    }
 
     // 채널 메시지 조회
     @GetMapping("/channel/{channelId}/messages")
@@ -163,6 +155,21 @@ public class ChattingController {
 
         List<ChannelResponseDTO> result = channelService.getVisibleChannelByName(memberId, channelName);
         return ResponseEntity.ok(result);
+    }
+
+    // 특정 메시지의 unreadCount 조회
+    @GetMapping("/channel/{channelId}/messages/{messageId}/unreadCount")
+    public long getUnreadCount(@PathVariable Long channelId, @PathVariable Long messageId) {
+        return channelMessageService.getUnreadCount(channelId, messageId);
+    }
+
+    // 특정 채널에 사용자가 방문했을 때 lastReadAt을 갱신하는 엔드포인트
+    @PostMapping("/channel/{channelId}/members/{memberId}/visit")
+    public void updateLastReadAtOnVisit(@PathVariable Long channelId,
+                                        @PathVariable Long memberId) {
+        // 현재 시간을 lastReadAt으로 기록
+        LocalDateTime now = LocalDateTime.now();
+        channelMessageService.updateLastReadAt(channelId, memberId, now);
     }
 
     // 디엠방 생성 (1:1 비공개 채팅)
