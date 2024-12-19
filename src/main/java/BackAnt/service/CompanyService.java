@@ -4,6 +4,7 @@ import BackAnt.dto.CompanyDTO;
 import BackAnt.dto.RequestDTO.CompanyRequestDTO;
 import BackAnt.entity.Company;
 import BackAnt.repository.CompanyRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
@@ -22,4 +23,14 @@ public class CompanyService {
         Company company = modelMapper.map(companyDTO, Company.class);
         return companyRepository.save(company);
     }
+
+    // 회사 조회
+    public CompanyDTO getCompanyById(Long id) {
+        Company company = companyRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("이 id의 회사가 없습니다."));
+
+        log.info("Company found: " + company.toString());
+
+        return modelMapper.map(company, CompanyDTO.class);
+    }
+
 }
