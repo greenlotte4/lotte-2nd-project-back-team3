@@ -15,4 +15,7 @@ public class ChannelMessageSocketDTO {
     String userName;
     String content;
     String createdAt;
+    private String fileUrl; // 파일 URL 추가
+    private Boolean isImage; // 이미지 여부 추가
+    private String fileType; // 파일 타입 (image/jpeg, application/pdf 등)
 }

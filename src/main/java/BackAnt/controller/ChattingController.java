@@ -4,6 +4,7 @@ import BackAnt.dto.chatting.*;
 import BackAnt.dto.common.ResultDTO;
 import BackAnt.entity.chatting.Channel;
 import BackAnt.entity.chatting.ChannelMessage;
+import BackAnt.repository.chatting.ChannelMessageRepository;
 import BackAnt.entity.chatting.DmMessage;
 import BackAnt.repository.chatting.ChannelRepository;
 import BackAnt.repository.chatting.DmMessageRepository;
@@ -16,6 +17,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +30,7 @@ public class ChattingController {
     private final ChannelService channelService;
     private final ChannelMessageService channelMessageService;
     private final DmService dmService;
+    private final ChannelMessageRepository channelMessageRepository;
     private final DmMessageRepository dmMessageRepository;
 
     // 채널 생성
@@ -63,6 +66,32 @@ public class ChattingController {
         List<ChannelMemberResponseDTO> channelMemberResponseDTOS = channelService.addChannelMember(id, channelMemberAddDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(channelMemberResponseDTOS);
     }
+
+    // 파일 전송
+    @PostMapping("/channel/{id}/files")
+    public ResponseEntity<ChannelMessageResponseDTO> sendMessageWithFile(
+            @PathVariable Long id,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "content", required = false) String content,
+            @RequestParam(value = "senderId") Long senderId) {
+
+        try {
+            Long channelMessageId = channelMessageService.sendMessageWithFile(id, senderId, content, file);
+            ChannelMessage message = channelMessageRepository.findById(channelMessageId)
+                    .orElseThrow(() -> new RuntimeException("Message not found"));
+
+            Long unreadCount = channelMessageRepository.countByIsReadFalseAndChannelAndMessage(
+                    message.getChannel(), message.getId());
+
+            ChannelMessageResponseDTO responseDTO = ChannelMessageResponseDTO.fromEntity(message, unreadCount);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+        } catch (Exception e) {
+            log.error("메시지 전송 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
     // 채널 메시지 보내기
     @PostMapping("/channel/{id}/messages")
