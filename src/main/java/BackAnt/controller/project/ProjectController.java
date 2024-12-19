@@ -109,4 +109,20 @@ public class ProjectController {
 
     }
 
+    // 해당 사용자가 등록한 프로젝트 수 반환
+    @GetMapping("count/{uid}")
+    public ResponseEntity<Integer> getUserProjectCount(@PathVariable String uid) {
+
+        log.info("프로젝트 수 조회 uid: " + uid);
+
+        // 사용자 uid에 대한 프로젝트 수 조회
+        int projectCount = projectService.countProjectsByUid(uid);
+        log.info("projectCount: " + projectCount);
+
+
+        // 프로젝트 수를 반환
+        return ResponseEntity.ok(projectCount); // HTTP 200 OK와 함께 프로젝트 수 반환
+    }
+
+
 }

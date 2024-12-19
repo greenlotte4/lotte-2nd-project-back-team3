@@ -202,7 +202,11 @@ public class ProjectService {
         return dto;
     }
 
-
+    // 사용자가 소유한 프로젝트 수를 계산하는 메서드
+    public int countProjectsByUid(String uid) {
+        // isOwner가 true인 프로젝트 수를 카운트
+        return projectCollaboratorRepository.countByUserUidAndIsOwnerTrue(uid);
+    }
 
 
 }

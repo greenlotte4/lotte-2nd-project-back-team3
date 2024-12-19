@@ -85,5 +85,14 @@ public class ProjectCollaboratorController {
             return ResponseEntity.ok("협업자가 성공적으로 삭제되었습니다.");
         }
 
+        // 프로젝트 id에 따른 협업자 수 세는 메서드
+        @GetMapping("/count/{projectId}")
+        public ResponseEntity<Integer> getCollaboratorCount(@PathVariable Long projectId) {
+            log.info("projectId: " + projectId);
+
+            int collaboratorCount = projectCollaboratorService.countCollaboratorsByProjectId(projectId);
+            return ResponseEntity.ok(collaboratorCount);
+        }
+
 
 }
