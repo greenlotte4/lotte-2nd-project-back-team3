@@ -34,11 +34,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 이메일로 사용자 조회
     Optional<User> findByEmail(String email);
 
-    // 채널과 메시지에 대해 읽지 않은 사용자 수를 세는 메서드
-    @Query("SELECT COUNT(DISTINCT m.sender) FROM ChannelMessage m " +
-            "WHERE m.channel = :channel AND m.isRead = false AND m.id = :messageId")
-    Long countByChannelAndHasNotReadMessage(Channel channel, Long messageId);
-
     // 아이디 중복 확인
     boolean existsByUid(String uid);
 

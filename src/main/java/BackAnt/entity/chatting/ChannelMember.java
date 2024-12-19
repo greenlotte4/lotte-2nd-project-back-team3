@@ -10,6 +10,8 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @AllArgsConstructor
@@ -30,9 +32,16 @@ public class ChannelMember extends BaseTimeEntity {
     @JoinColumn(name = "user_id")
     private User user; // 채널 멤버로 참여 중인 사용자
 
+    // 마지막 읽은 메시지 시점을 기록
+    private LocalDateTime lastReadAt;
+
     public ChannelMember(Channel channel, User user) {
         this.channel = channel;
         this.user = user;
 
+    }
+
+    public void changeLastReadAt(LocalDateTime lastReadAt) {
+        this.lastReadAt = lastReadAt;
     }
 }

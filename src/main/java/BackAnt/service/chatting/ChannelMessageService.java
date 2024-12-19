@@ -4,12 +4,15 @@ import BackAnt.dto.chatting.ChannelMessageCreateDTO;
 import BackAnt.dto.chatting.ChannelMessageResponseDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.chatting.Channel;
+import BackAnt.entity.chatting.ChannelMember;
 import BackAnt.entity.chatting.ChannelMessage;
 import BackAnt.repository.UserRepository;
+import BackAnt.repository.chatting.ChannelMemberRepository;
 import BackAnt.repository.chatting.ChannelMessageRepository;
 import BackAnt.repository.chatting.ChannelRepository;
 import BackAnt.service.ImageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,10 +31,11 @@ import java.util.stream.Collectors;
 @Transactional
 public class ChannelMessageService {
     private final ChannelMessageRepository channelMessageRepository;
+    private final ChannelMemberRepository channelMemberRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final ImageService imageService;
-
+    private final SimpMessagingTemplate messagingTemplate;
     // 채널 메시지 보내기
     public Long sendMessage(Long id, ChannelMessageCreateDTO dto) {
         // 사용자 및 채널 검증
@@ -49,6 +54,8 @@ public class ChannelMessageService {
 
         // 메시지 저장
         channelMessageRepository.save(message);
+
+        updateLastReadAt(id, dto.getSenderId(), LocalDateTime.now());
 
         return message.getId(); // 메시지 ID 반환
     }
@@ -112,8 +119,7 @@ public class ChannelMessageService {
 
         return messages.stream()
                 .map(message -> {
-                    Long unreadCount = getUnreadCountForMessage(message);  // 읽지 않은 사람 수 계산
-                    return ChannelMessageResponseDTO.fromEntity(message, unreadCount);  // unreadCount와 함께 DTO로 변환
+                    return ChannelMessageResponseDTO.fromEntity(message);  // unreadCount와 함께 DTO로 변환
                 })
                 .collect(Collectors.toList());
     }
@@ -130,49 +136,37 @@ public class ChannelMessageService {
 
         return messages.stream()
                 .map(message -> {
-                    Long unreadCount = getUnreadCountForMessage(message);  // 읽지 않은 사람 수 계산
-                    return ChannelMessageResponseDTO.fromEntity(message, unreadCount);  // unreadCount와 함께 DTO로 변환
+                    return ChannelMessageResponseDTO.fromEntity(message);
                 })
                 .collect(Collectors.toList());
     }
 
-    // 채널 메시지 읽음 처리
+
+    public long getUnreadCount(Long channelId, Long messageId) {
+        ChannelMessage message = channelMessageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found"));
+
+        LocalDateTime messageCreatedAt = message.getCreatedAt();
+
+        long totalMembers = channelMemberRepository.countMembersInChannel(channelId);
+        long readMembers = channelMemberRepository.countMembersReadOrBeyond(channelId, messageCreatedAt);
+        return totalMembers - readMembers;
+    }
+
     @Transactional
-    public void markMessagesAsRead(Long channelId, Long userId) {
-        Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new RuntimeException("채널을 찾을 수 없습니다"));
-
-        List<ChannelMessage> messages = channelMessageRepository.findAllByChannel(channel);
-
-        // 메시지를 읽음 처리
-        for (ChannelMessage message : messages) {
-            // 본인이 보낸 메시지는 제외하고, 읽지 않은 메시지를 읽음 상태로 처리
-            if (!message.getSender().getId().equals(userId) && !message.getIsRead()) {
-                message.markAsRead();  // 읽음 상태로 설정
-            }
+    public void updateLastReadAt(Long channelId, Long memberId, LocalDateTime readAtTime) {
+        ChannelMember cm = channelMemberRepository.findByChannelIdAndMemberId(channelId, memberId);
+        if (cm == null) {
+            throw new IllegalArgumentException("ChannelMember not found");
         }
+
+        // 새로 읽은 시점이 이전보다 최신이라면 갱신
+        if (cm.getLastReadAt() == null || cm.getLastReadAt().isBefore(readAtTime)) {
+            cm.changeLastReadAt(readAtTime);
+        }
+
+        
+        // TODO: 방문 소켓 보내기 - 소켓 컨트롤러 안돼서 서비스에서 호출
+        messagingTemplate.convertAndSend("/topic/chatting/channel/" + channelId + "/visit", "message");
     }
-    // 채널 메시지 읽지 않은 메시지 수 조회
-    @Transactional(readOnly = true)
-    public List<ChannelMessageResponseDTO> getMessagesWithUnreadCount(Long channelId) {
-        Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new RuntimeException("채널을 찾을 수 없습니다"));
-
-        List<ChannelMessage> messages = channelMessageRepository.findAllByChannel(channel);
-
-        // 메시지 리스트에 읽지 않은 사람 수를 포함해서 DTO로 변환
-        return messages.stream()
-                .map(message -> {
-                    Long unreadCount = getUnreadCountForMessage(message);  // 각 메시지에 대해 읽지 않은 사람 수 계산
-                    return ChannelMessageResponseDTO.fromEntity(message, unreadCount);  // unreadCount와 함께 DTO로 변환
-                })
-                .collect(Collectors.toList());
-    }
-
-    private Long getUnreadCountForMessage(ChannelMessage message) {
-        // 메시지 ID를 넘겨줘야 하므로 message.getId()를 사용합니다.
-        return channelMessageRepository.countByIsReadFalseAndChannelAndMessage(message.getChannel(), message.getId());
-    }
-
-
 }

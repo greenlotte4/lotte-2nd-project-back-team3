@@ -18,16 +18,14 @@ public class ChannelMessageResponseDTO {
     private String userProfile;
     private Long channelId;
     private String channelName;
-    private Boolean isRead;  // 읽음 여부 추가
     private String createdAt;  // 메시지 시간 (로컬 시간 형식으로 반환)
-    private Long unreadCount;  // 읽지 않은 사람 수 필드 추가
     private String fileUrl; // 파일 URL 추가
     private String fileType; // 파일 MIME 타입 추가
     private Boolean canDelete; // 삭제 가능 여부
 
 
     // ChannelMessage 엔티티를 ChannelMessageResponseDTO로 변환하는 정적 메서드
-    public static ChannelMessageResponseDTO fromEntity(ChannelMessage message, Long unreadCount) {
+    public static ChannelMessageResponseDTO fromEntity(ChannelMessage message) {
         return ChannelMessageResponseDTO.builder()
                 .id(message.getId())
                 .content(message.getContent())
@@ -36,9 +34,7 @@ public class ChannelMessageResponseDTO {
                 .userProfile(message.getSender().getProfileImageUrl())
                 .channelId(message.getChannel().getId())
                 .channelName(message.getChannel().getName())
-                .isRead(message.getIsRead())  // 읽음 여부 포함
                 .createdAt(message.getCreatedAt().toString())  // 메시지 시간
-                .unreadCount(unreadCount)  // 읽지 않은 사람 수 추가
                 .fileUrl(message.getFileUrl())  // 파일 URL 포함
                 .fileType(message.getFileType())  // 파일 MIME 타입 반환
                 .build();

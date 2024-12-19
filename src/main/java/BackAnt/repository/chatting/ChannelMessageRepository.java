@@ -16,8 +16,4 @@ public interface ChannelMessageRepository extends JpaRepository<ChannelMessage, 
 
     // 채널의 모든 메시지 조회
     List<ChannelMessage> findAllByChannel(Channel channel);
-
-    // 특정 메시지에 대해 읽지 않은 사용자 수를 계산하는 쿼리
-    @Query("SELECT COUNT(m) FROM ChannelMessage m WHERE m.channel = :channel AND m.isRead = false AND m.id = :messageId")
-    Long countByIsReadFalseAndChannelAndMessage(@Param("channel") Channel channel, @Param("messageId") Long messageId);
 }
