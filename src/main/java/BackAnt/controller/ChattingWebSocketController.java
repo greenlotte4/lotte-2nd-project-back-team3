@@ -22,15 +22,34 @@ public class ChattingWebSocketController {
 
     // 채널 메시지 전송
     @MessageMapping("/chatting/channel/{id}/send")
-    @SendTo("/topic/chatting/channel/{id}/messages")  // 경로 통일
+    @SendTo("/topic/chatting/channel/{id}/messages")
     public ChannelMessageSocketDTO sendChannelMessage(
             @DestinationVariable("id") Long id,
             @Payload ChannelMessageSocketDTO messageDTO
     ) {
         log.info("채널 {}로 메시지 수신: {}", id, messageDTO);
 
+        // 메시지 데이터 확장 (이미지 여부 및 파일 유형 확인)
+        if (messageDTO.getFileUrl() != null) {
+            String fileUrl = messageDTO.getFileUrl().toLowerCase();
+
+            // 이미지 여부 설정
+            boolean isImage = fileUrl.matches(".*\\.(jpg|jpeg|png|gif|bmp|webp)$");
+            messageDTO.setIsImage(isImage);
+
+            // MIME 타입 기반으로 파일 유형 설정
+            if (isImage) {
+                messageDTO.setFileType("image");
+            } else if (fileUrl.matches(".*\\.(pdf)$")) {
+                messageDTO.setFileType("pdf");
+            } else {
+                messageDTO.setFileType("file");
+            }
+        }
+
         return messageDTO;
     }
+
 
     // 디엠 메시지 전송
     @MessageMapping("/chatting/dm/{id}/send")

@@ -34,6 +34,12 @@ public class ChannelMessage extends BaseTimeEntity {
     @JoinColumn(name = "channel_id")
     private Channel channel; // 메시지가 전송된 채널
 
+    @Column(nullable = true) // 파일은 선택적으로 포함
+    private String fileUrl; // 업로드된 파일의 URL
+
+    @Column(nullable = true)
+    private String fileType;
+
     private boolean isRead = false; // 읽음 여부, 기본값 false
 
     // 읽음 상태 변경 메서드
