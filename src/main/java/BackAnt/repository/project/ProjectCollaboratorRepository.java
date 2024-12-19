@@ -37,5 +37,5 @@ public interface ProjectCollaboratorRepository extends JpaRepository<ProjectColl
     // 프로젝트 id 기준으로 프로젝트 협업자 삭제
     void deleteByProjectId(Long projectId);
 
-
+    void deleteByUserId(Long userId);
 }

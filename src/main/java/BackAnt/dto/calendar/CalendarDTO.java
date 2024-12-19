@@ -16,4 +16,5 @@ public class CalendarDTO {
     private String color;
 
     private boolean share;
+    private int no;
 }

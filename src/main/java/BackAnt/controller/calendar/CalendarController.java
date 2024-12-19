@@ -44,7 +44,7 @@ public class CalendarController {
 
     @PostMapping("/insert")
     public void calendar(@RequestBody CalendarDTO calendar) {
-
+        log.info("13245666");
         calendarService.insertCalendar(calendar);
     }
 

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface AccessLogRepository extends MongoRepository<AccessLog, String> {
-    List<AccessLog> findByUserId(String userId); // 사용자 ID로 로그 조회
+    List<AccessLog> findByUserIdOrderByAccessTimeDesc(String userId); // 사용자 ID로 로그 조회
     Page<AccessLog> findByUserIdContainingOrUrlPathContaining(String userId, String urlPath, Pageable pageable);
 
     // 검색어가 있을 경우 + 내림차순

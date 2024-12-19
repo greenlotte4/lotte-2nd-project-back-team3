@@ -20,4 +20,6 @@ public interface DriveCollaboratorRepository extends JpaRepository<DriveCollabor
 
     @Query("SELECT d.driveFolderId FROM DriveCollaborator d " + "WHERE d.isSharePoint = true " + "AND d.isOwner = false " + "AND d.user.id = :userId")
     List<String> findDriveFolderIdsByConditions(@Param("userId") Long userId);
+
+    void deleteByUserId(Long userId);
 }
