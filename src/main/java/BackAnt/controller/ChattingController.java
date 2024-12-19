@@ -4,6 +4,9 @@ import BackAnt.dto.chatting.*;
 import BackAnt.dto.common.ResultDTO;
 import BackAnt.entity.chatting.Channel;
 import BackAnt.entity.chatting.ChannelMessage;
+import BackAnt.entity.chatting.DmMessage;
+import BackAnt.repository.chatting.ChannelRepository;
+import BackAnt.repository.chatting.DmMessageRepository;
 import BackAnt.service.chatting.ChannelMessageService;
 import BackAnt.service.chatting.ChannelService;
 import BackAnt.service.chatting.DmService;
@@ -25,6 +28,7 @@ public class ChattingController {
     private final ChannelService channelService;
     private final ChannelMessageService channelMessageService;
     private final DmService dmService;
+    private final DmMessageRepository dmMessageRepository;
 
     // 채널 생성
     @PostMapping("/channel")
@@ -122,6 +126,16 @@ public class ChattingController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    // 채널 검색
+    @GetMapping("/channel/search")
+    public ResponseEntity<List<ChannelResponseDTO>> searchVisibleChannelsByName(
+            @RequestParam("memberId") Long memberId,
+            @RequestParam(value = "channelName", required = false) String channelName) {
+
+        List<ChannelResponseDTO> result = channelService.getVisibleChannelByName(memberId, channelName);
+        return ResponseEntity.ok(result);
+    }
+
     // 디엠방 생성 (1:1 비공개 채팅)
     @PostMapping("/dm")
     public ResponseEntity<ResultDTO<Long>> createDm(@RequestBody DmCreateDTO dmCreateDTO) {
@@ -172,5 +186,17 @@ public class ChattingController {
         List<DmMemberResponseDTO> members = dmService.getDmMembers(dmId);
         return ResponseEntity.ok(members);
     }
+
+
+    // 메시지 삭제 API
+    @DeleteMapping("/dm/messages/{messageId}")
+    public ResponseEntity<String> deleteMessage(
+            @PathVariable Long messageId,
+            @RequestParam Long userId
+    ) {
+        dmService.checkAndDeleteMessage(messageId, userId);
+        return ResponseEntity.ok("메시지가 삭제되었습니다.");
+    }
+
 
 }

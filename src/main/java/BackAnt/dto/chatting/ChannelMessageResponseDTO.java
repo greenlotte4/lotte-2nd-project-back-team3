@@ -21,6 +21,7 @@ public class ChannelMessageResponseDTO {
     private Boolean isRead;  // 읽음 여부 추가
     private String createdAt;  // 메시지 시간 (로컬 시간 형식으로 반환)
     private Long unreadCount;  // 읽지 않은 사람 수 필드 추가
+    private Boolean canDelete; // 삭제 가능 여부
 
 
     // ChannelMessage 엔티티를 ChannelMessageResponseDTO로 변환하는 정적 메서드
