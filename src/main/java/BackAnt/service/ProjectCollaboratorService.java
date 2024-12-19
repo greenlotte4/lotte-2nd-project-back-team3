@@ -157,4 +157,9 @@ public class ProjectCollaboratorService {
 
     }
 
+    // 프로젝트에 협업자가 몇 명 등록되어 있는지 세는 메서드
+    public int countCollaboratorsByProjectId(Long projectId) {
+        return projectCollaboratorRepository.countByProject_Id(projectId);
+    }
+
 }

@@ -38,4 +38,10 @@ public interface ProjectCollaboratorRepository extends JpaRepository<ProjectColl
     void deleteByProjectId(Long projectId);
 
     void deleteByUserId(Long userId);
+
+    // 사용자 UID, isOwner가 true로 프로젝트 참여 수를 카운트
+    int countByUserUidAndIsOwnerTrue(String uid);
+
+    // 프로젝트id에 따른 협업자 몇명인지 세는 메서드
+    int countByProject_Id(Long projectId);
 }

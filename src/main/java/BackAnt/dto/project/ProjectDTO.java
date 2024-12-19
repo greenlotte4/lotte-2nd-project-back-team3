@@ -23,6 +23,9 @@ public class ProjectDTO {
     private String action;  // 웹소켓을 쏴주기 위한 액션
     private Long projectId;
 
+    private Integer companyRate;    // 회사 무료/유료
+
+
     // 특정 필드만 받는 생성자
     public ProjectDTO(Long id, String projectName, int status) {
         this.id = id;
