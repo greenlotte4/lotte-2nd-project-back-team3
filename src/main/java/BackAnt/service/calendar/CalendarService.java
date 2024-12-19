@@ -1,5 +1,6 @@
 package BackAnt.service.calendar;
 
+import BackAnt.dto.NotificationDTO;
 import BackAnt.dto.user.UserDTO;
 import BackAnt.dto.calendar.CalendarDTO;
 import BackAnt.dto.calendar.ScheduleDTO;
@@ -11,6 +12,7 @@ import BackAnt.repository.UserRepository;
 import BackAnt.repository.calendar.CalendarRepository;
 import BackAnt.repository.calendar.ScheduleRepository;
 import BackAnt.repository.calendar.ViewCalendarRepository;
+import BackAnt.service.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -33,6 +35,7 @@ public class CalendarService {
     private final ScheduleRepository scheduleRepository;
     private final ViewCalendarRepository viewCalendarRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationService notificationService;
 
     public List<CalendarDTO> selectCalendar (String uid){
 
@@ -317,7 +320,22 @@ public class CalendarService {
                     .user(userRepository.findById(Long.parseLong(list)).orElseThrow(() -> new EntityNotFoundException("이 id의 Schedule 이 없습니다.")))
                     .build();
             viewCalendarRepository.save(viewCalendar);
+            // WebSocket을 통한 실시간 알림 전송
+            NotificationDTO notification = NotificationDTO.builder()
+                    .targetType("USER")
+                    .targetId(Long.parseLong(list)) // Approver ID
+                    .senderId(Long.parseLong(id))
+                    .message(viewCalendar.getCalendar().getName() + " 캘린더를 공유받으셨습니다!")
+                    .metadata(Map.of(
+                            "type", "공유캘린더초대"
+                    ))
+                    .createdAt(LocalDateTime.now())
+                    .isRead(false)
+                    .build();
+            notificationService.createAndSendNotification(notification);
         });
+
+
 
     }
 

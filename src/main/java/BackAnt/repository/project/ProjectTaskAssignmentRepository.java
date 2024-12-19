@@ -36,5 +36,8 @@ public interface ProjectTaskAssignmentRepository extends JpaRepository<ProjectTa
     @Transactional
     @Query("DELETE FROM ProjectTaskAssignment pta WHERE pta.task.state.project.id = :projectId AND pta.user.id = :userId")
     void deleteByProjectIdAndUserId(@Param("projectId") Long projectId, @Param("userId") Long userId);
-}
 
+    // userId로 삭제하기
+    void deleteByUserId(Long userId);
+
+}

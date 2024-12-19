@@ -8,7 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -46,8 +48,20 @@ public class AccessLogService {
     }
 
     // 사용자별 조회
-    public List<AccessLog> getLogsByUserId(String userId) {
-        return accessLogRepository.findByUserId(userId);
+    public List<String> getLogsByUserId(String userId) {
+        List<AccessLog> accessLogs = accessLogRepository.findByUserIdOrderByAccessTimeDesc(userId);
+
+        log.info("Logs:::::::::::: " + accessLogs);
+        List<String> filteredParts = accessLogs.stream()
+                .map(AccessLog::getUrlPath) // Extract urlPath
+                .map(urlPath -> urlPath.replaceFirst("^/api/", "")) // Remove "/api/"
+                .map(strippedPath -> strippedPath.split("/")[0]) // Get the first part after "/api/"
+                .filter(part -> !part.equals("user")) // Exclude "user"
+                .distinct()
+                .toList();
+
+        log.info("7777777777777" + filteredParts);
+        return filteredParts;
     }
 
 

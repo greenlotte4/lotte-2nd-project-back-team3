@@ -16,5 +16,5 @@ public interface PageCollaboratorRepository extends JpaRepository<PageCollaborat
     @Query("SELECT pc.pageId FROM PageCollaborator pc WHERE pc.user.uid = :userId AND pc.isOwner = false")
     List<String> findPageIdsByUserId(@Param("userId") String userId);
     List<PageCollaborator> findByUser_UidAndIsOwnerFalse(String userId);
-
+    void deleteByUser_Id(long userId);
 }

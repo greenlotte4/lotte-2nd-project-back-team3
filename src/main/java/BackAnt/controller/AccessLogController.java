@@ -72,7 +72,8 @@ public class AccessLogController {
 
     // 특정 사용자 로그 조회
     @GetMapping("/user/{userId}")
-    public List<AccessLog> getLogsByUserId(@PathVariable String userId) {
+    public List<String> getLogsByUserId(@PathVariable String userId) {
+        log.info("444455556666" + userId);
         return accessLogService.getLogsByUserId(userId);
     }
 

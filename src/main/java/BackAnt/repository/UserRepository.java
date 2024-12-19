@@ -43,7 +43,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUid(String uid);
 
     // 회사별 유저 조회 (페이징 처리)
-    Page<User> findAllByCompany(Company company, Pageable pageable);
+    Page<User> findAllByCompanyAndStatus(Company company, Status status, Pageable pageable);
 
     // 부서별 유저 조회
     List<User> findByDepartmentId(Long departmentId);

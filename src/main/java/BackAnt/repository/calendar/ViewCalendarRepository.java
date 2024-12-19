@@ -17,4 +17,6 @@ public interface ViewCalendarRepository extends JpaRepository<ViewCalendar, Inte
 
     long countByCalendar_CalendarId(int calendar_calendarId);
 
+    void deleteByUserId(Long userId);
+
 }

@@ -16,23 +16,26 @@ import BackAnt.repository.InviteRepository;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.calendar.CalendarRepository;
 import BackAnt.repository.calendar.ViewCalendarRepository;
+import BackAnt.repository.drive.DriveCollaboratorRepository;
+import BackAnt.repository.page.PageCollaboratorRepository;
+import BackAnt.repository.project.ProjectCollaboratorRepository;
+import BackAnt.repository.project.ProjectTaskAssignmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
+import java.util.*;
 import java.io.File;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /*
@@ -58,6 +61,10 @@ public class UserService {
     private final ImageService imageService;
     private final CalendarRepository calendarRepository;
     private final ViewCalendarRepository viewCalendarRepository;
+    private final ProjectCollaboratorRepository projectCollaboratorRepository;
+    private final PageCollaboratorRepository pageCollaboratorRepository;
+    private final DriveCollaboratorRepository driveCollaboratorRepository;
+    private final ProjectTaskAssignmentRepository projectTaskAssignmentRepository;
     // 매퍼 사용 엔티티 - DTO 상호전환
     public UserDTO toDTO(User user) {
         return modelMapper.map(user, UserDTO.class);
@@ -163,23 +170,24 @@ public class UserService {
 
 
     // 회사별 유저 조회 (페이징)
-    public Page<UserDTO> getMembersByCompany(Long companyId, int page, int size) {
+    public Page<UserDTO> getMembersByCompany(Long companyId, int page, int size, String type, String keyword) {
         Pageable pageable = PageRequest.of(page, size);
 
         // Company 조회
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new IllegalArgumentException("회사를 찾을 수 없습니다."));
 
-        // User 엔티티를 UserDTO로 매핑하고 departmentName 설정
-        return userRepository.findAllByCompany(company, pageable)
-                .map(user -> {
-                    UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-                    if (user.getDepartment() != null) {
-                        userDTO.setDepartmentName(user.getDepartment().getName());
-                        userDTO.setDepartmentId(user.getDepartment().getId());
-                    }
-                    return userDTO;
-                });
+
+            return userRepository.findAllByCompanyAndStatus(company, Status.valueOf(keyword), pageable)
+                    .map(user -> {
+                        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+                        if (user.getDepartment() != null) {
+                            userDTO.setDepartmentName(user.getDepartment().getName());
+                            userDTO.setDepartmentId(user.getDepartment().getId());
+                        }
+                        return userDTO;
+                    });
+
     }
 
     public List<UserDTO> getAllMembers() {
@@ -317,29 +325,77 @@ public class UserService {
         }
     }
 
-    public void searchUser(String type, String keyword, String companyId) {
-            List<User> users = userRepository.findAllByCompany(companyRepository.findById(Long.parseLong(companyId)).orElse(null));
-            log.info("히히히히히"+users);
+    public Page<UserDTO> searchUser(String type, String keyword, String companyId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<User> users = userRepository.findAllByCompany(companyRepository.findById(Long.parseLong(companyId)).orElse(null));
+        log.info("흠흠흠흠" + users);
+        List<UserDTO> filteredUsers = new ArrayList<>();
         if(Objects.equals(type, "이름")){
-            List<User> filteredUsers = users.stream()
+            filteredUsers = users.stream()
                     .filter(user ->  user.getName().contains(keyword)) // 조건
+                    .map(user -> {UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+                        userDTO.setDepartmentName(user.getDepartment().getName());
+                        userDTO.setDepartmentId(user.getDepartment().getId());
+                        return userDTO; })
                     .toList(); // 필터링 결과를 리스트로 변환
-            log.info("하하하"+filteredUsers);
+            log.info(filteredUsers);
         }else if(Objects.equals(type, "부서")){
-            List<User> filteredUsers = users.stream()
+            filteredUsers = users.stream()
                     .filter(user ->  user.getDepartment().getName().contains(keyword)) // 조건
+                    .map(user -> {UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+                        userDTO.setDepartmentName(user.getDepartment().getName());
+                        userDTO.setDepartmentId(user.getDepartment().getId());
+                        return userDTO; })
                     .toList(); // 필터링 결과를 리스트로 변환
-            log.info("하하하"+filteredUsers);
         }else if(Objects.equals(type, "직급")){
-            List<User> filteredUsers = users.stream()
+            filteredUsers = users.stream()
                     .filter(user ->  user.getPosition().contains(keyword)) // 조건
+                    .map(user -> {UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+                        userDTO.setDepartmentName(user.getDepartment().getName());
+                        userDTO.setDepartmentId(user.getDepartment().getId());
+                        return userDTO; })
                     .toList(); // 필터링 결과를 리스트로 변환
-            log.info("하하하"+filteredUsers);
         }else if(Objects.equals(type, "이메일")){
-            List<User> filteredUsers = users.stream()
+            filteredUsers = users.stream()
                     .filter(user ->  user.getEmail().contains(keyword)) // 조건
+                    .map(user -> {UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+                        userDTO.setDepartmentName(user.getDepartment().getName());
+                        userDTO.setDepartmentId(user.getDepartment().getId());
+                        return userDTO; })
                     .toList(); // 필터링 결과를 리스트로 변환
-            log.info("하하하"+filteredUsers);
+        }
+        return new PageImpl<>(filteredUsers, pageable, filteredUsers.size());
+    }
+
+    public void updatePosition (List<UserDTO> userDTOS) {
+        userDTOS.forEach(userDTO -> {
+            User user = userRepository.findById(userDTO.getId()).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+            user.setPosition(userDTO.getPosition());
+            userRepository.save(user);
+        });
+    }
+    @Transactional
+    public void updateStatus (List<String> userIds, String type){
+        if(Objects.equals(type, "delete")){
+            userIds.forEach(userId -> {
+               User user = userRepository.findById(Long.parseLong(userId)).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+               log.info(user);
+               user.setStatus(Status.DELETED);
+               userRepository.save(user);
+               calendarRepository.deleteByUser_Uid(user.getUid());
+               log.info("44444"+Long.parseLong(userId));
+               viewCalendarRepository.deleteByUserId(Long.parseLong(userId));
+               projectCollaboratorRepository.deleteByUserId(Long.parseLong(userId));
+               pageCollaboratorRepository.deleteByUser_Id(Long.parseLong(userId));
+               driveCollaboratorRepository.deleteByUserId(Long.parseLong(userId));
+               projectTaskAssignmentRepository.deleteByUserId(Long.parseLong(userId));
+            });
+        }else if(Objects.equals(type, "password")){
+            userIds.forEach(userId -> {
+                User user = userRepository.findById(Long.parseLong(userId)).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                user.setPassword(passwordEncoder.encode("a1234@"));
+                userRepository.save(user);
+            });
         }
     }
 

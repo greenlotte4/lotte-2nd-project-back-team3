@@ -272,7 +272,9 @@ public class UserController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<UserDTO> members = userService.getMembersByCompany(company, page - 1, size);
+        String type = "first";
+        String keyword = "ACTIVE";
+        Page<UserDTO> members = userService.getMembersByCompany(company, page - 1, size, type, keyword);
 
         log.info("ㅇㅇ" + members.getContent().get(0).getDepartmentName());
         return ResponseEntity.ok(members);
@@ -341,8 +343,34 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public void getSearchUser(@RequestParam String type, @RequestParam String keyword, @RequestParam String company){
+    public ResponseEntity<Page<UserDTO>> getSearchUser(@RequestParam String type, @RequestParam String keyword, @RequestParam String company,
+                                                       @RequestParam(defaultValue = "1") int page,
+                                                       @RequestParam(defaultValue = "10") int size ){
         log.info(":::::"+type+":::::"+keyword+":::::"+company);
-        userService.searchUser(type, keyword, company);
+        Page<UserDTO> members = userService.searchUser(type, keyword, company, page -1, size);
+        log.info("호호호"+members.getContent());
+        return ResponseEntity.ok(members);
     }
+
+    @PutMapping("/position")
+    public void updatePositionUser(@RequestBody List<UserDTO> userDTO) {
+        log.info(userDTO);
+        userService.updatePosition(userDTO);
+    }
+
+    @PutMapping("/delete/{type}")
+    public void deleteCheckUser(@RequestBody List<String> userIds, @PathVariable String type) {
+        log.info(type);
+        userService.updateStatus(userIds, type);
+    }
+
+    @GetMapping("/findDelete/{companyId}/{page}/{size}/{status}")
+    public ResponseEntity<Page<UserDTO>> findDeleteUser(@PathVariable Long companyId, @PathVariable int page, @PathVariable int size, @PathVariable String status) {
+        log.info(companyId);
+        String type = "second";
+        Page<UserDTO> members = userService.getMembersByCompany(companyId, page -1, size, type, status);
+        log.info("ㅇㅇ" + members.getContent());
+        return ResponseEntity.ok(members);
+    }
+
 }
