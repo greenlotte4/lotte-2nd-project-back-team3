@@ -204,4 +204,21 @@ public class DmService {
                 .toList();
     }
 
+    @Transactional
+    public void checkAndDeleteMessage(Long messageId, Long userId) {
+        // 메시지 조회
+        DmMessage dmMessage = dmMessageRepository.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("메시지를 찾을 수 없습니다."));
+
+        // 본인 메시지만 삭제 가능 확인
+        if (!dmMessage.getSender().getId().equals(userId)) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+
+        // 메시지 삭제
+        dmMessageRepository.deleteById(messageId);
+    }
+
+
+
 }

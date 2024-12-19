@@ -159,5 +159,11 @@ public class ChannelService {
         List<Channel> visibleChannels = channelRepository.findVisibleChannelByMemberId(memberId);
         return visibleChannels.stream().map(ChannelResponseDTO::fromEntity).toList();
     }
+
+    public List<ChannelResponseDTO> getVisibleChannelByName(Long memberId, String channelName) {
+        List<Channel> visibleChannels = channelRepository.findVisibleChannelByMemberIdAndChannelName(memberId, channelName);
+        return visibleChannels.stream().map(ChannelResponseDTO::fromEntity).toList();
+    }
+
 }
 
