@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /*
@@ -29,4 +30,6 @@ public class CompanyDTO {
     private String address;
     private String businessNumber;
     private String logo;
+    private int rate;
+    private LocalDateTime createdAt;
 }

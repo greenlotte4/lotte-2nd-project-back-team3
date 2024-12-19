@@ -1,5 +1,6 @@
 package BackAnt.controller.company;
 
+import BackAnt.dto.CompanyDTO;
 import BackAnt.dto.RequestDTO.CompanyRequestDTO;
 import BackAnt.dto.ResponseDTO.ApiResponseDTO;
 import BackAnt.entity.Company;
@@ -10,10 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -42,4 +40,16 @@ public class CompanyController {
                     .body(new ApiResponseDTO<>(false, "회사 저장 실패: " + e.getMessage(), null));
         }
     }
+
+    @GetMapping("select/{id}")
+    public CompanyDTO selectCompany(@PathVariable Long id) {
+
+        log.info("회사조회하기" + id);
+
+        CompanyDTO dto = companyService.getCompanyById(id);
+        log.info(dto);
+        return dto;
+
+    }
+
 }
