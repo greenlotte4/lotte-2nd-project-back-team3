@@ -9,14 +9,17 @@ import BackAnt.repository.ApproverRepository;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.VactionRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class VacationService {
@@ -85,4 +88,15 @@ public class VacationService {
                 .build();
         notificationService.createAndSendNotification(notification);
     }
+
+    public void findVacationUser() {
+        List<Vacation> vacations = vactionRepository.findAll();
+
+        List<Vacation> approvedVacations = vacations.stream()
+                .filter(vacation -> "승인".equals(vacation.getStatus()))  // status가 "승인"인 것만 필터링
+                .toList();  // 필터링된 결과를 리스트로 수집
+
+        log.info("444"+approvedVacations);
+    }
+
 }
