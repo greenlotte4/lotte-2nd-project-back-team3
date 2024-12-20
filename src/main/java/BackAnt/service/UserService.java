@@ -86,7 +86,6 @@ public class UserService {
     }
 
     // 회원 회원가입
-// 회원 회원가입
     public User registerUser(UserRegisterRequestDTO userDTO) throws Exception {
         Department department = null;
 
