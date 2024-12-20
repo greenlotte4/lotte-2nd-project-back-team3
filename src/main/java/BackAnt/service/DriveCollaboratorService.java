@@ -170,7 +170,7 @@ public class DriveCollaboratorService {
                     .driveFolderName(ShareFolder.getDriveFolderName())
                     .driveParentFolderId(ShareFolder.getDriveParentFolderId())
                     .driveFolderSize(ShareFolder.getDriveFolderSize())
-                    .driveFolderSharedAt(ShareFolder.getDriveFolderSharedAt())
+                    .driveFolderSharedAt(ShareFolder.getDriveFolderCreatedAt())
                     .driveFolderUpdatedAt(ShareFolder.getDriveFolderUpdatedAt())
                     .driveFolderMaker(ShareFolder.getDriveFolderMaker())
                     .driveFolderShareType(ShareFolder.getDriveFolderShareType())

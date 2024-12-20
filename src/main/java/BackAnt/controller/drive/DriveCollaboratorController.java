@@ -78,6 +78,7 @@ public class DriveCollaboratorController {
         log.info("선택된 공유 드라이브여야해,,,: "+ ShareDrive);
         log.info("냐냐냐뇽뇽냐냐뇨욘요 : " + driveFolderId);
         log.info("냐냐냐뇽뇽냐냐뇨욘요?? : " + userId);
+        log.info("마마마마마마난 : " + ShareDrive);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ShareDrive);
     }
