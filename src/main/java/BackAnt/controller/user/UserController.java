@@ -52,6 +52,7 @@ public class UserController {
     private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper;
     private final KafkaProducerService kafkaProducerService;
+    private final VacationService vacationService;
 
     // 초기 관리자 멤버 추가
     @PostMapping("/create")
@@ -371,6 +372,12 @@ public class UserController {
         Page<UserDTO> members = userService.getMembersByCompany(companyId, page -1, size, type, status);
         log.info("ㅇㅇ" + members.getContent());
         return ResponseEntity.ok(members);
+    }
+
+    @GetMapping("/vacation")
+    public void findVacation(){
+        log.info("123123444");
+        vacationService.findVacationUser();
     }
 
 }
