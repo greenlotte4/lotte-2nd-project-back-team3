@@ -36,8 +36,8 @@ public interface DriveFileRepository extends JpaRepository<DriveFileEntity, Inte
 
 
     // 삭제된 파일 조회
-    @Query("SELECT f FROM DriveFileEntity f WHERE f.driveIsDeleted = 1")
-    List<DriveFileEntity> findAllDeletedFiles();
+    @Query("SELECT f FROM DriveFileEntity f WHERE f.driveIsDeleted = 1 AND f.driveFileMaker = :uid")
+    List<DriveFileEntity> findAllDeletedFiles(String uid);
 
 
 }

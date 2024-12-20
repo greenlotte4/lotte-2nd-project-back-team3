@@ -1,6 +1,7 @@
 package BackAnt.service;
 
 import BackAnt.document.page.drive.DriveFolderDocument;
+import BackAnt.dto.drive.DriveFileStorageDTO;
 import BackAnt.dto.drive.DriveNewFileInsertDTO;
 import BackAnt.entity.drive.DriveFileStorage;
 import BackAnt.repository.drive.DriveFileStoarageRepository;
@@ -137,7 +138,7 @@ public List<DriveNewFileInsertDTO> fileInsert(DriveNewFileInsertDTO driveNewFile
             driveStorage = DriveFileStorage.builder()
                     .userId(driveNewFileInsertDTO.getDriveFileMaker())
                     .driveFileSize(driveFile.getSize())
-                    .driveFileLimitSize(107374182400L) //100GB
+                    .driveFileLimitSize(107374182400L) //100GB (무료회원 기준)
                     .driveSize("100GB")
                     .build();
 
@@ -194,6 +195,16 @@ public List<DriveNewFileInsertDTO> fileInsert(DriveNewFileInsertDTO driveNewFile
             } catch (Exception e) {
                 throw new RuntimeException("파일 다운로드 처리 중 오류 발생", e);
             }
+        }
+
+        public DriveFileStorageDTO SelectDriveTotalSize(String uid){
+            DriveFileStorage storage = driveFileStoarageRepository.findByUserId(uid);
+            DriveFileStorageDTO driveStoragedto = DriveFileStorageDTO.builder()
+                    .driveFileSize(storage.getDriveFileSize())
+                    .driveFileLimitSize(storage.getDriveFileLimitSize())
+                    .build();
+            log.info("먀모먀모먀 : "+driveStoragedto);
+            return driveStoragedto;
         }
 
     }
