@@ -74,7 +74,7 @@ public class DriveController {
         log.info("야옹야옹야옹양옹헝 : " + DriveNewFileInsertDTO);
         List<DriveNewFileInsertDTO> driveFile = driveFileService.fileInsert(DriveNewFileInsertDTO);
         log.info("양양양 :" + driveFile);
-        return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.OK) // 상태 코드를 200으로 설정
                 .body(driveFile);
     }
 //파일다운로드

@@ -138,8 +138,8 @@ public List<DriveNewFileInsertDTO> fileInsert(DriveNewFileInsertDTO driveNewFile
             driveStorage = DriveFileStorage.builder()
                     .userId(driveNewFileInsertDTO.getDriveFileMaker())
                     .driveFileSize(driveFile.getSize())
-                    .driveFileLimitSize(107374182400L) //100GB (무료회원 기준)
-                    .driveSize("100GB")
+                    .driveFileLimitSize(1073741824L) //1GB (무료회원 기준)
+                    .driveSize("1GB")
                     .build();
 
         }else {
