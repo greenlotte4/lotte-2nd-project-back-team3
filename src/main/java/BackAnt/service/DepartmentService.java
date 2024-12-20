@@ -4,9 +4,11 @@ import BackAnt.dto.DepartmentDTO;
 import BackAnt.dto.user.UserDTO;
 import BackAnt.entity.Company;
 import BackAnt.entity.Department;
+import BackAnt.entity.Invite;
 import BackAnt.entity.User;
 import BackAnt.repository.CompanyRepository;
 import BackAnt.repository.DepartmentRepository;
+import BackAnt.repository.InviteRepository;
 import BackAnt.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
+    private final InviteRepository inviteRepository;
 
     // 회사별 부서 생성
     public Department insertDepartment(DepartmentDTO departmentDTO) {
@@ -149,7 +152,23 @@ public class DepartmentService {
         Department department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 부서를 찾을 수 없습니다."));
 
-        // 부서에 속한 유저 확인
+        // 1. 부서에 속한 초대(Invite) 처리
+        List<Invite> invites = inviteRepository.findByDepartmentId(departmentId);
+
+        if (!invites.isEmpty()) {
+            if (targetDepartmentId != null) {
+                // 초대를 다른 부서로 이동
+                Department targetDepartment = departmentRepository.findById(targetDepartmentId)
+                        .orElseThrow(() -> new IllegalArgumentException("이동할 부서를 찾을 수 없습니다."));
+                invites.forEach(invite -> invite.setDepartment(targetDepartment));
+            } else {
+                // 초대의 부서 참조를 제거
+                invites.forEach(invite -> invite.setDepartment(null));
+            }
+            inviteRepository.saveAll(invites);
+        }
+
+        // 2. 부서에 속한 유저 처리
         List<User> users = userRepository.findByDepartmentId(departmentId);
 
         if (!users.isEmpty()) {
@@ -165,8 +184,9 @@ public class DepartmentService {
             userRepository.saveAll(users);
         }
 
-        // 부서 삭제
+        // 3. 부서 삭제
         departmentRepository.delete(department);
     }
+
 
 }
