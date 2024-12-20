@@ -34,7 +34,7 @@ public class EmailService {
     private String frontendUrl;
 
     // 공통 이메일 전송 로직
-    private void sendEmailMessage(String to, String subject, String body) {
+    public void sendEmailMessage(String to, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);
