@@ -31,8 +31,8 @@ public interface DriveFolderRepository extends MongoRepository<DriveFolderDocume
 //    List<DriveFolderDocument> findDeletedSubFolders();
 
     // 삭제된 모든 폴더 조회
-    @Query("{ 'driveFolderIsDeleted': 1 }")
-    List<DriveFolderDocument> findAllDeletedFolders();
+    @Query("{ 'driveFolderIsDeleted': 1, 'driveFolderMaker': ?0}")
+    List<DriveFolderDocument> findAllDeletedFolders(String uid);
 
     //폴더 선택 조회
     @Query(value = "{ 'driveParentFolderId': ?0 ,'driveFolderIsDeleted':0 }",

@@ -195,12 +195,12 @@ public class DriveFolderService {
     }
 
     //휴지통보기
-    public Map<String, Object> MyTrashView() {
+    public Map<String, Object> MyTrashView(String uid) {
         // 1. 삭제된 폴더 가져오기 (MongoDB)
-        List<DriveFolderDocument> allDeletedFolders = driveFolderRepository.findAllDeletedFolders();
+        List<DriveFolderDocument> allDeletedFolders = driveFolderRepository.findAllDeletedFolders(uid);
 
         // 2. 삭제된 파일 가져오기 (MySQL)
-        List<DriveFileEntity> allDeletedFiles = driveFileRepository.findAllDeletedFiles();
+        List<DriveFileEntity> allDeletedFiles = driveFileRepository.findAllDeletedFiles(uid);
 
         // 폴더 ID -> 폴더 객체 매핑
         Map<String, DriveFolderDocument> folderMap = allDeletedFolders.stream()
@@ -220,10 +220,10 @@ public class DriveFolderService {
                         } else {
                             // 상위 폴더가 삭제되지 않은 경우 DB에서 직접 조회
                             Optional<DriveFolderDocument> parentFolderOpt = driveFolderRepository.findById(parentId);
-                            parentFolderName = parentFolderOpt.map(DriveFolderDocument::getDriveFolderName).orElse("No Parent Folder");
+                            parentFolderName = parentFolderOpt.map(DriveFolderDocument::getDriveFolderName).orElse("내 드라이브");
                         }
                     } else {
-                        parentFolderName = "No Parent Folder";
+                        parentFolderName = "내 드라이브";
                     }
 
                     folder.setParentFolderName(parentFolderName); // 추가된 필드에 설정
@@ -261,10 +261,10 @@ public class DriveFolderService {
                         } else {
                             // 상위 폴더가 삭제되지 않은 경우 DB에서 직접 조회
                             Optional<DriveFolderDocument> parentFolderOpt = driveFolderRepository.findById(folderId);
-                            parentFolderName = parentFolderOpt.map(DriveFolderDocument::getDriveFolderName).orElse("No Parent Folder");
+                            parentFolderName = parentFolderOpt.map(DriveFolderDocument::getDriveFolderName).orElse("내 드라이브");
                         }
                     } else {
-                        parentFolderName = "No Parent Folder";
+                        parentFolderName = "내 드라이브";
                     }
 
                     file.setParentFolderName(parentFolderName); // 추가된 필드에 설정

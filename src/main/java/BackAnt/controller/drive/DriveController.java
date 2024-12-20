@@ -51,9 +51,9 @@ public class DriveController {
                 .body(MySelectDrive);
     }
 //휴지통전체보기
-    @GetMapping("/folder/myTrashView")
-    public ResponseEntity<?> MyTrashView(){
-        Map<String, Object> MyTrash = driveFolderService.MyTrashView();
+    @GetMapping("/folder/myTrashView/{uid}")
+    public ResponseEntity<?> MyTrashView(@PathVariable String uid){
+        Map<String, Object> MyTrash = driveFolderService.MyTrashView(uid);
         log.info("휴지통이어야해 : " + MyTrash);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(MyTrash);
@@ -117,5 +117,14 @@ public ResponseEntity<?> DriveFolderTrash(    @PathVariable(required = false) St
         log.info("마요야 보고시펑 : " + driveFolderFileToTrashDTO.getDriveFolderId());
         log.info("마요야 보고시펑 : " + driveFolderFileToTrashDTO.getSelectedDriveFileIds());
         return driveFolderService.ToMyTrash(driveFolderFileToTrashDTO.getDriveFolderId(), driveFolderFileToTrashDTO.getSelectedDriveFileIds());
+    }
+    //파일 총 사이즈 구하기
+    @GetMapping("/files/totalSize/{uid}")
+    public ResponseEntity<?> totalSize(@PathVariable String uid){
+        DriveFileStorageDTO storageDTO = driveFileService.SelectDriveTotalSize(uid);
+        log.info("머야 총용량이다 : " + storageDTO);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(storageDTO);
+
     }
 }
