@@ -2,6 +2,7 @@ package BackAnt;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -16,6 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling // 스케줄러 활성화 (준혁)
 @EnableJpaAuditing
 @SpringBootApplication
+@EnableAsync // 황수빈 - 답변 등록 후 이메일 전송 비동기로 이용하기 위해 사용
 public class BackAntApplication {
 
     public static void main(String[] args) {

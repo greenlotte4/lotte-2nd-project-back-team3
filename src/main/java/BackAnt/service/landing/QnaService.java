@@ -78,17 +78,19 @@ public class QnaService {
         qna.setAnsweredAt(LocalDateTime.now());
         Qna savedQna = qnaRepository.save(qna);
 
-        // send Email
-        String targetEmail = qna.getEmail();
-        String title = "문의내역에 답변이 작성되었습니다.";
-        String body =
-                "작성하신 문의내역에 답변이 작성되었습니다.\n" +
-                        "확인하시겠습니까 ? \n" +
-                        "페이지 링크 : http://localhost:5173/support";
-        emailService.sendEmailMessage(targetEmail, title, body);
-
-        log.info("답변 작성 서비스 savedQna : "+savedQna);
         return modelMapper.map(savedQna, QnaResponseDTO.class);
     }
 
+    public QnaResponseDTO modifyQna(Long id, QnaRequestDTO requestDTO) {
+
+        Qna qna = qnaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("문의를 찾을 수 없습니다."));
+
+        Qna savingQna  = modelMapper.map(requestDTO, Qna.class);
+        savingQna.setId(id);
+
+        Qna savedQna = qnaRepository.save(savingQna);
+
+        return modelMapper.map(savedQna, QnaResponseDTO.class);
+    }
 }
