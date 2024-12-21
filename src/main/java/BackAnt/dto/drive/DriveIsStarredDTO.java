@@ -14,5 +14,7 @@ public class DriveIsStarredDTO {
 
     private String driveFolderId;
 
+    private int driveFileId;
+
 
 }
