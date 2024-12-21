@@ -42,10 +42,10 @@ public class DriveController {
 
     }
 //마이드라이브선택보기
-    @GetMapping("/folder/myDriveSelectView/{driveFolderId}")
-    public ResponseEntity<?> MyDriveSelectView(@PathVariable String driveFolderId){
+    @GetMapping("/folder/myDriveSelectView/{driveFolderId}/{uid}")
+    public ResponseEntity<?> MyDriveSelectView(@PathVariable String driveFolderId, @PathVariable String uid){
         log.info("asdfasdf : " + driveFolderId);
-        Map<String, Object> MySelectDrive = driveFolderService.MyDriveSelectView(driveFolderId);
+        Map<String, Object> MySelectDrive = driveFolderService.MyDriveSelectView(driveFolderId,uid);
 //        List<MyDriveViewDTO> myDriveDTOs = driveFolderService.MyDriveSelectView(driveFolderId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(MySelectDrive);

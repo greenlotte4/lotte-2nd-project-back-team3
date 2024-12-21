@@ -21,5 +21,7 @@ public class DriveIsStared {
 
     private String driveFolderId;
 
+    private int driveFileId;
+
     private boolean isStared = false;
 }

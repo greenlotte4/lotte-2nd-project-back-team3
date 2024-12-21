@@ -137,13 +137,21 @@ public class DriveFolderService {
 
         // 좋아요 데이터를 Map으로 변환 (driveFolderId -> isStared)
         Map<String, Boolean> staredMap = MyDriveIsStared.stream()
-                .collect(Collectors.toMap(DriveIsStared::getDriveFolderId, DriveIsStared::isStared));
+                .filter(item -> item.getDriveFolderId() != null) // 폴더 데이터만 포함
+                .collect(Collectors.toMap(
+                        DriveIsStared::getDriveFolderId,
+                        DriveIsStared::isStared
+                ));
+
+        Map<Integer, Boolean> staredFileMap = MyDriveIsStared.stream()
+                .filter(item -> item.getDriveFileId() != 0)
+                .collect(Collectors.toMap(DriveIsStared::getDriveFileId, DriveIsStared::isStared));
 
         // 폴더 데이터와 좋아요 상태를 합친 새로운 DTO 리스트 생성
         List<MyDriveViewDTO> folderResponse = MyDriveFolders.stream()
                 .map(folder -> MyDriveViewDTO.builder()
                         .driveFolderId(folder.getDriveFolderId())
-                        .driveFolderName(folder.getParentFolderName())
+                        .driveFolderName(folder.getDriveFolderName())
                         .driveFolderMaker(folder.getDriveFolderMaker())
                         .driveFolderCreatedAt(folder.getDriveFolderCreatedAt())
                         .driveFolderSize(folder.getDriveFolderSize())
@@ -153,11 +161,24 @@ public class DriveFolderService {
                 )
                 .collect(Collectors.toList());
 
+        List<MyDriveFileViewDTO> fileResponse = MyDriveFiles.stream()
+                .map(file -> MyDriveFileViewDTO.builder()
+                        .driveFolderId(file.getDriveFolderId())
+                        .driveFileSName(file.getDriveFileSName())
+                        .driveFileMaker(file.getDriveFileMaker())
+                        .driveFileCreatedAt(file.getDriveFileCreatedAt())
+                        .driveFileSize(file.getDriveFileSize())
+                        .driveFileId(file.getDriveFileId())// 예: 폴더 이름 필드
+                        .driveIsStarted(staredFileMap.getOrDefault(file.getDriveFileId(), false)) // 좋아요 상태 (없으면 false)
+                        .build()
+                )
+                .collect(Collectors.toList());
+
 
         Map<String, Object> response = new HashMap<>();
         response.put("folders", folderResponse);  // MyDriveFolders를 "folders"라는 키로 추가
-        response.put("files", MyDriveFiles);     // MyDriveFiles를 "files"라는 키로 추가
-
+        response.put("files", fileResponse);     // MyDriveFiles를 "files"라는 키로 추가
+        log.info("모로모로모로 : " + fileResponse);
         return response;
     }
 
@@ -165,10 +186,50 @@ public class DriveFolderService {
 //                .map(folder -> modelMapper.map(folder, MyDriveViewDTO.class))
 //                .collect(Collectors.toList());
 //
-//마이드라이브선택된폴더파일조회
-    public Map<String, Object> MyDriveSelectView(String driveFolderId) {
+//마이드라이브 선택된폴더파일조회
+    public Map<String, Object> MyDriveSelectView(String driveFolderId, String uid) {
         List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findWithSelectFolders(driveFolderId);
         List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderIdAndDriveIsDeleted(driveFolderId,0);
+        List<DriveIsStared> MyDriveIsStared = driveIsStaredRepository.findByUserId(uid);
+
+        // 좋아요 데이터를 Map으로 변환 (driveFolderId -> isStared)
+        Map<String, Boolean> staredMap = MyDriveIsStared.stream()
+                .filter(item -> item.getDriveFolderId() != null) // 폴더 데이터만 포함
+                .collect(Collectors.toMap(
+                        DriveIsStared::getDriveFolderId,
+                        DriveIsStared::isStared
+                ));
+
+        Map<Integer, Boolean> staredFileMap = MyDriveIsStared.stream()
+                .filter(item -> item.getDriveFileId() != 0)
+                .collect(Collectors.toMap(DriveIsStared::getDriveFileId, DriveIsStared::isStared));
+
+        // 폴더 데이터와 좋아요 상태를 합친 새로운 DTO 리스트 생성
+        List<MyDriveViewDTO> folderResponse = MyDriveFolders.stream()
+                .map(folder -> MyDriveViewDTO.builder()
+                        .driveFolderId(folder.getDriveFolderId())
+                        .driveFolderName(folder.getDriveFolderName())
+                        .driveFolderMaker(folder.getDriveFolderMaker())
+                        .driveFolderCreatedAt(folder.getDriveFolderCreatedAt())
+                        .driveFolderSize(folder.getDriveFolderSize())
+                        .driveFolderShareType(folder.getDriveFolderShareType())// 예: 폴더 이름 필드
+                        .driveFolderIsStared(staredMap.getOrDefault(folder.getDriveFolderId(), false)) // 좋아요 상태 (없으면 false)
+                        .build()
+                )
+                .collect(Collectors.toList());
+
+        List<MyDriveFileViewDTO> fileResponse = MyDriveFiles.stream()
+                .map(file -> MyDriveFileViewDTO.builder()
+                        .driveFolderId(file.getDriveFolderId())
+                        .driveFileSName(file.getDriveFileSName())
+                        .driveFileMaker(file.getDriveFileMaker())
+                        .driveFileCreatedAt(file.getDriveFileCreatedAt())
+                        .driveFileSize(file.getDriveFileSize())
+                        .driveFileId(file.getDriveFileId())// 예: 폴더 이름 필드
+                        .driveIsStarted(staredFileMap.getOrDefault(file.getDriveFileId(), false)) // 좋아요 상태 (없으면 false)
+                        .build()
+                )
+                .collect(Collectors.toList());
 
         //네비게이션용 조회
         Optional<DriveFolderDocument> currentFolderOpt = driveFolderRepository.findById(driveFolderId);
@@ -199,8 +260,8 @@ public class DriveFolderService {
 
         log.info("파일...나와..? 마요야?.. : " + MyDriveFiles);
         Map<String, Object> response = new HashMap<>();
-        response.put("folders", MyDriveFolders);  // MyDriveFolders를 "folders"라는 키로 추가
-        response.put("files", MyDriveFiles);     // MyDriveFiles를 "files"라는 키로 추가
+        response.put("folders", folderResponse);  // MyDriveFolders를 "folders"라는 키로 추가
+        response.put("files", fileResponse);     // MyDriveFiles를 "files"라는 키로 추가
         response.put("breadcrumbs", breadcrumbs);
         log.info("부스러기 : "  +breadcrumbs);
 
@@ -628,7 +689,7 @@ public class DriveFolderService {
     //폴더 즐겨찾기
     public DriveIsStaredResponseDTO DriveIsStared(DriveIsStarredDTO driveIsStarredDTO) throws IOException {
         log.info("DriveIsStared : " + driveIsStarredDTO);
-        Optional<DriveIsStared> isStaredopt= driveIsStaredRepository.findByUserIdAndDriveFolderId(driveIsStarredDTO.getUserId(), driveIsStarredDTO.getDriveFolderId());
+        Optional<DriveIsStared> isStaredopt= driveIsStaredRepository.findByUserIdAndDriveFolderIdAndDriveFileId(driveIsStarredDTO.getUserId(), driveIsStarredDTO.getDriveFolderId(), driveIsStarredDTO.getDriveFileId());
         log.info("메롱메롱 : " + isStaredopt);
         DriveIsStared savedEntity;
 
@@ -642,6 +703,7 @@ public class DriveFolderService {
             DriveIsStared newEntity = DriveIsStared.builder()
                     .driveFolderId(driveIsStarredDTO.getDriveFolderId())
                     .userId(driveIsStarredDTO.getUserId())
+                    .driveFileId(driveIsStarredDTO.getDriveFileId())
                     .isStared(true)
                     .build();
             savedEntity = driveIsStaredRepository.save(newEntity);
@@ -652,6 +714,7 @@ public class DriveFolderService {
                 .driveFolderId(savedEntity.getDriveFolderId())
                 .userId(savedEntity.getUserId())
                 .isStared(savedEntity.isStared())
+                .driveFileId(savedEntity.getDriveFileId())
                 .build();
     }
 }

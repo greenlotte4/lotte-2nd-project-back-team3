@@ -8,6 +8,6 @@ import java.util.Optional;
 
 public interface DriveIsStaredRepository extends JpaRepository<DriveIsStared, Integer> {
 
-    Optional<DriveIsStared> findByUserIdAndDriveFolderId(String userId, String driveFolderId);
+    Optional<DriveIsStared> findByUserIdAndDriveFolderIdAndDriveFileId(String userId, String driveFolderId, int driveFileId);
     List<DriveIsStared> findByUserId(String userId);
 }
