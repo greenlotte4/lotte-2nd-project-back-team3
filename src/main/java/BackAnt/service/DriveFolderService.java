@@ -1,14 +1,15 @@
 package BackAnt.service;
 
 import BackAnt.document.page.drive.DriveFolderDocument;
-import BackAnt.dto.drive.DriveFolderNameDTO;
-import BackAnt.dto.drive.DriveNewFolderInsertDTO;
+import BackAnt.dto.drive.*;
 import BackAnt.entity.drive.DriveCollaborator;
 import BackAnt.entity.drive.DriveFileEntity;
 import BackAnt.entity.User;
+import BackAnt.entity.drive.DriveIsStared;
 import BackAnt.repository.drive.DriveFileRepository;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.drive.DriveCollaboratorRepository;
+import BackAnt.repository.drive.DriveIsStaredRepository;
 import BackAnt.repository.mongoDB.drive.DriveFolderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -34,6 +35,7 @@ public class DriveFolderService {
     private final DriveFolderRepository driveFolderRepository;
     private final DriveCollaboratorRepository driveCollaboratorRepository;
     private final UserRepository userRepository;
+    private final DriveIsStaredRepository driveIsStaredRepository;
     private final ModelMapper modelMapper;
     private final String USER_DIR = System.getProperty("user.dir"); // 현재 위치에서 /uploads를 붙혀주기때문에 배포 시 문제 없음
     private final DriveFileRepository driveFileRepository;
@@ -127,15 +129,33 @@ public class DriveFolderService {
 
     //마이드라이브폴더파일조회
     public Map<String, Object> MyDriveView(String uid) {
-
-        User user = userRepository.findByUid(uid)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        List<DriveIsStared> MyDriveIsStared = driveIsStaredRepository.findByUserId(uid);
+        log.info("좋아요한것 : "+MyDriveIsStared);
         List<DriveFolderDocument> MyDriveFolders = driveFolderRepository.findFirstWithFolders(uid);
         List<DriveFileEntity> MyDriveFiles = driveFileRepository.findByDriveFolderIdIsNullAndDriveFileMakerAndDriveIsDeleted(uid,0);
         log.info("파일...나와..? 야옹.. : " + MyDriveFiles);
 
+        // 좋아요 데이터를 Map으로 변환 (driveFolderId -> isStared)
+        Map<String, Boolean> staredMap = MyDriveIsStared.stream()
+                .collect(Collectors.toMap(DriveIsStared::getDriveFolderId, DriveIsStared::isStared));
+
+        // 폴더 데이터와 좋아요 상태를 합친 새로운 DTO 리스트 생성
+        List<MyDriveViewDTO> folderResponse = MyDriveFolders.stream()
+                .map(folder -> MyDriveViewDTO.builder()
+                        .driveFolderId(folder.getDriveFolderId())
+                        .driveFolderName(folder.getParentFolderName())
+                        .driveFolderMaker(folder.getDriveFolderMaker())
+                        .driveFolderCreatedAt(folder.getDriveFolderCreatedAt())
+                        .driveFolderSize(folder.getDriveFolderSize())
+                        .driveFolderShareType(folder.getDriveFolderShareType())// 예: 폴더 이름 필드
+                        .driveFolderIsStared(staredMap.getOrDefault(folder.getDriveFolderId(), false)) // 좋아요 상태 (없으면 false)
+                        .build()
+                )
+                .collect(Collectors.toList());
+
+
         Map<String, Object> response = new HashMap<>();
-        response.put("folders", MyDriveFolders);  // MyDriveFolders를 "folders"라는 키로 추가
+        response.put("folders", folderResponse);  // MyDriveFolders를 "folders"라는 키로 추가
         response.put("files", MyDriveFiles);     // MyDriveFiles를 "files"라는 키로 추가
 
         return response;
@@ -604,5 +624,34 @@ public class DriveFolderService {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Drive folder or files not found.");
         }
+    }
+    //폴더 즐겨찾기
+    public DriveIsStaredResponseDTO DriveIsStared(DriveIsStarredDTO driveIsStarredDTO) throws IOException {
+        log.info("DriveIsStared : " + driveIsStarredDTO);
+        Optional<DriveIsStared> isStaredopt= driveIsStaredRepository.findByUserIdAndDriveFolderId(driveIsStarredDTO.getUserId(), driveIsStarredDTO.getDriveFolderId());
+        log.info("메롱메롱 : " + isStaredopt);
+        DriveIsStared savedEntity;
+
+        if (isStaredopt.isPresent()) {
+            // 기존 데이터 업데이트
+            DriveIsStared updateIsStar = isStaredopt.get();
+            updateIsStar.setStared(!updateIsStar.isStared()); // 상태 토글
+            savedEntity = driveIsStaredRepository.save(updateIsStar);
+        } else {
+            // 새 데이터 생성 및 저장
+            DriveIsStared newEntity = DriveIsStared.builder()
+                    .driveFolderId(driveIsStarredDTO.getDriveFolderId())
+                    .userId(driveIsStarredDTO.getUserId())
+                    .isStared(true)
+                    .build();
+            savedEntity = driveIsStaredRepository.save(newEntity);
+        }
+
+        // 저장된 엔티티를 DTO로 변환하여 반환
+        return DriveIsStaredResponseDTO.builder()
+                .driveFolderId(savedEntity.getDriveFolderId())
+                .userId(savedEntity.getUserId())
+                .isStared(savedEntity.isStared())
+                .build();
     }
 }

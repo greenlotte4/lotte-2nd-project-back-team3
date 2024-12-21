@@ -22,7 +22,6 @@ public class MyDriveViewDTO {
 
     private int driveFolderSize;
     private LocalDateTime driveFolderCreatedAt;
-
-
-
+    private int driveFolderShareType;
+    private boolean driveFolderIsStared;
 }

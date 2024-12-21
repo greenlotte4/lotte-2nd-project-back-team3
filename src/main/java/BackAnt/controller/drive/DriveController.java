@@ -57,18 +57,8 @@ public class DriveController {
         log.info("휴지통이어야해 : " + MyTrash);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(MyTrash);
-
     }
-//    //휴지통선택보기
-//    @GetMapping("/folder/myTrashSelectView/{driveFolderId}")
-//    public ResponseEntity<?> MyTrashSelectView(@PathVariable String driveFolderId){
-//        log.info("여기로 온건 맞아? : " + driveFolderId);
-//        Map<String, Object> MySelectTrash = driveFolderService.MyTrashSelectView(driveFolderId);
-//        log.info("와랄랄랄랄랄 : " + MySelectTrash);
-//        return ResponseEntity.status(HttpStatus.CREATED)
-//                .body(MySelectTrash);
-//    }
-
+//파일업로드
     @PostMapping("/files/insert")
     public ResponseEntity<?> filesInsert(DriveNewFileInsertDTO DriveNewFileInsertDTO){
         log.info("야옹야옹야옹양옹헝 : " + DriveNewFileInsertDTO);
@@ -126,5 +116,13 @@ public ResponseEntity<?> DriveFolderTrash(    @PathVariable(required = false) St
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(storageDTO);
 
+    }
+    @PostMapping("/isStared")
+    public ResponseEntity<?> DriveIsStared(@RequestBody DriveIsStarredDTO driveIsStarredDTO) throws IOException {
+        log.info("드라이브 아이디 즐겨찾기용 : " + driveIsStarredDTO.getDriveFolderId());
+        log.info("유저 아이디 즐겨찾기용 : " + driveIsStarredDTO.getUserId());
+        DriveIsStaredResponseDTO driveIsStaredResponseDTO = driveFolderService.DriveIsStared(driveIsStarredDTO);
+        return ResponseEntity.status(HttpStatus.OK) // 상태 코드를 200으로 설정
+                .body(driveIsStaredResponseDTO);
     }
 }
