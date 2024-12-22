@@ -1,6 +1,5 @@
-package BackAnt.service;
+package BackAnt.service.project;
 
-import BackAnt.dto.project.ProjectCollaboratorDTO;
 import BackAnt.dto.project.ProjectStateDTO;
 import BackAnt.entity.project.Project;
 import BackAnt.entity.project.ProjectCollaborator;

@@ -1,7 +1,7 @@
 package BackAnt.controller.project;
 
 import BackAnt.dto.project.ProjectStateDTO;
-import BackAnt.service.ProjectStateService;
+import BackAnt.service.project.ProjectStateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;

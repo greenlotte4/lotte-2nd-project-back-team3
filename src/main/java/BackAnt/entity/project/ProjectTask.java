@@ -32,15 +32,23 @@ public class ProjectTask {
 
     private String content; // 작업 설명
 
-    private int priority; // 0: 낮음, 1: 보통, 2: 높음
+//    private int priority; // 0: 낮음, 1: 보통, 2: 높음
 
     private int status; // 0: 미완료, 1: 완료
 
-    private String size; // 작업 크기 (예: S, M, L 등)
+//    private String size; // 작업 크기 (예: S, M, L 등)
 
     private LocalDate dueDate; // 작업 마감일
 
     private int position; // 보드 내 위치 (작업 순서)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "priority_id")
+    private ProjectTaskAttribute priority; // 우선순위
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "size_id")
+    private ProjectTaskAttribute size; // 작업 크기
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "state_id", nullable = false)

@@ -3,20 +3,17 @@ package BackAnt.controller.project;
 import BackAnt.dto.project.ProjectDTO;
 import BackAnt.repository.project.ProjectRepository;
 import BackAnt.repository.UserRepository;
-import BackAnt.service.ProjectCollaboratorService;
-import BackAnt.service.ProjectService;
+import BackAnt.service.project.ProjectCollaboratorService;
+import BackAnt.service.project.ProjectService;
 import BackAnt.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.coyote.Response;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /*
     날 짜 : 2024/12/2(월)
