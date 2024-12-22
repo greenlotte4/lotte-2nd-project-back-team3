@@ -30,5 +30,8 @@ public interface ChannelMemberRepository extends JpaRepository<ChannelMember, Lo
     @Query("SELECT cm FROM ChannelMember cm WHERE cm.channel.id = :channelId AND cm.user.id = :memberId")
     ChannelMember findByChannelIdAndMemberId(Long channelId, Long memberId);
 
+    @Query("SELECT COUNT(cm) FROM ChannelMessage cm WHERE cm.channel.id = :channelId AND cm.createdAt  >= :readDateTime")
+    long countUnreadCountByChannelIdAndReadDateTime(@Param("channelId") long channelId, @Param("readDateTime") LocalDateTime readDateTime);
+
     List<ChannelMember> findByChannel(Channel channel);
 }

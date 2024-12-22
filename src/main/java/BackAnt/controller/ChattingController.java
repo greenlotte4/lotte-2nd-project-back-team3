@@ -172,6 +172,12 @@ public class ChattingController {
         channelMessageService.updateLastReadAt(channelId, memberId, now);
     }
 
+    @GetMapping("/channel/{channelId}/unreadCount")
+    public ResponseEntity<Long> getChannelUnreadCount(@PathVariable Long channelId, @RequestParam Long userId) {
+        long unreadCount = channelService.getUnreadCountByChannelIdAndMemberId(channelId, userId);
+        return ResponseEntity.status(HttpStatus.OK).body(unreadCount);
+    }
+
     // 디엠방 생성 (1:1 비공개 채팅)
     @PostMapping("/dm")
     public ResponseEntity<ResultDTO<Long>> createDm(@RequestBody DmCreateDTO dmCreateDTO) {

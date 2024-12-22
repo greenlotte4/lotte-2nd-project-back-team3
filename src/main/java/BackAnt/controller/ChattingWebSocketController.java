@@ -60,7 +60,7 @@ public class ChattingWebSocketController {
             @DestinationVariable("id") Long id
     ) {
         log.info("채널 {}로 방문", id);
-        messagingTemplate.convertAndSend("/topic/chatting/channel/" + id + "/visit", "채널 방문 메세지");
+//        messagingTemplate.convertAndSend("/topic/chatting/channel/" + id + "/visit", "채널 방문 메세지");
         return "채널 " + id + " 방문 메세지";
     }
 
