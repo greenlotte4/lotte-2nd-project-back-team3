@@ -26,7 +26,7 @@ public class DriveShareAllViewDTO {
 
     private int driveFolderShareType = 0;//(0이면 공유중아님, 1이면 공유중)
 
-    private boolean driveFolderIsStared = false;//(0이면 즐찾X, 1이면 즐찾됨)
+    private boolean driveFolderIsStared;//(0이면 즐찾X, 1이면 즐찾됨)
 
     private String driveFolderMaker; // 등록한 사람(공유폴더일시 수정한사람)
 

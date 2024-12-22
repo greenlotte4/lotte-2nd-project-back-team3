@@ -9,8 +9,10 @@ import BackAnt.dto.drive.DriveShareSelectViewDTO;
 import BackAnt.entity.drive.DriveCollaborator;
 import BackAnt.entity.drive.DriveFileEntity;
 import BackAnt.entity.User;
+import BackAnt.entity.drive.DriveIsStared;
 import BackAnt.repository.drive.DriveFileRepository;
 import BackAnt.repository.drive.DriveCollaboratorRepository;
+import BackAnt.repository.drive.DriveIsStaredRepository;
 import BackAnt.repository.mongoDB.drive.DriveFolderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -29,6 +31,7 @@ public class DriveCollaboratorService {
 
     private final DriveFolderRepository driveFolderRepository;
     private final DriveCollaboratorRepository driveCollaboratorRepository;
+    private final DriveIsStaredRepository driveIsStaredRepository;
     private final DriveFileRepository driveFileRepository;
     private final ModelMapper modelMapper;
 
@@ -100,9 +103,6 @@ public class DriveCollaboratorService {
             driveFileRepository.saveAll(files);
         }
 
-
-
-
     }
 
     // 폴더 id와 사용자 id를 기준으로 협업자 삭제
@@ -115,10 +115,21 @@ public class DriveCollaboratorService {
     }
 
 
-    //공유 드라이브 전체 조회 (파일 차후 추가)
-    public Map<String, Object> shareDriveView(Long userId){
+    //공유 드라이브 전체 조회(파일x)
+    public Map<String, Object> shareDriveView(Long userId,String uid){
+        List<DriveIsStared> MyDriveIsStared = driveIsStaredRepository.findByUserId(uid);
+        log.info("좋아요한것 : "+MyDriveIsStared);
+
+        // 좋아요 데이터를 Map으로 변환 (driveFolderId -> isStared)
+        Map<String, Boolean> staredMap = MyDriveIsStared.stream()
+                .filter(item -> item.getDriveFolderId() != null) // 폴더 데이터만 포함
+                .collect(Collectors.toMap(
+                        DriveIsStared::getDriveFolderId,
+                        DriveIsStared::isStared
+                ));
 
         List<DriveShareAllViewDTO> driveShareAllviewsDTO = new ArrayList<>();
+
         Map<String, Object> response = new HashMap<>();
         List<String> driveFolderIds = driveCollaboratorRepository.findDriveFolderIdsByConditions(userId);
         log.info("공유드라이브 조회하기... : " + driveFolderIds);
@@ -137,6 +148,7 @@ public class DriveCollaboratorService {
                             .driveFolderSharedAt(driveShareFolder.getDriveFolderSharedAt())
                             .driveFolderShareType(driveShareFolder.getDriveFolderShareType())
                             .driveFolderMaker(driveShareFolder.getDriveFolderMaker())
+                            .driveFolderIsStared(staredMap.getOrDefault(driveShareFolder.getDriveFolderId(), false))
                             .build();
 
                     driveShareAllviewsDTO.add(allviewDTO);
@@ -153,7 +165,7 @@ public class DriveCollaboratorService {
     }
 
     //공유 드라이브 선택조회 (파일 차후 추가)
-    public Map<String, Object> ShareDriveSelectView(String driveFolderId){
+    public Map<String, Object> ShareDriveSelectView(String driveFolderId, String uid){
         List<DriveShareSelectViewDTO> selectViewsDTO = new ArrayList<>();
         List<DriveShareSelectFilesViewDTO> selectFilesDTO = new ArrayList<>();
         log.info("gbgbgbgbgb : " + driveFolderId);

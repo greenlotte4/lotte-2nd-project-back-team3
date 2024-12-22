@@ -63,21 +63,21 @@ public class DriveCollaboratorController {
 
         return ResponseEntity.ok("협업자가 성공적으로 삭제되었습니다.");
     }
-    @GetMapping("/ShareDriveView/{userId}")
-    public ResponseEntity<?> ShareDriveView(@PathVariable Long userId){
+    @GetMapping("/ShareDriveView/{userId}/{uid}")
+    public ResponseEntity<?> ShareDriveView(@PathVariable Long userId, @PathVariable String uid){
 
-       Map<String, Object> ShareDrive = driveCollaboratorService.shareDriveView(userId);
+       Map<String, Object> ShareDrive = driveCollaboratorService.shareDriveView(userId,uid);
        log.info("공유드라이브여야해,,,: "+ShareDrive);
        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ShareDrive);
     }
-    @GetMapping("/ShareDriveSelectView/{driveFolderId}/{userId}")
-    public ResponseEntity<?> ShareDriveSelectView(@PathVariable String driveFolderId, @PathVariable Long userId){
+    @GetMapping("/ShareDriveSelectView/{driveFolderId}/{uid}")
+    public ResponseEntity<?> ShareDriveSelectView(@PathVariable String driveFolderId, @PathVariable String uid){
 
-        Map<String, Object> ShareDrive = driveCollaboratorService.ShareDriveSelectView(driveFolderId);
+        Map<String, Object> ShareDrive = driveCollaboratorService.ShareDriveSelectView(driveFolderId, uid);
         log.info("선택된 공유 드라이브여야해,,,: "+ ShareDrive);
         log.info("냐냐냐뇽뇽냐냐뇨욘요 : " + driveFolderId);
-        log.info("냐냐냐뇽뇽냐냐뇨욘요?? : " + userId);
+        log.info("냐냐냐뇽뇽냐냐뇨욘요?? : " + uid);
         log.info("마마마마마마난 : " + ShareDrive);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ShareDrive);
