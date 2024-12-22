@@ -63,6 +63,7 @@ public class DriveCollaboratorController {
 
         return ResponseEntity.ok("협업자가 성공적으로 삭제되었습니다.");
     }
+    //공유드라이브 전체보기
     @GetMapping("/ShareDriveView/{userId}/{uid}")
     public ResponseEntity<?> ShareDriveView(@PathVariable Long userId, @PathVariable String uid){
 
@@ -71,6 +72,7 @@ public class DriveCollaboratorController {
        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ShareDrive);
     }
+    //공유드라이브 선택보기
     @GetMapping("/ShareDriveSelectView/{driveFolderId}/{uid}")
     public ResponseEntity<?> ShareDriveSelectView(@PathVariable String driveFolderId, @PathVariable String uid){
 
