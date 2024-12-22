@@ -127,7 +127,7 @@ public class DriveFolderService {
     }
 
 
-    //마이드라이브폴더파일조회
+    //마이드라이브폴더파일 전체조회
     public Map<String, Object> MyDriveView(String uid) {
         List<DriveIsStared> MyDriveIsStared = driveIsStaredRepository.findByUserId(uid);
         log.info("좋아요한것 : "+MyDriveIsStared);
