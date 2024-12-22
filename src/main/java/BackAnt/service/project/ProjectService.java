@@ -1,4 +1,4 @@
-package BackAnt.service;
+package BackAnt.service.project;
 
 import BackAnt.dto.project.ProjectDTO;
 import BackAnt.entity.project.Project;
@@ -11,17 +11,11 @@ import BackAnt.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.coyote.Response;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /*

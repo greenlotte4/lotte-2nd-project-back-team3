@@ -1,4 +1,4 @@
-package BackAnt.service;
+package BackAnt.service.project;
 
 import BackAnt.dto.NotificationDTO;
 import BackAnt.dto.user.UserDTO;
@@ -7,11 +7,10 @@ import BackAnt.dto.project.UserForProjectDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.project.Project;
 import BackAnt.entity.project.ProjectCollaborator;
-import BackAnt.entity.project.ProjectTaskAssignment;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.project.ProjectCollaboratorRepository;
 import BackAnt.repository.project.ProjectTaskAssignmentRepository;
-import jakarta.persistence.EntityNotFoundException;
+import BackAnt.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;

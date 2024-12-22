@@ -3,7 +3,7 @@ package BackAnt.controller.project;
 import BackAnt.dto.project.ProjectTaskDTO;
 import BackAnt.repository.project.ProjectTaskAssignmentRepository;
 import BackAnt.repository.project.ProjectTaskRepository;
-import BackAnt.service.ProjectTaskService;
+import BackAnt.service.project.ProjectTaskService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

@@ -1,13 +1,10 @@
-package BackAnt.service;
+package BackAnt.service.project;
 
 import BackAnt.dto.project.ProjectAssignedUserDTO;
 import BackAnt.dto.project.ProjectTaskDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.project.*;
-import BackAnt.repository.project.ProjectCollaboratorRepository;
-import BackAnt.repository.project.ProjectStateRepository;
-import BackAnt.repository.project.ProjectTaskAssignmentRepository;
-import BackAnt.repository.project.ProjectTaskRepository;
+import BackAnt.repository.project.*;
 import BackAnt.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +34,7 @@ public class ProjectTaskService {
     private final ProjectTaskAssignmentRepository projectTaskAssignmentRepository;
     private final ProjectCollaboratorRepository projectCollaboratorRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ProjectTaskAttributeRepository projectTaskAttributeRepository;
 
 
     // 프로젝트 작업 등록
@@ -52,6 +50,20 @@ public class ProjectTaskService {
         ProjectState projectState = projectStateRepository.findById(taskDTO.getStateId())
                 .orElseThrow(() -> new IllegalArgumentException("State not found with ID: " + taskDTO.getStateId()));
         task.setState(projectState);
+
+        // 우선순위 연결
+        if (taskDTO.getPriorityId() != null) {
+            ProjectTaskAttribute priority = projectTaskAttributeRepository.findById(taskDTO.getPriorityId())
+                    .orElseThrow(() -> new IllegalArgumentException("Priority not found with ID: " + taskDTO.getPriorityId()));
+            task.setPriority(priority);
+        }
+
+        // 크기 연결
+        if (taskDTO.getSizeId() != null) {
+            ProjectTaskAttribute size = projectTaskAttributeRepository.findById(taskDTO.getSizeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Size not found with ID: " + taskDTO.getSizeId()));
+            task.setSize(size);
+        }
 
         // 작업 저장
         ProjectTask savedTask = projectTaskRepository.save(task);
@@ -72,6 +84,17 @@ public class ProjectTaskService {
 
         // 3. 할당된 사용자 정보를 taskDTO에 설정
         ProjectTaskDTO responseDTO = modelMapper.map(savedTask, ProjectTaskDTO.class);
+
+        // 우선순위 및 크기 정보 설정
+        if (savedTask.getPriority() != null) {
+            responseDTO.setPriorityId(savedTask.getPriority().getId());
+            responseDTO.setPriorityName(savedTask.getPriority().getName());
+        }
+
+        if (savedTask.getSize() != null) {
+            responseDTO.setSizeId(savedTask.getSize().getId());
+            responseDTO.setSizeName(savedTask.getSize().getName());
+        }
 
         // ProjectTaskAssignment에서 할당된 사용자들의 ID를 가져와서 할당
         List<Long> assignedUserIds = projectTaskAssignmentRepository.findByTaskId(savedTask.getId()).stream()
@@ -120,22 +143,36 @@ public class ProjectTaskService {
 
     // 특정 상태 id로 작업 조회
     public List<ProjectTaskDTO> getTasksWithAssignedUsers(Long stateId) {
-        List<ProjectTask> tasks = projectTaskRepository.findAllByStateId(stateId);
+        // Fetch Join을 사용하여 관련 데이터 한 번에 가져오기
+        List<ProjectTask> tasks = projectTaskRepository.findAllByStateIdWithAttributes(stateId);
+        log.info("작업 조회 tasks : " + tasks);
 
-        // 각 작업에 할당된 사용자 ID들을 수집하여 ProjectTaskDTO에 매핑
+        // 각 작업에 대한 DTO 변환 및 매핑
         return tasks.stream()
                 .map(task -> {
                     ProjectTaskDTO taskDTO = modelMapper.map(task, ProjectTaskDTO.class);
 
-                    // 프로젝트 작업에 할당된 사용자 ID들을 가져오기 위해 project_task_assignment을 조회
+                    // 우선순위 정보 설정
+                    if (task.getPriority() != null) {
+                        taskDTO.setPriorityId(task.getPriority().getId());
+                        taskDTO.setPriorityName(task.getPriority().getName());
+                    }
+
+                    // 크기 정보 설정
+                    if (task.getSize() != null) {
+                        taskDTO.setSizeId(task.getSize().getId());
+                        taskDTO.setSizeName(task.getSize().getName());
+                    }
+
+                    // 할당된 사용자 ID 조회
                     List<Long> assignedUserIds = projectTaskAssignmentRepository.findByTaskId(task.getId())
                             .stream()
-                            .map(assignment -> assignment.getUser().getId()) // User ID만 추출
+                            .map(assignment -> assignment.getUser().getId())
                             .collect(Collectors.toList());
 
-                    taskDTO.setAssignedUser(assignedUserIds); // 해당 작업에 할당된 사용자 ID 목록 설정
+                    taskDTO.setAssignedUser(assignedUserIds);
 
-                    // 각 할당된 사용자 ID에 대해 User 정보를 가져와 ProjectAssignedUserDTO로 변환
+                    // 할당된 사용자 상세 정보 변환 및 설정
                     List<ProjectAssignedUserDTO> assignedUsers = assignedUserIds.stream()
                             .map(userId -> {
                                 User user = userRepository.findById(userId)
@@ -150,12 +187,13 @@ public class ProjectTaskService {
                             })
                             .collect(Collectors.toList());
 
-                    taskDTO.setAssignedUserDetails(assignedUsers); // 상세 사용자 정보 설정
+                    taskDTO.setAssignedUserDetails(assignedUsers);
 
                     return taskDTO;
                 })
                 .collect(Collectors.toList());
     }
+
 
     // 프로젝트 작업 수정
     @Transactional
@@ -176,11 +214,27 @@ public class ProjectTaskService {
         // 3. 기존 작업 필드 업데이트
         existingTask.setTitle(projectTaskDTO.getTitle());
         existingTask.setContent(projectTaskDTO.getContent());
-        existingTask.setPriority(projectTaskDTO.getPriority());
         existingTask.setStatus(projectTaskDTO.getStatus());
-        existingTask.setSize(projectTaskDTO.getSize());
         existingTask.setDueDate(projectTaskDTO.getDueDate());
         existingTask.setPosition(projectTaskDTO.getPosition());
+
+        // 우선순위 연결
+        if (projectTaskDTO.getPriorityId() != null) {
+            ProjectTaskAttribute priority = projectTaskAttributeRepository.findById(projectTaskDTO.getPriorityId())
+                    .orElseThrow(() -> new IllegalArgumentException("Priority not found with ID: " + projectTaskDTO.getPriorityId()));
+            existingTask.setPriority(priority);
+        } else {
+            existingTask.setPriority(null);
+        }
+
+        // 크기 연결
+        if (projectTaskDTO.getSizeId() != null) {
+            ProjectTaskAttribute size = projectTaskAttributeRepository.findById(projectTaskDTO.getSizeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Size not found with ID: " + projectTaskDTO.getSizeId()));
+            existingTask.setSize(size);
+        } else {
+            existingTask.setSize(null);
+        }
 
         // 작업의 담당자 수정
         if (projectTaskDTO.getAssignedUser() != null) {
@@ -224,6 +278,18 @@ public class ProjectTaskService {
 
         // 수정된 작업 DTO 반환
         ProjectTaskDTO responseDTO = modelMapper.map(updatedTask, ProjectTaskDTO.class);
+
+        // 우선순위 설정
+        if (updatedTask.getPriority() != null) {
+            responseDTO.setPriorityId(updatedTask.getPriority().getId());
+            responseDTO.setPriorityName(updatedTask.getPriority().getName());
+        }
+
+        // 크기 설정
+        if (updatedTask.getSize() != null) {
+            responseDTO.setSizeId(updatedTask.getSize().getId());
+            responseDTO.setSizeName(updatedTask.getSize().getName());
+        }
 
         // 할당된 사용자 정보 가져오기
         List<Long> assignedUserIds = projectTaskAssignmentRepository.findByTaskId(updatedTask.getId()).stream()
@@ -298,6 +364,10 @@ public class ProjectTaskService {
         dto.setStateId(newStateId);
         dto.setAction("taskDrag");
         dto.getAssignedUserDetails();
+        dto.setSizeId(projectTask.getSize().getId());
+        dto.setSizeName(projectTask.getSize().getName());
+        dto.setPriorityId(projectTask.getPriority().getId());
+        dto.setPriorityName(projectTask.getPriority().getName());
         log.info("작업 드래그앤드랍 dto : " + dto);
 
         // 웹소켓을 쏴주기 위한 프로젝트 id에 다른 협업자 조회
