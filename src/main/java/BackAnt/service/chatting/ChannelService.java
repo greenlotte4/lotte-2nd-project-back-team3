@@ -105,7 +105,7 @@ public class ChannelService {
         // 채널에 포함된 멤버들 조회 (소유자 제외)
         List<ChannelMember> members = channelMemberRepository.findByChannel(channel);
 
-        // 채널에 멤버가 1명만 남은 경우, 소유자가 나가면 채널 삭제
+        // 채널에 멤버가 1명만 남은 경우,소유자가 나가면 채널 삭제
         if (members.size() == 1) {
             // 소유자가 유일한 멤버일 경우, 채널 삭제
             channelMemberRepository.delete(members.get(0));
