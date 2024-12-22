@@ -163,5 +163,15 @@ public class ChannelService {
         return visibleChannels.stream().map(ChannelResponseDTO::fromEntity).toList();
     }
 
+
+    public long getUnreadCountByChannelIdAndMemberId(Long channelId, Long memberId) {
+        ChannelMember channelMember = channelMemberRepository.findByChannelIdAndMemberId(channelId, memberId);
+        if(channelMember == null)
+        {
+            return 0;
+        }
+        long unreadCount = channelMemberRepository.countUnreadCountByChannelIdAndReadDateTime(channelId, channelMember.getLastReadAt());
+        return unreadCount;
+    }
 }
 

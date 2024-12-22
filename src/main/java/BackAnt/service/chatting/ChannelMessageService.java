@@ -167,6 +167,6 @@ public class ChannelMessageService {
 
         
         // TODO: 방문 소켓 보내기 - 소켓 컨트롤러 안돼서 서비스에서 호출
-        messagingTemplate.convertAndSend("/topic/chatting/channel/" + channelId + "/visit", "message");
+//        messagingTemplate.convertAndSend("/topic/chatting/channel/" + channelId + "/visit", "message");
     }
 }
