@@ -22,7 +22,7 @@ public class DriveShareSelectFilesViewDTO {
     private double driveFileSize; // 파일 크기
 
     // 디폴트 값 - 즐찾되지 않음
-    private int driveIsStarted;
+    private boolean driveIsStarted;
     // (0이면 공유중아님, 1이면 공유중)
     private int driveShareType;
 

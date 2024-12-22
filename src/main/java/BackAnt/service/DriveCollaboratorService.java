@@ -166,6 +166,21 @@ public class DriveCollaboratorService {
 
     //공유 드라이브 선택조회 (파일 차후 추가)
     public Map<String, Object> ShareDriveSelectView(String driveFolderId, String uid){
+        List<DriveIsStared> MyDriveIsStared = driveIsStaredRepository.findByUserId(uid);
+        log.info("좋아요한것 : "+MyDriveIsStared);
+
+        // 좋아요 데이터를 Map으로 변환 (driveFolderId -> isStared)
+        Map<String, Boolean> staredMap = MyDriveIsStared.stream()
+                .filter(item -> item.getDriveFolderId() != null) // 폴더 데이터만 포함
+                .collect(Collectors.toMap(
+                        DriveIsStared::getDriveFolderId,
+                        DriveIsStared::isStared
+                ));
+
+        Map<Integer, Boolean> staredFileMap = MyDriveIsStared.stream()
+                .filter(item -> item.getDriveFileId() != 0)
+                .collect(Collectors.toMap(DriveIsStared::getDriveFileId, DriveIsStared::isStared));
+
         List<DriveShareSelectViewDTO> selectViewsDTO = new ArrayList<>();
         List<DriveShareSelectFilesViewDTO> selectFilesDTO = new ArrayList<>();
         log.info("gbgbgbgbgb : " + driveFolderId);
@@ -186,6 +201,7 @@ public class DriveCollaboratorService {
                     .driveFolderUpdatedAt(ShareFolder.getDriveFolderUpdatedAt())
                     .driveFolderMaker(ShareFolder.getDriveFolderMaker())
                     .driveFolderShareType(ShareFolder.getDriveFolderShareType())
+                    .driveFolderIsStared(staredMap.getOrDefault(ShareFolder.getDriveFolderId(), false)) // 좋아요 상태 (없으면 false)
                     .build();
 
             selectViewsDTO.add(selectViewDTO);
@@ -201,6 +217,7 @@ public class DriveCollaboratorService {
                     .driveFileCreatedAt(ShareFile.getDriveFileCreatedAt())
                     .driveFileSharedAt(ShareFile.getDriveFileSharedAt())
                     .driveShareType(ShareFile.getDriveShareType())
+                    .driveIsStarted(staredFileMap.getOrDefault(ShareFile.getDriveFileId(), false))
                     .build();
 
             selectFilesDTO.add(selectFileViewDTO);

@@ -209,6 +209,7 @@ public class DriveFolderService {
                 .map(folder -> MyDriveViewDTO.builder()
                         .driveFolderId(folder.getDriveFolderId())
                         .driveFolderName(folder.getDriveFolderName())
+                        .driveParentFolderId(folder.getDriveParentFolderId())
                         .driveFolderMaker(folder.getDriveFolderMaker())
                         .driveFolderCreatedAt(folder.getDriveFolderCreatedAt())
                         .driveFolderSize(folder.getDriveFolderSize())
@@ -259,6 +260,7 @@ public class DriveFolderService {
         breadcrumbs.add(0, rootBreadcrumb);
 
         log.info("파일...나와..? 마요야?.. : " + MyDriveFiles);
+        log.info("휴휴휴휴흏 : " + folderResponse);
         Map<String, Object> response = new HashMap<>();
         response.put("folders", folderResponse);  // MyDriveFolders를 "folders"라는 키로 추가
         response.put("files", fileResponse);     // MyDriveFiles를 "files"라는 키로 추가
