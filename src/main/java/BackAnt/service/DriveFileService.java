@@ -199,9 +199,11 @@ public List<DriveNewFileInsertDTO> fileInsert(DriveNewFileInsertDTO driveNewFile
 
         public DriveFileStorageDTO SelectDriveTotalSize(String uid){
             DriveFileStorage storage = driveFileStoarageRepository.findByUserId(uid);
+            double driveFileSize = (storage != null) ? storage.getDriveFileSize() : 0.0;
+            Long driveFileLimitSize = (storage != null) ? storage.getDriveFileLimitSize() : 1073741824L;
             DriveFileStorageDTO driveStoragedto = DriveFileStorageDTO.builder()
-                    .driveFileSize(storage.getDriveFileSize())
-                    .driveFileLimitSize(storage.getDriveFileLimitSize())
+                    .driveFileSize(driveFileSize)
+                    .driveFileLimitSize(driveFileLimitSize)
                     .build();
             log.info("먀모먀모먀 : "+driveStoragedto);
             return driveStoragedto;
