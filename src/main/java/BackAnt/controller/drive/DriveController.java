@@ -125,4 +125,25 @@ public ResponseEntity<?> DriveFolderTrash(    @PathVariable(required = false) St
         return ResponseEntity.status(HttpStatus.OK) // 상태 코드를 200으로 설정
                 .body(driveIsStaredResponseDTO);
     }
+
+    @PostMapping("/move")
+    public ResponseEntity<?> DriveMoveToFolder(@RequestBody DriveMoveRequestDTO driveMoveRequestDTO) throws IOException {
+        log.info("이동 할 폴더 : " + driveMoveRequestDTO.getDriveFolderId());
+        log.info("이동 될 폴더 : " + driveMoveRequestDTO.getSelectDriveFolderId());
+        log.info("이동 할 파일 : " + driveMoveRequestDTO.getDriveFileId());
+        try {
+            // 서비스 호출
+            driveFolderService.DriveMoveToFolder(driveMoveRequestDTO);
+            return ResponseEntity.ok("폴더 이동이 성공적으로 완료되었습니다.");
+        } catch (IllegalArgumentException e) {
+            log.error("잘못된 요청: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IOException e) {
+            log.error("폴더 이동 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("알 수 없는 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("폴더 이동 중 알 수 없는 오류가 발생했습니다.");
+        }
+    }
 }
