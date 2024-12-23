@@ -96,9 +96,9 @@ public class ChattingController {
 
     // 채널 메시지 보내기
     @PostMapping("/channel/{id}/messages")
-    public ResponseEntity<ResultDTO<Long>> sendMessage(@PathVariable Long id, @RequestBody ChannelMessageCreateDTO channelMessageCreateDTO) {
-        Long channelMessageId = channelMessageService.sendMessage(id, channelMessageCreateDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResultDTO<>(channelMessageId));
+    public ResponseEntity<ChannelMessageResponseDTO> sendMessage(@PathVariable Long id, @RequestBody ChannelMessageCreateDTO channelMessageCreateDTO) {
+        ChannelMessageResponseDTO channelMessageResponseDTO = channelMessageService.sendMessage(id, channelMessageCreateDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(channelMessageResponseDTO);
     }
 
     // 금칙어 추가

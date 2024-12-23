@@ -39,7 +39,7 @@ public class ChannelMessageService {
     private final ForbiddenWordService forbiddenWordService;
 
     // 채널 메시지 보내기
-    public Long sendMessage(Long id, ChannelMessageCreateDTO dto) {
+    public ChannelMessageResponseDTO sendMessage(Long id, ChannelMessageCreateDTO dto) {
         // 사용자 및 채널 검증
         User sender = userRepository.findById(dto.getSenderId())
                 .orElseThrow(() -> new RuntimeException("Sender not found"));
@@ -60,9 +60,11 @@ public class ChannelMessageService {
         // 메시지 저장
         channelMessageRepository.save(message);
 
+
         updateLastReadAt(id, dto.getSenderId(), LocalDateTime.now());
 
-        return message.getId(); // 메시지 ID 반환
+        ChannelMessageResponseDTO channelMessageResponseDTO = ChannelMessageResponseDTO.fromEntity(message, forbiddenWordService);
+        return channelMessageResponseDTO;
     }
 
     // 파일 전송
