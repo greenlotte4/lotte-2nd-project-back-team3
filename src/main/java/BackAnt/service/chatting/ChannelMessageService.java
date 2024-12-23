@@ -36,6 +36,8 @@ public class ChannelMessageService {
     private final ChannelRepository channelRepository;
     private final ImageService imageService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ForbiddenWordService forbiddenWordService;
+
     // 채널 메시지 보내기
     public Long sendMessage(Long id, ChannelMessageCreateDTO dto) {
         // 사용자 및 채널 검증
@@ -45,9 +47,12 @@ public class ChannelMessageService {
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Channel not found"));
 
+        // 금칙어 필터링
+        String filteredContent = forbiddenWordService.filterMessage(dto.getContent());
+
         // 메시지 생성
         ChannelMessage message = ChannelMessage.builder()
-                .content(dto.getContent())
+                .content(filteredContent)
                 .sender(sender)
                 .channel(channel)
                 .build();
@@ -68,6 +73,9 @@ public class ChannelMessageService {
 
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Channel not found"));
+
+        // 금칙어 필터링 적용
+        String filteredContent = forbiddenWordService.filterMessage(content);
 
         String fileUrl = null;
         String fileType = null; // 파일 유형 변수
@@ -95,7 +103,7 @@ public class ChannelMessageService {
 
         // 메시지 생성
         ChannelMessage message = ChannelMessage.builder()
-                .content(content)
+                .content(filteredContent) // 필터링된 콘텐츠 저장
                 .sender(sender)
                 .channel(channel)
                 .fileUrl(fileUrl) // 업로드된 파일 URL 저장
@@ -109,22 +117,6 @@ public class ChannelMessageService {
     }
 
 
-    // 키워드로 채널 메시지 검색
-    public List<ChannelMessageResponseDTO> getsearchChannelMessages(Long channelId, String keyword) {
-        List<ChannelMessage> messages = channelMessageRepository.findMessagesByKeywordAndChannel(channelId, keyword);
-
-        if (messages == null) {
-            messages = new ArrayList<>();
-        }
-
-        return messages.stream()
-                .map(message -> {
-                    return ChannelMessageResponseDTO.fromEntity(message);  // unreadCount와 함께 DTO로 변환
-                })
-                .collect(Collectors.toList());
-    }
-
-
 
     // 채널 메시지 조회
     @Transactional(readOnly = true)
@@ -135,9 +127,7 @@ public class ChannelMessageService {
         List<ChannelMessage> messages = channelMessageRepository.findAllByChannel(channel);
 
         return messages.stream()
-                .map(message -> {
-                    return ChannelMessageResponseDTO.fromEntity(message);
-                })
+                .map(message -> ChannelMessageResponseDTO.fromEntity(message, forbiddenWordService)) // 금칙어 필터링 포함
                 .collect(Collectors.toList());
     }
 
