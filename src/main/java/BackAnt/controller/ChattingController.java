@@ -11,6 +11,7 @@ import BackAnt.repository.chatting.DmMessageRepository;
 import BackAnt.service.chatting.ChannelMessageService;
 import BackAnt.service.chatting.ChannelService;
 import BackAnt.service.chatting.DmService;
+import BackAnt.service.chatting.ForbiddenWordService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -33,6 +34,7 @@ public class ChattingController {
     private final DmService dmService;
     private final ChannelMessageRepository channelMessageRepository;
     private final DmMessageRepository dmMessageRepository;
+    private final ForbiddenWordService forbiddenWordService;
 
     // 채널 생성
     @PostMapping("/channel")
@@ -81,7 +83,8 @@ public class ChattingController {
             ChannelMessage message = channelMessageRepository.findById(channelMessageId)
                     .orElseThrow(() -> new RuntimeException("Message not found"));
 
-            ChannelMessageResponseDTO responseDTO = ChannelMessageResponseDTO.fromEntity(message);
+            // ForbiddenWordService를 함께 전달
+            ChannelMessageResponseDTO responseDTO = ChannelMessageResponseDTO.fromEntity(message, forbiddenWordService);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
         } catch (Exception e) {
@@ -98,14 +101,33 @@ public class ChattingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResultDTO<>(channelMessageId));
     }
 
-    // 메시지 검색 (채널 내 키워드로)
-    @GetMapping("/channel/{channelId}/messages/search")
-    public ResponseEntity<List<ChannelMessageResponseDTO>> searchMessages(@PathVariable Long channelId, @RequestParam String keyword) {
-        // 채널 ID와 키워드를 기준으로 메시지 검색
-        List<ChannelMessageResponseDTO> messages = channelMessageService.getsearchChannelMessages(channelId, keyword);
-        return ResponseEntity.ok(messages);
+    // 금칙어 추가
+    @PostMapping("/forbidden-words")
+    public ResponseEntity<ForbiddenWordDTO> addForbiddenWord(@RequestBody ForbiddenWordDTO dto) {
+        ForbiddenWordDTO addedWord = forbiddenWordService.addForbiddenWord(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(addedWord);
     }
 
+    // 금칙어 조회
+    @GetMapping("/forbidden-words")
+    public ResponseEntity<List<ForbiddenWordDTO>> getForbiddenWords() {
+        List<ForbiddenWordDTO> words = forbiddenWordService.getAllForbiddenWords();
+        return ResponseEntity.ok(words);
+    }
+
+    // 금칙어 삭제
+    @DeleteMapping("/forbidden-words/{id}")
+    public ResponseEntity<Void> deleteForbiddenWord(@PathVariable Long id) {
+        forbiddenWordService.deleteForbiddenWord(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    // 메시지 필터링 테스트
+    @PostMapping("/test-filter-message")
+    public ResponseEntity<String> testFilterMessage(@RequestBody String message) {
+        String filteredMessage = forbiddenWordService.filterMessage(message);
+        return ResponseEntity.ok(filteredMessage);
+    }
 
     // 채널 멤버 삭제
     @DeleteMapping("/channel/{id}/member")
