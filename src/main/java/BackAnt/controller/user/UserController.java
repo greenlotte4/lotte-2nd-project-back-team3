@@ -13,7 +13,7 @@ import BackAnt.entity.Invite;
 import BackAnt.entity.User;
 import BackAnt.security.MyUserDetails;
 import BackAnt.service.*;
-import BackAnt.service.kafka.KafkaProducerService;
+//import BackAnt.service.kafka.KafkaProducerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
@@ -51,7 +51,7 @@ public class UserController {
     private final ModelMapper modelMapper;
     private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper;
-    private final KafkaProducerService kafkaProducerService;
+//    private final KafkaProducerService kafkaProducerService;
     private final VacationService vacationService;
 
     // 초기 관리자 멤버 추가

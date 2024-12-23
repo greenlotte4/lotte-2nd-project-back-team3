@@ -61,6 +61,7 @@ public class PageCollaboratorService {
 
     // 페이지 협업자 추가
     public List<PageCollaboratorDTO> addCollaborators(String pageId, List<PageCollaboratorDTO> collaboratorDTOs) {
+            log.info("협업자는 들어오나 ?"+collaboratorDTOs);
         List<PageCollaborator> newCollaborators = collaboratorDTOs.stream()
                 .map(dto -> {
                     User user = userRepository.findById(dto.getUser_id())
@@ -87,6 +88,13 @@ public class PageCollaboratorService {
     }
     public void removeCollaboratorsByPageId(String pageId) {
         pageCollaboratorRepository.deleteByPageId(pageId);
+    }
+    // 페이지 협업자 권한 업데이트
+    public void updateCollaboratorPermission(String pageId, long userId, int permissionType) {
+        PageCollaborator collaborator = pageCollaboratorRepository.findByPageIdAndUser_Id(pageId, userId)
+                .orElseThrow(() -> new RuntimeException("Collaborator not found"));
+        collaborator.setType(permissionType);
+        pageCollaboratorRepository.save(collaborator);
     }
 
     // Entity를 DTO로 변환
