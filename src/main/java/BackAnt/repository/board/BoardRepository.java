@@ -2,9 +2,11 @@ package BackAnt.repository.board;
 
 import BackAnt.dto.board.BoardDTO;
 import BackAnt.entity.board.Board;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
@@ -42,4 +44,15 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 //    List<Board> findAllByOrderByRegDateDesc();
     //Page<Board> findAllByOrderByRegDateDesc(Pageable pageable);
     Page<Board> findAllByOrderByRegDateDesc(Pageable pageable);
+
+    // 특정 카테고리에 속한 게시글 조회 - 2024/12/23 강은경
+    @Query("SELECT b FROM Board b WHERE b.category.id = :categoryId")
+    List<Board> findByCategoryId(Long categoryId);
+
+    // 카테고리id로 게시글 삭제 - 2024/12/23 강은경
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Board b WHERE b.category.id = :categoryId")
+    void deleteByCategoryId(Long categoryId);
+
 }

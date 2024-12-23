@@ -70,6 +70,10 @@ public class Board {
     @Column(name = "update_date")
     private LocalDateTime updateDate; // 글 수정된 날짜
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false) // 카테고리 연결
+    private BoardCategory category;
+
     // 좋아요 증가
     public void increaseLikes() {
         this.likes++;

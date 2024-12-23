@@ -27,6 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /*
@@ -252,5 +254,12 @@ public class BoardService {
         log.info("🗑️ 게시글 삭제 완료 - 게시글 ID: {}", id);
     }
 
+    // 카테고리별 게시글 조회
+    public List<BoardDTO> getBoardsByCategory(Long categoryId){
+        List<Board> boards = boardRepository.findByCategoryId(categoryId);
 
+        return boards.stream()
+                .map(board -> modelMapper.map(board, BoardDTO.class))
+            .collect(Collectors.toList());
+    }
 }

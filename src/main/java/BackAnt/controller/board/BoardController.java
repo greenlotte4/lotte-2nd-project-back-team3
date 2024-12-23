@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -216,4 +217,12 @@ public class BoardController {
         boardService.deleteBoard(uid);
         return ResponseEntity.noContent().build();
     }
+
+    // 카테고리별 게시글 조회 - 2024/12/23 강은경
+    @GetMapping("/select/{categoryId}")
+    public ResponseEntity<List<BoardDTO>> getBoardsByCategory(@PathVariable Long categoryId) {
+        List<BoardDTO> boards = boardService.getBoardsByCategory(categoryId);
+        return ResponseEntity.ok(boards);
+    }
+
 }
