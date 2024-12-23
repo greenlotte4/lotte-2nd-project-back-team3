@@ -205,7 +205,7 @@ public class UserController {
             log.setMethodDescription("로그인");
 
             String message = objectMapper.writeValueAsString(log);
-            kafkaProducerService.sendMessage("access-log-topic", message);
+//            kafkaProducerService.sendMessage("access-log-topic", message);
         } catch (Exception e) {
             log.error("로그 생성 실패: {}", e.getMessage());
         }
