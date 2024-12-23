@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -688,7 +689,7 @@ public class DriveFolderService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Drive folder or files not found.");
         }
     }
-    //폴더 즐겨찾기
+    //폴더 즐겨찾기 (단독파일 이동 차후 추가)
     public DriveIsStaredResponseDTO DriveIsStared(DriveIsStarredDTO driveIsStarredDTO) throws IOException {
         log.info("DriveIsStared : " + driveIsStarredDTO);
         Optional<DriveIsStared> isStaredopt= driveIsStaredRepository.findByUserIdAndDriveFolderIdAndDriveFileId(driveIsStarredDTO.getUserId(), driveIsStarredDTO.getDriveFolderId(), driveIsStarredDTO.getDriveFileId());
@@ -718,5 +719,242 @@ public class DriveFolderService {
                 .isStared(savedEntity.isStared())
                 .driveFileId(savedEntity.getDriveFileId())
                 .build();
+    }
+    // 드라이브 폴더 이동
+    public void DriveMoveToFolder(DriveMoveRequestDTO driveMoveRequestDTO) throws IOException {
+
+        String userId = driveMoveRequestDTO.getUserId();
+
+        // 이동될 폴더 ID와 이동할 폴더 ID 가져오기
+        String originFolderId = driveMoveRequestDTO.getDriveFolderId(); // 이동될 폴더
+        String targetFolderId = driveMoveRequestDTO.getSelectDriveFolderId(); // 이동할 폴더
+        Integer originFileId = driveMoveRequestDTO.getDriveFileId(); // 이동될 파일 (null 가능)
+
+        // 예외 처리: 이동 대상이 없는 경우
+        if (originFileId == null && originFolderId == null) {
+            throw new IllegalArgumentException("이동될 파일 또는 폴더 ID가 필요합니다.");
+        }
+
+        log.info("이까지는 들어오긴 하나? originFileId: {}", originFileId);
+
+        // 이동할 폴더 조회
+        Optional<DriveFolderDocument> targetFolderOpt = driveFolderRepository.findById(targetFolderId);
+        if (!targetFolderOpt.isPresent()) {
+            throw new IllegalArgumentException("이동할 폴더를 찾을 수 없습니다: " + targetFolderId);
+        }
+        DriveFolderDocument targetFolder = targetFolderOpt.get();
+        String targetPath = targetFolder.getDriveFolderPath();
+
+        // 단일 파일 이동
+        if (originFileId != 0) {
+            Optional<DriveFileEntity> fileOpt = driveFileRepository.findById(originFileId);
+            if (!fileOpt.isPresent()) {
+                throw new IllegalArgumentException("이동될 파일을 찾을 수 없습니다: " + originFileId);
+            }
+            DriveFileEntity file = fileOpt.get();
+
+            log.info("단일 파일 이동 시작: {}", file);
+
+            // 물리적 경로 이동
+            movePhysicalPaths(Collections.emptyList(), Collections.emptyList(), targetPath, userId, Optional.of(file));
+
+            // 데이터베이스 경로 업데이트
+            updateDatabasePaths(Collections.emptyList(), Collections.emptyList(), targetPath, userId, targetFolderId, null, Optional.of(file));
+            return; // 단일 파일 이동 후 종료
+        }
+
+        // 폴더 이동
+        if (originFolderId != null) {
+            Optional<DriveFolderDocument> sourceFolderOpt = driveFolderRepository.findById(originFolderId);
+            if (!sourceFolderOpt.isPresent()) {
+                throw new IllegalArgumentException("이동될 폴더를 찾을 수 없습니다: " + originFolderId);
+            }
+            DriveFolderDocument originFolder = sourceFolderOpt.get();
+            String originPath = originFolder.getDriveFolderPath();
+
+            String userBasePath = "/uploads/drive/" + userId + "/";
+            String relativeFolderPath = targetPath.replaceFirst(userBasePath, ""); // UUID만
+            String relativeFolderPath2 = originPath.replaceFirst(userBasePath, "");
+
+            log.info("이거 UUID만 잇어? " + relativeFolderPath);
+            log.info("이것도? UUID 만 있어? " + relativeFolderPath2);
+
+            if (relativeFolderPath.contains(relativeFolderPath2)) {
+                throw new IOException("하위 폴더로 이동할 수 없습니다");
+            }
+
+            // 이동하려는 폴더 안의 모든 하위 폴더와 파일 가져오기
+            List<DriveFolderDocument> folders = driveFolderRepository.findBydriveFolderPathStartingWith(originPath);
+            List<DriveFileEntity> files = driveFileRepository.findBydriveFilePathStartingWith(originPath);
+
+            log.info("폴더 이동 시작: folders={}, files={}", folders, files);
+
+            // 물리적 경로 이동
+            movePhysicalPaths(folders, files, targetPath, userId, Optional.empty());
+
+            // 데이터베이스 경로 업데이트
+            updateDatabasePaths(folders, files, targetPath, userId, targetFolderId, originFolderId, Optional.empty());
+        }
+    }
+    //물리적 경로 이동
+    private void movePhysicalPaths(
+            List<DriveFolderDocument> folders,
+            List<DriveFileEntity> files,
+            String targetPath,
+            String userId,
+            Optional<DriveFileEntity> onefile
+    ) throws IOException {
+
+        String userDir = System.getProperty("user.dir");
+        String userBasePath = "/uploads/drive/" + userId + "/";
+        log.info("여기는 찍히니? : " + userDir);
+        if (onefile.isPresent()) {
+            DriveFileEntity file = onefile.get();
+
+            Path originFilePath = Paths.get(userDir + "/" + file.getDriveFilePath());
+            Path targetParentPath = Paths.get(userDir + "/" + targetPath);
+            Path targetFilePath = targetParentPath.resolve(originFilePath.getFileName());
+
+            // 로그 출력
+            log.info("파일 원본 경로: {}", originFilePath);
+            log.info("파일 대상 경로: {}", targetFilePath);
+
+            // 부모 폴더 생성 (대상 경로의 부모 폴더가 없으면 생성)
+            if (!Files.exists(targetParentPath)) {
+                Files.createDirectories(targetParentPath);
+                log.info("대상 경로의 부모 폴더 생성: {}", targetParentPath);
+            }
+
+            // 파일 이동
+            try {
+                Files.move(originFilePath, targetFilePath, StandardCopyOption.REPLACE_EXISTING);
+                log.info("한개파일 이동 성공: {} -> {}", originFilePath, targetFilePath);
+            } catch (IOException e) {
+                log.error("한개파일 이동 중 오류 발생: {} -> {}", originFilePath, targetFilePath, e);
+            }
+
+            // 이동 후 상태 확인
+            if (!Files.exists(originFilePath)) {
+                log.info("한개파일 이동되었음 ");
+            } else {
+                log.info("한개파일 이동안됨.. ");
+            }
+
+            // 파일 이동만 수행했으므로 함수 종료
+            return;
+        }
+        for (DriveFolderDocument folder : folders) {
+
+            Path originFolderPath = Paths.get(userDir + "/" + folder.getDriveFolderPath());
+
+            // 대상 경로 계산: 대상 경로의 하위로 이동
+            Path targetParentPath = Paths.get(userDir + "/" + targetPath);
+            Path targetFolderPath = targetParentPath.resolve(originFolderPath.getFileName());
+
+            // 로그 출력
+            log.info("원본 경로: {}", originFolderPath);
+            log.info("대상 경로: {}", targetFolderPath);
+
+
+            // 부모 폴더 생성 (대상 경로의 부모 폴더가 없으면 생성)
+            if (!Files.exists(targetParentPath)) {
+                Files.createDirectories(targetParentPath);
+                log.info("대상 폴더의 부모 경로 생성: {}", targetParentPath);
+            }
+
+            // 폴더 이동
+            try {
+                Files.move(originFolderPath, targetFolderPath, StandardCopyOption.REPLACE_EXISTING);
+                log.info("폴더 이동 성공: {} -> {}", originFolderPath, targetFolderPath);
+            }catch (IOException e) {
+                log.error("파일 이동 중 오류 발생: {} -> {}", originFolderPath, targetFolderPath, e);
+            }
+            if(!Files.exists(originFolderPath)){
+                log.info("이동되었음 ");
+            }else {
+                log.info("이동안됨.. ");
+            }
+        }
+
+        for (DriveFileEntity file : files) {
+//            String relativeFilerPath = file.getDriveFilePath().replaceFirst(userBasePath, "");//UUID만있음
+//            Path sourceFilePath = Paths.get(userDir + "/" + file.getDriveFilePath());
+//            Path targetFilePath = Paths.get(userDir + "/" + targetPath + "/" +relativeFilerPath);
+
+            Path originFilePath = Paths.get(userDir + "/" + file.getDriveFilePath());
+
+            // 대상 경로 계산: 대상 경로의 하위로 이동
+            Path targetParentPath = Paths.get(userDir + "/" + targetPath);
+            Path targetFilePath = targetParentPath.resolve(originFilePath.getFileName());
+
+            // 로그 출력
+            log.info("파일 원본 경로: {}", originFilePath);
+            log.info("파일 대상 경로: {}", targetFilePath);
+
+            // 폴더 이동
+            try {
+                Files.move(originFilePath, targetFilePath, StandardCopyOption.REPLACE_EXISTING);
+                log.info("파일 이동 성공: {} -> {}", originFilePath, targetFilePath);
+            }catch (IOException e) {
+                log.error("파일 이동 중 오류 발생: {} -> {}", originFilePath, targetFilePath, e);
+            }
+            if(!Files.exists(originFilePath)){
+                log.info("파일 이동되었음 ");
+            }else {
+                log.info("파일 이동안됨.. ");
+            }
+        }
+    }
+    //DB경로변경
+    private void updateDatabasePaths(
+            List<DriveFolderDocument> folders,
+            List<DriveFileEntity> files,
+            String targetPath,
+            String userId,
+            String targetFolderId,
+            String originFolderId,
+            Optional<DriveFileEntity> onefile
+
+    ) {
+        String userBasePath = "/uploads/drive/" + userId + "/";
+        if(onefile.isPresent()){
+            DriveFileEntity oneFile = onefile.get();
+            oneFile.setDriveFolderId(targetFolderId);
+            String relativeFilerPath = Paths.get(onefile.get().getDriveFilePath()).getFileName().toString();
+//            String relativeFilerPath = oneFile.getDriveFilePath().replaceFirst(userBasePath, "");//UUID만있음
+            String updatedPath = targetPath + "/" + relativeFilerPath;
+            oneFile.setDriveFilePath(updatedPath);
+            // 단일 파일 저장
+            driveFileRepository.save(oneFile);
+
+            log.info("단독 파일의 데이터베이스 경로 업데이트 완료: {}", oneFile);
+            return; // 단독 파일 처리 후 종료
+        }
+        for (DriveFolderDocument folder : folders) {
+            if(folder.getDriveParentFolderId() == null){
+                folder.setDriveParentFolderId(targetFolderId);
+            }else if(folder.getDriveParentFolderId() == originFolderId){
+                folder.setDriveParentFolderId(targetFolderId);
+            }
+            String relativeFolderPath = folder.getDriveFolderPath().replaceFirst(userBasePath, "");//UUID만있음
+            String updatedPath = targetPath + "/" + relativeFolderPath;
+            folder.setDriveFolderPath(updatedPath);
+
+        }
+        driveFolderRepository.saveAll(folders);
+
+        for (DriveFileEntity file : files) {
+            if(file.getDriveFolderId() == null){
+                file.setDriveFolderId(targetFolderId);
+            }else if(file.getDriveFolderId() == originFolderId){
+                file.setDriveFolderId(targetFolderId);
+            }
+            String relativeFilerPath = file.getDriveFilePath().replaceFirst(userBasePath, "");//UUID만있음
+            String updatedPath = targetPath + "/" + relativeFilerPath;
+            file.setDriveFilePath(updatedPath);
+        }
+        driveFileRepository.saveAll(files);
+
+        log.info("데이터베이스 경로 업데이트 완료");
     }
 }
