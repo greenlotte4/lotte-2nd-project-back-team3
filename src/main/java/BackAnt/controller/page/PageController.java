@@ -224,4 +224,14 @@ public class PageController {
         pageCollaboratorService.removeCollaborator(pageId, userId);
         return ResponseEntity.ok().build();
     }
+    // 페이지 협업자 권한 업데이트
+    @PutMapping("/{pageId}/collaborators/{userId}")
+    public ResponseEntity<Void> updateCollaboratorPermission(
+            @PathVariable String pageId,
+            @PathVariable long userId,
+            @RequestBody Map<String, Integer> request) {
+        int permissionType = request.get("type");
+        pageCollaboratorService.updateCollaboratorPermission(pageId, userId, permissionType);
+        return ResponseEntity.ok().build();
+    }
 }
