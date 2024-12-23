@@ -3,6 +3,7 @@ package BackAnt.service.board;
 import BackAnt.JWT.JwtProvider;
 import BackAnt.dto.board.BoardDTO;
 import BackAnt.dto.board.BoardFileDTO;
+import BackAnt.dto.board.BoardPageDTO;
 import BackAnt.dto.board.BoardResponseViewDTO;
 import BackAnt.entity.board.Board;
 import BackAnt.entity.User;
@@ -72,6 +73,26 @@ public class BoardService {
             return boardDTO;
         });
     }
+
+    // 글 검색
+    // 게시글 검색
+    public Page<BoardDTO> searchBoards(String keyword, Pageable pageable) {
+        Page<Board> boardPage = boardRepository.searchByKeyword(keyword, pageable);
+
+        return boardPage.map(board -> {
+            BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class);
+            boardDTO.setWriterId(board.getWriter() != null ? board.getWriter().getId() : null);
+            boardDTO.setWriterName(board.getWriter() != null ? board.getWriter().getName() : "익명");
+
+            // 좋아요 수 추가
+            int likeCount = boardLikeRepository.countByBoardId(board.getId());
+            boardDTO.setLikes(likeCount);
+
+            return boardDTO;
+        });
+    }
+
+
 
     // 글 상세 조회
     public BoardResponseViewDTO getBoardsById(Long id) {
@@ -203,12 +224,6 @@ public class BoardService {
         }
         if (boardDTO.getContent() != null) {
             board.setContent(boardDTO.getContent());
-        }
-        if (boardDTO.getCate1() != null) {
-            board.setCate1(boardDTO.getCate1());
-        }
-        if (boardDTO.getCate2() != null) {
-            board.setCate2(boardDTO.getCate2());
         }
 
         // 4. 수정일시 업데이트

@@ -31,9 +31,6 @@ public class BoardDTO {
 
     private Long id; // 게시글 번호
 
-    private String cate1; // 카테고리1
-    private String cate2; // 카테고리2
-
     private String title;    // 게시글 제목
     private String content;  // 게시글 내용
 

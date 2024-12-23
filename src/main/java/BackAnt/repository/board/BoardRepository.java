@@ -32,7 +32,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     List<Board> findAllWithWriter();
 
     // 글 목록 전체 조회
-    @Query("SELECT NEW BackAnt.dto.board.BoardResponseViewDTO(b.id, b.cate1, b.cate2, b.title, " +
+    @Query("SELECT NEW BackAnt.dto.board.BoardResponseViewDTO(b.id, b.title, " +
             "b.comment, b.content, b.writer.name, b.file, b.hit, b.likes, " +
             "b.regIp, b.regDate) " +
             "FROM Board b " +
@@ -41,8 +41,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     List<BoardDTO> findAllBoardDTOs();
 
     // 최신 글 순으로 정렬
-//    List<Board> findAllByOrderByRegDateDesc();
-    //Page<Board> findAllByOrderByRegDateDesc(Pageable pageable);
     Page<Board> findAllByOrderByRegDateDesc(Pageable pageable);
 
     // 특정 카테고리에 속한 게시글 조회 - 2024/12/23 강은경
@@ -54,5 +52,16 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     @Transactional
     @Query("DELETE FROM Board b WHERE b.category.id = :categoryId")
     void deleteByCategoryId(Long categoryId);
+
+
+
+    // **검색 기능** - 제목, 작성자 이름, 내용에서 키워드 검색
+    @Query("SELECT DISTINCT b FROM Board b " +
+            "LEFT JOIN b.writer w " +
+            "WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "   OR LOWER(b.content) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "   OR LOWER(w.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "ORDER BY b.regDate DESC")
+    Page<Board> searchByKeyword(String keyword, Pageable pageable);
 
 }

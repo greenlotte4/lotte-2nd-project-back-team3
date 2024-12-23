@@ -1,6 +1,7 @@
 package BackAnt.controller.board;
 
 import BackAnt.dto.board.BoardDTO;
+import BackAnt.dto.board.BoardPageDTO;
 import BackAnt.dto.board.BoardResponseViewDTO;
 import BackAnt.dto.common.ResponseDTO;
 import BackAnt.entity.board.Board;
@@ -51,41 +52,6 @@ public class BoardController {
 
 
     // 글 목록 전체 조회
-//    @GetMapping("/list")
-//    public ResponseEntity<Page<BoardDTO>> getFindAllBoards(
-//            @PageableDefault(size = 10, sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable) {
-//
-//        log.info("게시글 목록 컨트롤러 시작 -------------");
-//        log.info("요청받은 페이징 정보: 페이지 번호 = {}, 페이지 크기 = {}, 정렬 = {}",
-//                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-//
-//        try {
-//            // 페이징 처리된 Board 엔티티 리스트 가져오기
-//            Page<Board> boards = boardService.getFindAllBoards(pageable);
-//            log.info("조회된 Board 데이터 (엔티티): 페이지 번호 = {}, 총 페이지 수 = {}, 총 요소 수 = {}",
-//                    boards.getNumber(), boards.getTotalPages(), boards.getTotalElements());
-//
-//            // Page<Board> -> Page<BoardDTO>로 변환
-//            Page<BoardDTO> boardDTOs = boards.map(board -> {
-//                BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class);   // modelMapper로 변환
-//                boardDTO.setWriterId(board.getWriter() != null ? board.getWriter().getId() : null); // 작성자 ID
-//                boardDTO.setWriterName(board.getWriter() != null ? board.getWriter().getName() : "익명"); // 작성자 이름
-//                return boardDTO;
-//            });
-//
-//
-//
-//            log.info("변환된 BoardDTO 데이터: 페이지 크기 = {}, 변환된 요소 수 = {}",
-//                    boardDTOs.getSize(), boardDTOs.getContent().size());
-//
-//            return ResponseEntity.ok(boardDTOs);
-//        } catch (Exception e) {
-//            log.error("게시글 목록 조회 중 오류 발생: ", e);
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        }
-//    }
-
-    // 글 목록 전체 조회
     @GetMapping("/list")
     public ResponseEntity<Page<BoardDTO>> getFindAllBoards(
             @PageableDefault(size = 10, sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -95,6 +61,23 @@ public class BoardController {
         log.info("(컨트롤러) 게시글 목록 boardDTO :  "+boards);
         return ResponseEntity.ok(boards);
     }
+
+    // 글 검색
+    @GetMapping("/list/search")
+    public ResponseEntity<BoardPageDTO<BoardDTO>> searchBoards(
+            @RequestParam("keyword") String keyword,
+            @PageableDefault(size = 10, sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        log.info("(컨트롤러) 게시글 검색 요청 - 키워드: " + keyword);
+        Page<BoardDTO> searchResults = boardService.searchBoards(keyword, pageable);
+
+        // Page<BoardDTO>를 BoardPageDTO<BoardDTO>로 변환
+        BoardPageDTO<BoardDTO> response = new BoardPageDTO<>(searchResults);
+
+        log.info("(컨트롤러) 응답: " + response);
+        return ResponseEntity.ok(response);
+    }
+
 
     // 글 상세 조회
     @GetMapping("/view/{id}")
@@ -157,24 +140,6 @@ public class BoardController {
 
 
     // 글 수정
-//    @PutMapping("/update/{uid}")
-//    public ResponseDTO<BoardDTO> updateBoard(
-//            @PathVariable Long uid,
-//            @RequestBody BoardDTO boardDTO) {
-//
-//        log.info("글 수정 컨트롤러");
-//        try {
-//            BoardDTO updatedBoard = boardService.updateBoard(uid, boardDTO);
-//            log.info("글 수정 컨트롤러 id"+uid);
-//            log.info("글 수정 컨트롤러 boardDTO"+boardDTO);
-//
-//            return ResponseDTO.success(updatedBoard);
-//        } catch (Exception e) {
-//            return ResponseDTO.failure(e.getMessage());
-//        }
-//    }
-
-    // 글 수정
     @PutMapping("/update/{uid}")
     public ResponseDTO<BoardDTO> updateBoard(
             @PathVariable Long uid,
@@ -206,12 +171,6 @@ public class BoardController {
 
     // 글 삭제
     @DeleteMapping("/delete/{uid}")
-//    public ResponseEntity<Void> deleteBoard(@PathVariable Long uid) {
-//        log.info("🗑️ 게시글 삭제 id: {}", uid);
-//        boardService.deleteBoard(uid);
-//        return ResponseEntity.noContent().build();
-//    }
-
     public ResponseEntity<Void> deleteBoard(@PathVariable Long uid) {
         log.info("🗑️ 게시글 삭제 요청 - 게시글 ID: {}", uid);
         boardService.deleteBoard(uid);
