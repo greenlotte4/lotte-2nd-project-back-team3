@@ -39,6 +39,7 @@ public class PageCollaborator {
                 .pageId(this.pageId)
                 .user_id(this.user.getId())
                 .uid(this.user.getUid())// User의 uid를 가져옴
+                .name(this.user.getName())
                 .uidImage(this.user.getProfileImageUrl())  // User의 이미지 필드가 있을 경우 가져옴
                 .invitedAt(this.invitedAt)
                 .isOwner(this.isOwner)
