@@ -17,8 +17,6 @@ import lombok.*;
 @Builder
 public class BoardUpdateRequestDTO {
 
-    private String cate1;
-    private String cate2;
     private String title;
     private String content;
 

@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
            - 글목록 상세 조회
            - 댓글 기능 추가 시 DTO 추가 예정
 
+    수정 내역: 2024/12/23 (김민희) :  카테고리 삭제
+
 */
 @Getter
 @Setter
@@ -20,8 +22,7 @@ import java.time.LocalDateTime;
 public class BoardResponseViewDTO {
 
     private Long id; // 게시글 번호
-    private String cate1; // 카테고리1
-    private String cate2; // 카테고리2
+
     private String title;    // 게시글 제목
     private int comment = 0; // 게시글 댓글 0
     private String content;  // 게시글 내용
@@ -36,11 +37,9 @@ public class BoardResponseViewDTO {
     private LocalDateTime regDate; // 작성일
 
 
-    public BoardResponseViewDTO(Long id, String cate1, String cate2, String title, int comment, String content, String writer,
+    public BoardResponseViewDTO(Long id, String title, int comment, String content, String writer,
                                 int file, int hit, int likes, String regIp, LocalDateTime regDate) {
         this.id = id;
-        this.cate1 = cate1;
-        this.cate2 = cate2;
         this.title = title;
         this.content = content;
         this.writer = writer;

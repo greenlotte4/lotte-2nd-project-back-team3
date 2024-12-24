@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
    2024/12/03(화) 김민희 - likes 컬럼 추가 (* sql 예약어 "like" 컬럼명 추가 x)
    2024/12/06(금) 김민희 - 게시글의 전체 좋아요 수(likes) 관리 하는 필드
                        - 좋아요 증가/감소
+   2024/12/23(금) 김민희 - 카테고리 삭제
 
 */
 
@@ -33,9 +34,6 @@ public class Board {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 게시글 번호
-
-    private String cate1; // 카테고리1
-    private String cate2; // 카테고리2
 
     @Column(nullable = false, length = 100)   // NULL 불가, 최대 100자
     private String title;    // 게시글 제목

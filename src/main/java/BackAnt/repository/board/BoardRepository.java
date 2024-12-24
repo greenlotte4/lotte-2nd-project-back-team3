@@ -2,6 +2,7 @@ package BackAnt.repository.board;
 
 import BackAnt.dto.board.BoardDTO;
 import BackAnt.entity.board.Board;
+import io.lettuce.core.dynamic.annotation.Param;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,7 +33,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     List<Board> findAllWithWriter();
 
     // 글 목록 전체 조회
-    @Query("SELECT NEW BackAnt.dto.board.BoardResponseViewDTO(b.id, b.cate1, b.cate2, b.title, " +
+    @Query("SELECT NEW BackAnt.dto.board.BoardResponseViewDTO(b.id, b.title, " +
             "b.comment, b.content, b.writer.name, b.file, b.hit, b.likes, " +
             "b.regIp, b.regDate) " +
             "FROM Board b " +
@@ -41,18 +42,23 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     List<BoardDTO> findAllBoardDTOs();
 
     // 최신 글 순으로 정렬
-//    List<Board> findAllByOrderByRegDateDesc();
-    //Page<Board> findAllByOrderByRegDateDesc(Pageable pageable);
     Page<Board> findAllByOrderByRegDateDesc(Pageable pageable);
 
     // 특정 카테고리에 속한 게시글 조회 - 2024/12/23 강은경
     @Query("SELECT b FROM Board b WHERE b.category.id = :categoryId")
     List<Board> findByCategoryId(Long categoryId);
 
-    // 카테고리id로 게시글 삭제 - 2024/12/23 강은경
+    // 카테고리 id로 게시글 삭제 - 2024/12/23 강은경
     @Modifying
     @Transactional
     @Query("DELETE FROM Board b WHERE b.category.id = :categoryId")
     void deleteByCategoryId(Long categoryId);
+
+    // **검색 기능** - 제목, 작성자 이름, 내용에서 키워드 검색
+    @Query("SELECT b FROM Board b " +
+            "WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(b.content) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(b.writer.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Board> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
 }
