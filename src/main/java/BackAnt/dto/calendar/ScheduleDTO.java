@@ -21,9 +21,9 @@ public class ScheduleDTO {
     private List<String> internalAttendees;
     private List<String> externalAttendees;
     private String location;
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime start;
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime end;
     private String uid;
 

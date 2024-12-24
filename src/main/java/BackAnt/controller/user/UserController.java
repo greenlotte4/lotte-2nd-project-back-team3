@@ -370,14 +370,12 @@ public class UserController {
         log.info(companyId);
         String type = "second";
         Page<UserDTO> members = userService.getMembersByCompany(companyId, page -1, size, type, status);
-        log.info("ㅇㅇ" + members.getContent());
         return ResponseEntity.ok(members);
     }
 
     @GetMapping("/vacation")
-    public void findVacation(){
-        log.info("123123444");
-        vacationService.findVacationUser();
+    public List<Long> findVacation(){
+        return vacationService.findVacationUser();
     }
 
 }

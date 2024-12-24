@@ -62,7 +62,6 @@ public class CalendarService {
 
         dtos.forEach(dto -> {
             long result = viewCalendarRepository.countByCalendar_CalendarId(dto.getCalendarId());
-            log.info("rrrrrrrrrrrrrrrrr" + result);
             if(result == 1){
                 dto.setShare(false);
             } else if (result > 1){
@@ -127,12 +126,10 @@ public class CalendarService {
             dto.setAction("update");
             dto.setCalendarId(calendar.getCalendarId());
             List<ViewCalendar> viewCalendars = viewCalendarRepository.findByCalendar_CalendarId(calendar.getCalendarId());
-            log.info("뷰캘린더는 어떨까?" + viewCalendars);
             // 2. WebSocket을 통한 실시간 알림 전송
             viewCalendars.forEach(viewCalendar -> {
 
                 String destination = "/topic/schedules/" + viewCalendar.getUser().getId();
-                log.info("경로" + destination);
                 messagingTemplate.convertAndSend(destination, dto);
             });
         });
@@ -176,11 +173,9 @@ public class CalendarService {
        dto.setAction("insert");
         dto.setCalendarId(calendar.getCalendarId());
        List<ViewCalendar> viewCalendars = viewCalendarRepository.findByCalendar_CalendarId(calendar.getCalendarId());
-        log.info("뷰캘린더는 어떨까?" + viewCalendars);
         // 2. WebSocket을 통한 실시간 알림 전송
         viewCalendars.forEach(viewCalendar -> {
             String destination = "/topic/schedules/" + viewCalendar.getUser().getId();
-            log.info("경로" + destination);
             messagingTemplate.convertAndSend(destination, dto);
         });
 
@@ -266,14 +261,11 @@ public class CalendarService {
 
 
         List<ViewCalendar> viewCalendars = viewCalendarRepository.findByCalendar_CalendarId(schedule1.getCalendar().getCalendarId());
-        log.info("뷰캘린더는 어떨까?" + viewCalendars);
-        log.info("디티오는 어떨까?" + dto);
         // 2. WebSocket을 통한 실시간 알림 전송
         viewCalendars.forEach(viewCalendar -> {
             dto.setColor((calendarRepository.findById(viewCalendar.getCalendar().getCalendarId()).orElseThrow(() -> new EntityNotFoundException("이 id의 Schedule 이 없습니다."))).getColor());
             dto.setCalendarId(viewCalendar.getCalendar().getCalendarId());
             String destination = "/topic/schedules/" + viewCalendar.getUser().getId();
-            log.info("경로" + destination);
             messagingTemplate.convertAndSend(destination, dto);
         });
 
@@ -299,11 +291,9 @@ public class CalendarService {
         scheduleRepository.deleteById(no);
         ScheduleDTO dto = modelMapper.map(schedule, ScheduleDTO.class);
         dto.setAction("delete");
-        log.info("스케줄은 과연???"+schedule);
         List<ViewCalendar> viewCalendars = viewCalendarRepository.findByCalendar_CalendarId(schedule.getCalendar().getCalendarId());
         viewCalendars.forEach(viewCalendar -> {
             String destination = "/topic/schedules/" + viewCalendar.getUser().getId();
-            log.info("경로" + destination);
             messagingTemplate.convertAndSend(destination, dto);
         });
     }
@@ -364,6 +354,16 @@ public class CalendarService {
         log.info(viewCalendar);
 
         viewCalendarRepository.delete(viewCalendar);
+
+    }
+
+    public void settingLanguage(Long id, String language){
+
+        User user = userRepository.findById(id).orElse(null);
+
+        user.updateCalendarLanguage(language);
+
+        userRepository.save(user);
 
     }
 
