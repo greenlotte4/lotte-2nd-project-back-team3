@@ -55,20 +55,20 @@ spring:
     graphql:
         websocket:
             path: /ws
-#    kafka:
-#        bootstrap-servers: 3.38.150.176:9092
-#        consumer:
-#            group-id: test-group
-#            auto-offset-reset: earliest
-#            key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#            value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#        producer:
-#            key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#            value-serializer: org.apache.kafka.common.serialization.StringSerializer
-#        properties:
-#            session.timeout.ms: 30000       # 세션 타임아웃 (기본값 10초 → 30초로 증가)
-#            heartbeat.interval.ms: 10000    # 하트비트 간격 (기본값 3초 → 10초로 증가)
-#            max.poll.interval.ms: 300000    # 폴링 최대 시간 (5분 동안 폴링이 없으면 타임아웃)
+    kafka:
+        bootstrap-servers: 3.38.150.176:9092
+        consumer:
+            group-id: test-group
+            auto-offset-reset: earliest
+            key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+            value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        producer:
+            key-serializer: org.apache.kafka.common.serialization.StringSerializer
+            value-serializer: org.apache.kafka.common.serialization.StringSerializer
+        properties:
+            session.timeout.ms: 30000       # 세션 타임아웃 (기본값 10초 → 30초로 증가)
+            heartbeat.interval.ms: 10000    # 하트비트 간격 (기본값 3초 → 10초로 증가)
+            max.poll.interval.ms: 300000    # 폴링 최대 시간 (5분 동안 폴링이 없으면 타임아웃)
 file:
     upload:
         path: uploads

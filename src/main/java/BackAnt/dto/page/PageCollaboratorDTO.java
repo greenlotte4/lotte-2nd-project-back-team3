@@ -20,6 +20,7 @@ public class PageCollaboratorDTO {
     private String pageId;
 
     private Long user_id;
+    private String name;
     private String uid;
     private String uidImage;
 
