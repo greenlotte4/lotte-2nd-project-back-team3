@@ -109,9 +109,9 @@ public ResponseEntity<?> DriveFolderTrash(    @PathVariable(required = false) St
         return driveFolderService.ToMyTrash(driveFolderFileToTrashDTO.getDriveFolderId(), driveFolderFileToTrashDTO.getSelectedDriveFileIds());
     }
     //파일 총 사이즈 구하기
-    @GetMapping("/files/totalSize/{uid}")
-    public ResponseEntity<?> totalSize(@PathVariable String uid){
-        DriveFileStorageDTO storageDTO = driveFileService.SelectDriveTotalSize(uid);
+    @GetMapping("/files/totalSize/{uid}/{rate}")
+    public ResponseEntity<?> totalSize(@PathVariable String uid, @PathVariable Integer rate){
+        DriveFileStorageDTO storageDTO = driveFileService.SelectDriveTotalSize(uid,rate);
         log.info("머야 총용량이다 : " + storageDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(storageDTO);
