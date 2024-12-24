@@ -3,6 +3,7 @@ package BackAnt.controller.board;
 import BackAnt.dto.board.BoardDTO;
 import BackAnt.dto.board.BoardPageDTO;
 import BackAnt.dto.board.BoardResponseViewDTO;
+import BackAnt.dto.board.BoardSearchDTO;
 import BackAnt.dto.common.ResponseDTO;
 import BackAnt.entity.board.Board;
 import BackAnt.service.board.BoardService;
@@ -62,21 +63,28 @@ public class BoardController {
         return ResponseEntity.ok(boards);
     }
 
+
     // 글 검색
     @GetMapping("/list/search")
-    public ResponseEntity<BoardPageDTO<BoardDTO>> searchBoards(
+    public ResponseEntity<Page<BoardSearchDTO>> searchBoards(
             @RequestParam("keyword") String keyword,
-            @PageableDefault(size = 10, sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "regDate",
+            direction = Sort.Direction.DESC) Pageable pageable) {
 
-        log.info("(컨트롤러) 게시글 검색 요청 - 키워드: " + keyword);
-        Page<BoardDTO> searchResults = boardService.searchBoards(keyword, pageable);
+        // 요청 파라미터 확인
+        log.info("검색 요청 - 키워드: " + keyword);
+        log.info("페이지 번호: " + pageable.getPageNumber());
+        log.info("페이지 크기: " + pageable.getPageSize());
 
-        // Page<BoardDTO>를 BoardPageDTO<BoardDTO>로 변환
-        BoardPageDTO<BoardDTO> response = new BoardPageDTO<>(searchResults);
+        // 검색 서비스 호출
+        Page<BoardSearchDTO> searchResults = boardService.searchBoards(keyword, pageable);
+        log.info("검색 결과 수: " + searchResults.getTotalElements());
 
-        log.info("(컨트롤러) 응답: " + response);
-        return ResponseEntity.ok(response);
+        log.info("(컨트롤러) 검색 결과 수: " + searchResults.getTotalElements());
+        return ResponseEntity.ok(searchResults);
     }
+
+
 
 
     // 글 상세 조회

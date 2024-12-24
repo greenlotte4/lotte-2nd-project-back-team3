@@ -2,6 +2,7 @@ package BackAnt.repository.board;
 
 import BackAnt.dto.board.BoardDTO;
 import BackAnt.entity.board.Board;
+import io.lettuce.core.dynamic.annotation.Param;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -47,21 +48,17 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     @Query("SELECT b FROM Board b WHERE b.category.id = :categoryId")
     List<Board> findByCategoryId(Long categoryId);
 
-    // 카테고리id로 게시글 삭제 - 2024/12/23 강은경
+    // 카테고리 id로 게시글 삭제 - 2024/12/23 강은경
     @Modifying
     @Transactional
     @Query("DELETE FROM Board b WHERE b.category.id = :categoryId")
     void deleteByCategoryId(Long categoryId);
 
-
-
     // **검색 기능** - 제목, 작성자 이름, 내용에서 키워드 검색
-    @Query("SELECT DISTINCT b FROM Board b " +
-            "LEFT JOIN b.writer w " +
+    @Query("SELECT b FROM Board b " +
             "WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "   OR LOWER(b.content) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "   OR LOWER(w.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "ORDER BY b.regDate DESC")
-    Page<Board> searchByKeyword(String keyword, Pageable pageable);
+            "OR LOWER(b.content) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(b.writer.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Board> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
 }

@@ -1,13 +1,11 @@
 package BackAnt.service.board;
 
 import BackAnt.JWT.JwtProvider;
-import BackAnt.dto.board.BoardDTO;
-import BackAnt.dto.board.BoardFileDTO;
-import BackAnt.dto.board.BoardPageDTO;
-import BackAnt.dto.board.BoardResponseViewDTO;
+import BackAnt.dto.board.*;
 import BackAnt.entity.board.Board;
 import BackAnt.entity.User;
 import BackAnt.entity.board.BoardLike;
+import BackAnt.repository.board.BoardCategoryRepository;
 import BackAnt.repository.board.BoardLikeRepository;
 import BackAnt.repository.board.BoardRepository;
 import BackAnt.repository.UserRepository;
@@ -50,12 +48,8 @@ public class BoardService {
     private final ModelMapper modelMapper;
     private final JwtProvider jwtProvider;
     private final BoardFileService boardFileService;
-
-
-    // 글 목록 조회
-//    public Page<Board> getFindAllBoards(Pageable pageable) {
-//        return boardRepository.findAllByOrderByRegDateDesc(pageable);
-//    }
+    private final BoardCategoryService boardCategoryService;
+    private final BoardCategoryRepository boardCategoryRepository;
 
     // 글 목록 조회
     public Page<BoardDTO> getFindAllBoards(Pageable pageable) {
@@ -75,21 +69,28 @@ public class BoardService {
     }
 
     // 글 검색
-    // 게시글 검색
-    public Page<BoardDTO> searchBoards(String keyword, Pageable pageable) {
+//    public Page<BoardDTO> searchBoards(
+//            String keyword, Pageable pageable) {
+//        log.info("(서비스) 글검색 시작");
+//        Page<Board> boardPage = boardRepository.searchByKeyword(keyword, pageable);
+//        log.info("(서비스) 글검색 boardPage : "+ boardPage);
+//
+//        return boardPage.map(board -> {
+//            BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class);
+//            log.info("boardDTO: " + boardDTO);
+//            boardDTO.setWriterName(board.getWriter() != null ? board.getWriter().getName() : "익명");
+//            return boardDTO;
+//        });
+//    }
+
+    public Page<BoardSearchDTO> searchBoards(String keyword, Pageable pageable) {
+        log.info("(서비스) 검색어: " + keyword);
+
         Page<Board> boardPage = boardRepository.searchByKeyword(keyword, pageable);
+        log.info("(서비스) 검색된 게시글 수: " + boardPage.getTotalElements());
 
-        return boardPage.map(board -> {
-            BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class);
-            boardDTO.setWriterId(board.getWriter() != null ? board.getWriter().getId() : null);
-            boardDTO.setWriterName(board.getWriter() != null ? board.getWriter().getName() : "익명");
-
-            // 좋아요 수 추가
-            int likeCount = boardLikeRepository.countByBoardId(board.getId());
-            boardDTO.setLikes(likeCount);
-
-            return boardDTO;
-        });
+        // ModelMapper를 활용해 Board -> SearchDTO 변환
+        return boardPage.map(board -> modelMapper.map(board, BoardSearchDTO.class));
     }
 
 
@@ -188,6 +189,8 @@ public class BoardService {
 
             log.info("글쓰기 서비스 board 작성자 ID: {}", user.getId());
 
+            // boardDTO에 담긴 FK boardCategoryId로 boardCategory 조회 후 SET
+            board.setCategory(boardCategoryRepository.findById(boardDTO.getCategoryId()).orElse(null));
 
             // 게시글 DB 저장
             Board savedBoard = boardRepository.save(board);
