@@ -67,17 +67,19 @@ public class BoardController {
     // 글 검색
     @GetMapping("/list/search")
     public ResponseEntity<Page<BoardSearchDTO>> searchBoards(
+            @RequestParam ("type") String type,
             @RequestParam("keyword") String keyword,
             @PageableDefault(size = 10, sort = "regDate",
             direction = Sort.Direction.DESC) Pageable pageable) {
 
         // 요청 파라미터 확인
+        log.info("검색 요청 - 타입: " + type);
         log.info("검색 요청 - 키워드: " + keyword);
         log.info("페이지 번호: " + pageable.getPageNumber());
         log.info("페이지 크기: " + pageable.getPageSize());
 
         // 검색 서비스 호출
-        Page<BoardSearchDTO> searchResults = boardService.searchBoards(keyword, pageable);
+        Page<BoardSearchDTO> searchResults = boardService.searchBoards(type, keyword, pageable);
         log.info("검색 결과 수: " + searchResults.getTotalElements());
 
         log.info("(컨트롤러) 검색 결과 수: " + searchResults.getTotalElements());

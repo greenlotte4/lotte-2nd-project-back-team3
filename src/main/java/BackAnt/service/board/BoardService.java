@@ -27,6 +27,7 @@ import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -83,14 +84,29 @@ public class BoardService {
 //        });
 //    }
 
-    public Page<BoardSearchDTO> searchBoards(String keyword, Pageable pageable) {
+    public Page<BoardSearchDTO> searchBoards(String type, String keyword, Pageable pageable) {
         log.info("(서비스) 검색어: " + keyword);
+
+
+        if(Objects.equals(type, "title")){
+            Page<Board> boardPage = boardRepository.searchByTitle(keyword, pageable);
+            log.info("1111::"+boardPage);
+            return boardPage.map(board -> modelMapper.map(board, BoardSearchDTO.class));
+        }else if(Objects.equals(type, "content")){
+            Page<Board> boardPage = boardRepository.searchByContent(keyword, pageable);
+            log.info("2222::"+boardPage);
+            return boardPage.map(board -> modelMapper.map(board, BoardSearchDTO.class));
+        }else if(Objects.equals(type, "writerName")){
+            Page<Board> boardPage = boardRepository.searchByWriterName(keyword, pageable);
+            log.info("3333::"+boardPage);
+            return boardPage.map(board -> modelMapper.map(board, BoardSearchDTO.class));
+        }
 
         Page<Board> boardPage = boardRepository.searchByKeyword(keyword, pageable);
         log.info("(서비스) 검색된 게시글 수: " + boardPage.getTotalElements());
 
         // ModelMapper를 활용해 Board -> SearchDTO 변환
-        return boardPage.map(board -> modelMapper.map(board, BoardSearchDTO.class));
+        return null;
     }
 
 
