@@ -41,7 +41,7 @@ spring:
       active: local # 기본 프로파일을 로컬로 설정
     data:
         mongodb:
-            uri: mongodb://antwork:1234@3.38.150.176:27017/Antwork
+            uri: mongodb://antwork:1234@107.20.58.55:27017/antwork?authSource=antwork
         redis:
             host: 3.38.150.176
             port: 6379
