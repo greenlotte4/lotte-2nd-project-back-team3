@@ -36,10 +36,10 @@ public interface DriveFolderRepository extends MongoRepository<DriveFolderDocume
 
     //폴더 선택 조회
     @Query(value = "{ 'driveParentFolderId': ?0 ,'driveFolderIsDeleted':0 }",
-            fields = "{ 'driveFolderId': 1, 'driveFolderName': 1, 'driveParentFolderId': 1, 'driveFolderMaker': 1, 'driveFolderSize': 1, 'driveFolderCreatedAt': 1, 'driveFolderShareType': 1 }")
+            fields = "{ 'driveFolderId': 1, 'driveFolderName': 1, 'driveParentFolderId': 1, 'driveFolderMaker': 1, 'driveFolderSize': 1, 'driveFolderCreatedAt': 1, 'driveFolderShareType': 1, 'driveFolderPath': 1 }")
     List<DriveFolderDocument> findWithSelectFolders(String driveFolderId);
 
-    //폴더 선택 조회
+    //공유폴더 선택 조회
     @Query(value = "{ 'driveParentFolderId': ?0 ,'driveFolderIsDeleted':0, 'driveFolderShareType': 1 }",
             fields = "{ 'driveFolderId': 1, 'driveFolderName': 1, 'driveParentFolderId': 1, 'driveFolderMaker': 1, 'driveFolderSize': 1, 'driveFolderCreatedAt': 1, 'driveFolderShareType': 1, 'driveFolderUpdatedAt':1 }")
     List<DriveFolderDocument> findWithSelectShareFolders(String driveFolderId);

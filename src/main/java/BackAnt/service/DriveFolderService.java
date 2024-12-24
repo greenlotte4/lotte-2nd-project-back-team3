@@ -905,7 +905,7 @@ public class DriveFolderService {
             }
         }
     }
-    //DB경로변경
+    // 데이터베이스 업데이트 치기
     private void updateDatabasePaths(
             List<DriveFolderDocument> folders,
             List<DriveFileEntity> files,
@@ -913,48 +913,76 @@ public class DriveFolderService {
             String userId,
             String targetFolderId,
             String originFolderId,
-            Optional<DriveFileEntity> onefile
-
+            Optional<DriveFileEntity> oneFile
     ) {
         String userBasePath = "/uploads/drive/" + userId + "/";
-        if(onefile.isPresent()){
-            DriveFileEntity oneFile = onefile.get();
-            oneFile.setDriveFolderId(targetFolderId);
-            String relativeFilerPath = Paths.get(onefile.get().getDriveFilePath()).getFileName().toString();
-//            String relativeFilerPath = oneFile.getDriveFilePath().replaceFirst(userBasePath, "");//UUID만있음
-            String updatedPath = targetPath + "/" + relativeFilerPath;
-            oneFile.setDriveFilePath(updatedPath);
-            // 단일 파일 저장
-            driveFileRepository.save(oneFile);
 
-            log.info("단독 파일의 데이터베이스 경로 업데이트 완료: {}", oneFile);
-            return; // 단독 파일 처리 후 종료
-        }
-        for (DriveFolderDocument folder : folders) {
-            if(folder.getDriveParentFolderId() == null){
-                folder.setDriveParentFolderId(targetFolderId);
-            }else if(folder.getDriveParentFolderId() == originFolderId){
-                folder.setDriveParentFolderId(targetFolderId);
-            }
-            String relativeFolderPath = folder.getDriveFolderPath().replaceFirst(userBasePath, "");//UUID만있음
-            String updatedPath = targetPath + "/" + relativeFolderPath;
-            folder.setDriveFolderPath(updatedPath);
+        // 1. 단일 파일 처리
+        if (oneFile.isPresent()) {
+            DriveFileEntity singleFile = oneFile.get();
+            singleFile.setDriveFolderId(targetFolderId);
 
+            // 경로 갱신
+            String relativeFilePath = singleFile.getDriveFilePath().replaceFirst(".*/", "");
+            String updatedPath = targetPath + "/" + relativeFilePath;
+            singleFile.setDriveFilePath(updatedPath);
+            // 저장
+            driveFileRepository.save(singleFile);
+            log.info("단독 파일의 데이터베이스 경로 업데이트 완료: {}", singleFile);
+            return; // 단일 파일 처리 후 종료
         }
-        driveFolderRepository.saveAll(folders);
 
-        for (DriveFileEntity file : files) {
-            if(file.getDriveFolderId() == null){
-                file.setDriveFolderId(targetFolderId);
-            }else if(file.getDriveFolderId() == originFolderId){
-                file.setDriveFolderId(targetFolderId);
-            }
-            String relativeFilerPath = file.getDriveFilePath().replaceFirst(userBasePath, "");//UUID만있음
-            String updatedPath = targetPath + "/" + relativeFilerPath;
-            file.setDriveFilePath(updatedPath);
+        // 2. 이동하려는 최상위 폴더 필터링
+        List<DriveFolderDocument> rootFolders;
+        if (originFolderId == null) {
+            // 최상위 폴더의 경우
+            rootFolders = folders.stream()
+                    .filter(folder -> folder.getDriveParentFolderId() == null)
+                    .collect(Collectors.toList());
+        } else {
+            // 특정 폴더의 하위 구조를 이동하는 경우
+            rootFolders = folders.stream()
+                    .filter(folder -> folder.getDriveFolderId().equals(originFolderId))
+                    .collect(Collectors.toList());
         }
-        driveFileRepository.saveAll(files);
+
+        // 3. 최상위 폴더부터 재귀적으로 갱신 시작
+        for (DriveFolderDocument rootFolder : rootFolders) {
+            rootFolder.setDriveParentFolderId(targetFolderId); // 부모 ID 갱신
+            recursivelyUpdatePaths(rootFolder, targetPath);
+        }
 
         log.info("데이터베이스 경로 업데이트 완료");
     }
+
+    // 재귀적으로 하위 폴더와 파일의 경로를 갱신
+    private void recursivelyUpdatePaths(DriveFolderDocument parentFolder, String newParentPath) {
+        // 상위 폴더의 새 경로 갱신
+        log.info("parentFolder 아이디 새로운 것 들 들어와야 돼 : " + parentFolder);
+        String updatedParentPath = newParentPath + "/" + parentFolder.getDriveFolderPath().replaceFirst(".*/", ""); // 기존 경로의 마지막 부분 유지
+        log.info("새 경로 갱신 : " + updatedParentPath);
+        parentFolder.setDriveFolderPath(updatedParentPath);
+        log.info("현재 paretnFolder는? : " + parentFolder);
+
+        driveFolderRepository.save(parentFolder);
+
+        // 하위 폴더 갱신
+        List<DriveFolderDocument> childFolders = driveFolderRepository.findWithSelectFolders(parentFolder.getDriveFolderId());
+        log.info("자식 뭐로 나오나 ? : " + childFolders);
+        for (DriveFolderDocument childFolder : childFolders) {
+            childFolder.setDriveParentFolderId(parentFolder.getDriveFolderId()); // 부모 ID 갱신
+            log.info("자식 부모 아이디 재 생성 : " + childFolder);
+            recursivelyUpdatePaths(childFolder, updatedParentPath); // 재귀 호출
+        }
+
+        // 하위 파일 갱신
+        List<DriveFileEntity> childFiles = driveFileRepository.findByDriveFolderId(parentFolder.getDriveFolderId());
+        for (DriveFileEntity file : childFiles) {
+            String updatedFilePath = updatedParentPath + "/" + file.getDriveFilePath().replaceFirst(".*/", ""); // 기존 경로의 마지막 부분 유지
+            file.setDriveFilePath(updatedFilePath);
+        }
+        driveFileRepository.saveAll(childFiles); // 파일 저장
+    }
+
+
 }

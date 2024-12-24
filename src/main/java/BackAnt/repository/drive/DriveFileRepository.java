@@ -22,7 +22,7 @@ public interface DriveFileRepository extends JpaRepository<DriveFileEntity, Inte
     List<DriveFileEntity> findByDriveFolderIdIsNullAndDriveFileMakerAndDriveIsDeleted(String uid, int driveIsDeleted);
     List<DriveFileEntity> findByDriveIsDeleted(int driveIsDeleted);
 
-
+    List<DriveFileEntity> findByDriveFolderId(String driveFolderId);
     // 파람의 folderId와 동일한 파일 찾기
     List<DriveFileEntity> findByDriveFolderIdAndDriveIsDeleted(String driveFolderId , int driveIsDeleted);
 
