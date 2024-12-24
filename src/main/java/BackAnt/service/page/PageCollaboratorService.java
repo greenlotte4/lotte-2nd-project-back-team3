@@ -114,6 +114,8 @@ public class PageCollaboratorService {
                 .id(collaborator.getId())
                 .pageId(collaborator.getPageId())
                 .user_id(collaborator.getUser().getId())
+                .uid(collaborator.getUser().getUid())
+                .name(collaborator.getUser().getName())
                 .uidImage(collaborator.getUser().getProfileImageUrl())
                 .invitedAt(collaborator.getInvitedAt())
                 .isOwner(collaborator.getIsOwner())
