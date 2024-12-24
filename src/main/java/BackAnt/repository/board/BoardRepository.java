@@ -61,4 +61,16 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
             "OR LOWER(b.writer.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Board> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
+    @Query("SELECT b FROM Board b " +
+            "WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Board> searchByTitle(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT b FROM Board b " +
+            "WHERE LOWER(b.content) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Board> searchByContent(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT b FROM Board b " +
+            "WHERE LOWER(b.writer.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Board> searchByWriterName(@Param("keyword") String keyword, Pageable pageable);
+
 }
