@@ -78,4 +78,12 @@ public class CalendarController {
 
     }
 
+    @PutMapping("/language/{id}/{language}")
+    public void settingLanguage(@PathVariable Long id, @PathVariable String language){
+
+        log.info("111:::"+id+"::"+language);
+
+        calendarService.settingLanguage(id, language);
+
+    }
 }

@@ -2,10 +2,14 @@ package BackAnt.service;
 
 import BackAnt.dto.NotificationDTO;
 import BackAnt.dto.RequestDTO.VacationRequestDTO;
+import BackAnt.dto.approval.BusinessTripDTO;
+import BackAnt.dto.approval.VacationDTO;
 import BackAnt.entity.User;
 import BackAnt.entity.approval.Approver;
+import BackAnt.entity.approval.BusinessTrip;
 import BackAnt.entity.approval.Vacation;
 import BackAnt.repository.ApproverRepository;
+import BackAnt.repository.BusinessTripRepository;
 import BackAnt.repository.UserRepository;
 import BackAnt.repository.VactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Log4j2
 @Service
@@ -28,7 +34,8 @@ public class VacationService {
     private final ApproverRepository approverRepository;
     private final ImageService imageService;
     private final NotificationService notificationService;
-
+    private final ApprovalRequestService approvalRequestService;
+    private final BusinessTripRepository businessTripRepository;
     // 휴가 신청 로직
     @Transactional
     public void createVacation(VacationRequestDTO requestDto, MultipartFile proofFile) throws Exception {
@@ -89,14 +96,61 @@ public class VacationService {
         notificationService.createAndSendNotification(notification);
     }
 
-    public void findVacationUser() {
-        List<Vacation> vacations = vactionRepository.findAll();
+    public List<Long> findVacationUser() {
+        List<Vacation> vacations = vactionRepository.findByStatus("승인");
+        List<BusinessTrip> businessTrips = businessTripRepository.findByStatus("승인");
+        List<VacationDTO> vacationDTOs = new ArrayList<>();
+        List<BusinessTripDTO> businessTripDTOs = new ArrayList<>();
+        vacations.forEach(vacation -> {
 
-        List<Vacation> approvedVacations = vacations.stream()
-                .filter(vacation -> "승인".equals(vacation.getStatus()))  // status가 "승인"인 것만 필터링
-                .toList();  // 필터링된 결과를 리스트로 수집
+            vacationDTOs.add(approvalRequestService.getApprovalDetails(vacation.getId()));
+        });
+        businessTrips.forEach(businessTrip -> {
 
-        log.info("444"+approvedVacations);
+            businessTripDTOs.add(approvalRequestService.getApprovalDetails(businessTrip.getId()));
+
+        });
+
+        LocalDate today = LocalDate.now();
+
+
+        // 2. "휴가신청"에서 "연차"와 "반차" 나누기
+        List<VacationDTO> annualLeaveRequests = vacationDTOs.stream()
+                .filter(dto -> "연차".equals(dto.getVacationType()))
+                .toList();
+
+        List<VacationDTO> halfDayRequests = vacationDTOs.stream()
+                .filter(dto -> "반차".equals(dto.getVacationType()))
+                .toList();
+
+
+
+        // 3. 오늘 날짜가 포함된 데이터 개수 세기
+        long annualLeaveCount = annualLeaveRequests.stream()
+                .filter(dto -> isDateInRange(dto.getStartDate(), dto.getEndDate(), today))
+                .count();
+
+        long halfDayCount = halfDayRequests.stream()
+                .filter(dto -> isDateInRange(dto.getStartDate(), dto.getEndDate(), today))
+                .count();
+
+        long businessCount = businessTripDTOs.stream()
+                .filter(dto -> isDateInRange(dto.getStartDate(), dto.getEndDate(), today))
+                .count();
+
+
+        List<Long> userList = new ArrayList<>();
+        userList.add(businessCount);
+        userList.add(annualLeaveCount);
+        userList.add(halfDayCount);
+
+        return userList;
+
+    }
+
+    private static boolean isDateInRange(LocalDate startDate, LocalDate endDate, LocalDate today) {
+        return (startDate.isEqual(today) || startDate.isBefore(today)) &&
+                (endDate.isEqual(today) || endDate.isAfter(today));
     }
 
 }

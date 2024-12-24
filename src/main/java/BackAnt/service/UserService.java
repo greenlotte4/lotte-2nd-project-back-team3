@@ -382,7 +382,6 @@ public class UserService {
                user.setStatus(Status.DELETED);
                userRepository.save(user);
                calendarRepository.deleteByUser_Uid(user.getUid());
-               log.info("44444"+Long.parseLong(userId));
                viewCalendarRepository.deleteByUserId(Long.parseLong(userId));
                projectCollaboratorRepository.deleteByUserId(Long.parseLong(userId));
                pageCollaboratorRepository.deleteByUser_Id(Long.parseLong(userId));

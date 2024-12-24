@@ -33,6 +33,7 @@ public class ScheduleController {
 
     @PostMapping("/insert")
     public ScheduleDTO insertSchedule(@RequestBody ScheduleDTO scheduleDTO) {
+        log.info(scheduleDTO);
        return calendarService.insertSchedule(scheduleDTO);
     }
 

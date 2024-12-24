@@ -57,6 +57,7 @@ public class User {
     private String phoneNumber; // 연락처
     private String profileImageUrl; // 프로필 사진 URL
     private LocalDate joinDate; // 입사일
+    private String calendarLanguage;
 
     private LocalDateTime lastLoginAt; // 마지막 로그인 시간
 
@@ -101,5 +102,8 @@ public class User {
     }
     public void updateProfileImageUrl(String newProfileImageUrl){
         this.profileImageUrl = newProfileImageUrl;
+    }
+    public void updateCalendarLanguage(String newCalendarLanguage){
+        this.calendarLanguage = newCalendarLanguage;
     }
 }
