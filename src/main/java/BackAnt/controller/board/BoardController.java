@@ -60,7 +60,16 @@ public class BoardController {
         log.info("(컨트롤러) 게시글 목록 조회 요청 -------------------------");
         Page<BoardDTO> boards = boardService.getFindAllBoards(pageable);
         log.info("(컨트롤러) 게시글 목록 boardDTO :  "+boards);
+        log.info("(컨트롤러) 총 페이지 수: " + boards.getTotalPages());
+        log.info("(컨트롤러) 전체 게시글 수: " + boards.getTotalElements());
+        log.info("(컨트롤러) 현재 페이지 번호: " + boards.getNumber());
         return ResponseEntity.ok(boards);
+    }
+
+    // 댓글 카운트
+    @GetMapping("/{boardId}/comments/count")
+    public int getCommentCount(@PathVariable Long boardId) {
+        return boardService.getCommentCount(boardId);
     }
 
 
@@ -69,6 +78,7 @@ public class BoardController {
     public ResponseEntity<Page<BoardSearchDTO>> searchBoards(
             @RequestParam ("type") String type,
             @RequestParam("keyword") String keyword,
+            @RequestParam(required = false) String category,
             @PageableDefault(size = 10, sort = "regDate",
             direction = Sort.Direction.DESC) Pageable pageable) {
 

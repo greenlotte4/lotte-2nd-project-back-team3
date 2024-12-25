@@ -5,6 +5,7 @@ import BackAnt.entity.board.Board;
 import BackAnt.service.board.BoardCategoryService;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import lombok.extern.log4j.Log4j2;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Log4j2
 public class BoardDTO {
 
 
@@ -70,7 +72,7 @@ public class BoardDTO {
         User writer = board.getWriter();  // User 객체 조회
 
 
-        return BoardDTO.builder()
+        BoardDTO boardDTO = BoardDTO.builder()
                 .id(board.getId())
                 .title(board.getTitle())
                 .content(board.getContent())
@@ -85,6 +87,8 @@ public class BoardDTO {
                 .regIp(board.getRegIp())
                 .regDate(board.getRegDate())
                 .build();
+        log.info("(DTO 변환) Board -> BoardDTO: " + boardDTO);
+        return boardDTO;
     }
 
 

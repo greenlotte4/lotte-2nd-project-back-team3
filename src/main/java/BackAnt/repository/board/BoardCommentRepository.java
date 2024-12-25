@@ -22,5 +22,11 @@ public interface BoardCommentRepository extends JpaRepository<BoardComment, Long
 //
 //    // 특정 사용자가 작성한 모든 댓글 조회
 //    List<BoardComment> findByCommentWriter_IdOrderByCreatedAtDesc(Long userId);
+
+    // 댓글 카운트
+    @Query("SELECT COUNT(c) FROM BoardComment c WHERE c.board.id = :boardId")
+    int countCommentsByBoardId(@Param("boardId") Long boardId);
+
+
 }
 
