@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface VactionRepository extends JpaRepository<Vacation, Long> {
+public interface VacationRepository extends JpaRepository<Vacation, Long> {
 
     List<Vacation> findByStatus(String status);
 }

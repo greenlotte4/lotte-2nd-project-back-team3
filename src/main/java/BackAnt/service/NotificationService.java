@@ -30,6 +30,7 @@ public class NotificationService {
 
     // 알림 생성 및 WebSocket 전송
     public void createAndSendNotification(NotificationDTO dto) {
+
         // 1. 알림 데이터 저장
         Notification notification = modelMapper.map(dto, Notification.class);
         notification.setCreatedAt(LocalDateTime.now());

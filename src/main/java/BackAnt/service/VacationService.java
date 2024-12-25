@@ -11,7 +11,7 @@ import BackAnt.entity.approval.Vacation;
 import BackAnt.repository.ApproverRepository;
 import BackAnt.repository.BusinessTripRepository;
 import BackAnt.repository.UserRepository;
-import BackAnt.repository.VactionRepository;
+import BackAnt.repository.VacationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class VacationService {
-    private final VactionRepository vactionRepository;
+    private final VacationRepository vacationRepository;
     private final UserRepository userRepository;
     private final ApproverRepository approverRepository;
     private final ImageService imageService;
@@ -41,63 +41,93 @@ public class VacationService {
     public void createVacation(VacationRequestDTO requestDto, MultipartFile proofFile) throws Exception {
         String proofUrl = null;
 
-        // 증빙 파일 업로드
-        if (proofFile != null && !proofFile.isEmpty()) {
-            proofUrl = imageService.uploadImage(proofFile, "vaction");
+        log.info("휴가 신청 시작");
+
+        try {
+            // 증빙 파일 업로드
+            if (proofFile != null && !proofFile.isEmpty()) {
+                proofUrl = imageService.uploadImage(proofFile, "vaction");
+                log.info("증빙 파일 업로드 성공, URL: {}", proofUrl);
+            }
+        } catch (Exception e) {
+            log.error("증빙 파일 업로드 중 오류 발생", e);
+            throw e;
         }
 
-        // Approver에 연결된 User를 조회하거나 생성
-        User approverUser = userRepository.findById(requestDto.getApprover().getId())
-                .orElseThrow(() -> new RuntimeException("Approver User not found"));
+        try {
+            // Approver에 연결된 User를 조회하거나 생성
+            User approverUser = userRepository.findById(requestDto.getApprover().getId())
+                    .orElseThrow(() -> new RuntimeException("Approver User not found"));
+            log.info("Approver User 조회 성공: {}", approverUser.getId());
 
-        Approver approver = approverRepository.findByUser(approverUser)
-                .orElseGet(() -> approverRepository.save(
-                        Approver.builder()
+            Approver approver = approverRepository.findByUser(approverUser)
+                    .orElseGet(() -> {
+                        Approver newApprover = Approver.builder()
                                 .user(approverUser)
                                 .status(requestDto.getApprover().getStatus())
-                                .build()
-                ));
+                                .build();
+                        approverRepository.save(newApprover);
+                        log.info("새 Approver 저장 성공: {}", newApprover.getId());
+                        return newApprover;
+                    });
 
+            // Vacation 엔티티 생성 및 저장
+            Vacation vacation = Vacation.builder()
+                    .userId(requestDto.getUserId())
+                    .userName(requestDto.getUserName())
+                    .title(requestDto.getTitle())
+                    .department(requestDto.getDepartment())
+                    .companyName(requestDto.getCompanyName())
+                    .startDate(requestDto.getStartDate())
+                    .endDate(requestDto.getEndDate())
+                    .annualLeaveRequest(requestDto.getAnnualLeaveRequest())
+                    .vacation_type(requestDto.getType())
+                    .type("휴가신청")
+                    .halfDay(requestDto.getHalfDay())
+                    .approvalDate(LocalDate.now())
+                    .proofUrl(proofUrl)
+                    .approver(approver)
+                    .status("대기") // 초기 상태
+                    .build();
 
-        // Vaction 엔티티 생성
-        Vacation vacation = Vacation.builder()
-                .userId(requestDto.getUserId())
-                .userName(requestDto.getUserName())
-                .title(requestDto.getTitle())
-                .department(requestDto.getDepartment())
-                .companyName(requestDto.getCompanyName())
-                .startDate(requestDto.getStartDate())
-                .endDate(requestDto.getEndDate())
-                .annualLeaveRequest(requestDto.getAnnualLeaveRequest())
-                .vacation_type(requestDto.getType())
-                .type("휴가신청")
-                .halfDay(requestDto.getHalfDay())
-                .approvalDate(LocalDate.now())
-                .proofUrl(proofUrl)
-                .approver(approver)
-                .status("대기") // 초기 상태
-                .build();
+            log.info("Vacation 엔티티 생성 완료: {}", vacation);
+            vacationRepository.save(vacation);
+            log.info("Vacation 엔티티 저장 성공");
+        } catch (Exception e) {
+            log.error("Vacation 저장 중 오류 발생", e);
+            throw e;
+        }
 
-        vactionRepository.save(vacation);
+        try {
+            // WebSocket을 통한 실시간 알림 전송
+            NotificationDTO notification = NotificationDTO.builder()
+                    .targetType("USER")
+                    .targetId(requestDto.getApprover().getId()) // Approver ID
+                    .senderId(requestDto.getUserId())
+                    .message(requestDto.getUserName() + "님이 휴가를 신청했습니다.")
+                    .metadata(Map.of(
+                            "url", "/antwork/admin/approval",
+                            "type", "휴가신청",
+                            "title", requestDto.getTitle()
+                    ))
+                    .createdAt(LocalDateTime.now())
+                    .isRead(false)
+                    .build();
 
-        // WebSocket을 통한 실시간 알림 전송
-        NotificationDTO notification = NotificationDTO.builder()
-                .targetType("USER")
-                .targetId(approver.getUser().getId()) // Approver ID
-                .message(requestDto.getUserName() + "님이 휴가를 신청했습니다.")
-                .metadata(Map.of(
-                        "url", "/antwork/admin/approval",
-                        "type", "휴가신청",
-                        "title", requestDto.getTitle()
-                ))
-                .createdAt(LocalDateTime.now())
-                .isRead(false)
-                .build();
-        notificationService.createAndSendNotification(notification);
+            log.info("Notification 생성 완료: {}", notification);
+            notificationService.createAndSendNotification(notification);
+            log.info("Notification 전송 성공");
+        } catch (Exception e) {
+            log.error("Notification 전송 중 오류 발생", e);
+            throw e;
+        }
+
+        log.info("휴가 신청 완료");
     }
 
+
     public List<Long> findVacationUser() {
-        List<Vacation> vacations = vactionRepository.findByStatus("승인");
+        List<Vacation> vacations = vacationRepository.findByStatus("승인");
         List<BusinessTrip> businessTrips = businessTripRepository.findByStatus("승인");
         List<VacationDTO> vacationDTOs = new ArrayList<>();
         List<BusinessTripDTO> businessTripDTOs = new ArrayList<>();

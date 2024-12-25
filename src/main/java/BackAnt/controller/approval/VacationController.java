@@ -31,6 +31,7 @@ public class VacationController {
             log.info("데이터 구조 확인" + requestDto.toString());
             // 휴가 신청 처리
             vacationService.createVacation(requestDto, proofFile);
+            log.info("컨트롤러 나왼?");
             return ResponseEntity.ok("휴가 신청이 완료되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

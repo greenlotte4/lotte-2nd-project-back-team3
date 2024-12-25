@@ -92,6 +92,7 @@ public class BusinessTripService {
         NotificationDTO notification = NotificationDTO.builder()
                 .targetType("USER")
                 .targetId(approver.getUser().getId()) // Approver ID
+                .senderId(requestDto.getUserId())
                 .message(requestDto.getUserName() + "님이 출장을 신청했습니다.")
                 .metadata(Map.of(
                         "url", "/antwork/admin/approval",

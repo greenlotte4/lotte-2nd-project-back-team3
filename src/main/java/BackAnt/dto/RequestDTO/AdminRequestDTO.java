@@ -1,5 +1,6 @@
 package BackAnt.dto.RequestDTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 @Getter
@@ -8,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true) // 알 수 없는 필드 무시
 public class AdminRequestDTO {
     private String uid;
     private String name;

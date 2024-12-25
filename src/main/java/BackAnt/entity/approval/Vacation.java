@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@Table(name = "Vaction")
+@Table(name = "Vacation")
 public class Vacation extends ApprovalRequest {
     
     private String title; // 제목
