@@ -24,8 +24,6 @@ public class BoardCommentRequestDTO {
     private String content;             // 댓글 내용
     private Boolean secret;           // 비밀 댓글 여부
     private Long parentCommentId;       // 대댓글인 경우 부모 댓글 ID
-    private Long userId;
-    // 작성자 ID
-//    private String writerName;          // 작성자 이름
-//    private String writerDepartment;    // 작성자 부서
+    private Long userId; // 작성자 ID
+
 }

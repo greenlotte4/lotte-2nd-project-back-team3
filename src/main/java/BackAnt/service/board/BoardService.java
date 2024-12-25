@@ -6,6 +6,7 @@ import BackAnt.entity.board.Board;
 import BackAnt.entity.User;
 import BackAnt.entity.board.BoardLike;
 import BackAnt.repository.board.BoardCategoryRepository;
+import BackAnt.repository.board.BoardCommentRepository;
 import BackAnt.repository.board.BoardLikeRepository;
 import BackAnt.repository.board.BoardRepository;
 import BackAnt.repository.UserRepository;
@@ -51,20 +52,22 @@ public class BoardService {
     private final BoardFileService boardFileService;
     private final BoardCategoryService boardCategoryService;
     private final BoardCategoryRepository boardCategoryRepository;
+    private final BoardCommentRepository boardCommentRepository;
 
     // 글 목록 조회
     public Page<BoardDTO> getFindAllBoards(Pageable pageable) {
         Page<Board> boards = boardRepository.findAllByOrderByRegDateDesc(pageable);
+
+        // Board -> BoardDTO 변환 시 상세 로그 추가
         return boards.map(board -> {
             BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class);
             boardDTO.setWriterId(board.getWriter() != null ? board.getWriter().getId() : null);
             boardDTO.setWriterName(board.getWriter() != null ? board.getWriter().getName() : "익명");
 
-
-            // 좋아요 수를 추가
             int likeCount = boardLikeRepository.countByBoardId(board.getId());
             boardDTO.setLikes(likeCount);
 
+            log.info("(서비스) 변환된 DTO: " + boardDTO);
             return boardDTO;
         });
     }
@@ -187,6 +190,11 @@ public class BoardService {
         return boardLikeRepository.countByBoardId(boardId);
     }
 
+    // 댓글 카운트
+    public int getCommentCount(Long boardId) {
+        return boardCommentRepository.countCommentsByBoardId(boardId);
+    }
+
     // 글 쓰기
     @Transactional
     public Long save(BoardDTO boardDTO, HttpServletRequest req) {
@@ -296,4 +304,6 @@ public class BoardService {
                 .map(board -> modelMapper.map(board, BoardDTO.class))
             .collect(Collectors.toList());
     }
+
+
 }
