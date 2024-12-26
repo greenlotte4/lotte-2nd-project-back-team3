@@ -721,7 +721,7 @@ public class DriveFolderService {
                 .build();
     }
     // 드라이브 폴더 이동
-    public void DriveMoveToFolder(DriveMoveRequestDTO driveMoveRequestDTO) throws IOException {
+    public ResponseEntity<?> DriveMoveToFolder(DriveMoveRequestDTO driveMoveRequestDTO) throws IOException {
 
         String userId = driveMoveRequestDTO.getUserId();
 
@@ -760,7 +760,7 @@ public class DriveFolderService {
 
             // 데이터베이스 경로 업데이트
             updateDatabasePaths(Collections.emptyList(), Collections.emptyList(), targetPath, userId, targetFolderId, null, Optional.of(file));
-            return; // 단일 파일 이동 후 종료
+            return ResponseEntity.ok("단일 파일 이동 완료.");
         }
 
         // 폴더 이동
@@ -794,7 +794,9 @@ public class DriveFolderService {
 
             // 데이터베이스 경로 업데이트
             updateDatabasePaths(folders, files, targetPath, userId, targetFolderId, originFolderId, Optional.empty());
+            return ResponseEntity.ok("단일 파일 이동 완료.");
         }
+        return null;
     }
     //물리적 경로 이동
     private void movePhysicalPaths(

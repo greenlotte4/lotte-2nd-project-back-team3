@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 public class DriveCollaboratorDTO {
 
+    //공유드라이브 조회
 
     private int DriveFolderShareId;
 

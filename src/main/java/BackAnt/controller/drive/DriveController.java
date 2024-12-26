@@ -133,8 +133,7 @@ public ResponseEntity<?> DriveFolderTrash(    @PathVariable(required = false) St
         log.info("이동 할 파일 : " + driveMoveRequestDTO.getDriveFileId());
         try {
             // 서비스 호출
-            driveFolderService.DriveMoveToFolder(driveMoveRequestDTO);
-            return ResponseEntity.ok("폴더 이동이 성공적으로 완료되었습니다.");
+            return driveFolderService.DriveMoveToFolder(driveMoveRequestDTO);
         } catch (IllegalArgumentException e) {
             log.error("잘못된 요청: {}", e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
